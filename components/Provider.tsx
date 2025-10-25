@@ -3,9 +3,23 @@ import { TamaguiProvider, type TamaguiProviderProps } from 'tamagui'
 import { ToastProvider, ToastViewport } from '@tamagui/toast'
 import { CurrentToast } from './CurrentToast'
 import { config } from '../tamagui.config'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import Auth from '../components/Auth'
+import Account from '../components/Account'
+import { Session } from '@supabase/supabase-js'
 
 export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'config'>) {
   const colorScheme = useColorScheme()
+  const [session, setSession] = useState<Session | null>(null)
+    useEffect(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session)
+      })
+      supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session)
+      })
+    }, [])
 
   return (
     <TamaguiProvider
@@ -23,7 +37,7 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'conf
           ]
         }
       >
-        {children}
+          {session && session.user ? children : <Auth />}
         <CurrentToast />
         <ToastViewport top="$8" left={0} right={0} />
       </ToastProvider>
