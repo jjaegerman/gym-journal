@@ -1,1 +1,14 @@
-note because this is in a monorepo had to remove react, react-dom, and react-native-web deps and change metro.config.js a bit.
+
+local supabase:
+
+```
+supabase start
+supabase migration up
+supabase functions serve --env-file ./supabase/.env.local --no-verify-jwt --debug
+```
+
+
+pull in remote schema changes to db
+```
+supabase db pull
+```
