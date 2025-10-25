@@ -4,5 +4,6 @@
 
 expo-env.d.ts
 node_modules/
+.temp
 
 # @end expo-cli
