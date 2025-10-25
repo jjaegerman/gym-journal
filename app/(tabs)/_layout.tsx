@@ -41,6 +41,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <AudioWaveform color={color as any} />,
         }}
       />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: 'Account',
+          tabBarIcon: ({ color }) => <AudioWaveform color={color as any} />,
+        }}
+      />
     </Tabs>
   )
 }
