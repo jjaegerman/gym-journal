@@ -2686,6 +2686,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ffmpeg/ffmpeg@npm:^0.12.15":
+  version: 0.12.15
+  resolution: "@ffmpeg/ffmpeg@npm:0.12.15"
+  dependencies:
+    "@ffmpeg/types": "npm:^0.12.4"
+  checksum: 10c0/80c44459ca31ec7596d5624572370fd4c6ecf31701c6b23ec52cce85b4bddabaaa68c3ad050adfbba4db3ae4956c5538828690c51e1c258930850fe1a182599e
+  languageName: node
+  linkType: hard
+
+"@ffmpeg/types@npm:^0.12.4":
+  version: 0.12.4
+  resolution: "@ffmpeg/types@npm:0.12.4"
+  checksum: 10c0/8dba8e728a11158fbee94baffd648bf3446ad891506f5e65ffc64f5510e8afc33dffc2dd4abcf2966736fbd7d3c4919e9ce9fcf71f7d22607015caae431b83dd
+  languageName: node
+  linkType: hard
+
 "@floating-ui/core@npm:^1.0.0, @floating-ui/core@npm:^1.6.0":
   version: 1.6.7
   resolution: "@floating-ui/core@npm:1.6.7"
@@ -7939,6 +7955,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-audio@npm:~0.4.9":
+  version: 0.4.9
+  resolution: "expo-audio@npm:0.4.9"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/e5b9e07445a5777bdcaaf50acab2bb825e1d8fbbc8913e32601bdb87ebc75b8d9e8ec8eeaf77b27d068649083066c538e5153feecd6352f7cc8b3f6a40e6f81c
+  languageName: node
+  linkType: hard
+
 "expo-build-properties@npm:~0.14.8":
   version: 0.14.8
   resolution: "expo-build-properties@npm:0.14.8"
@@ -8713,6 +8740,7 @@ __metadata:
     "@babel/core": "npm:^7.24.6"
     "@expo/metro-config": "npm:~0.20.0"
     "@expo/metro-runtime": "npm:~5.0.5"
+    "@ffmpeg/ffmpeg": "npm:^0.12.15"
     "@react-native-async-storage/async-storage": "npm:2.1.2"
     "@react-navigation/native": "npm:^7.1.6"
     "@rneui/base": "npm:^4.0.0-rc.8"
@@ -8729,7 +8757,9 @@ __metadata:
     babel-preset-expo: "npm:~13.0.0"
     burnt: "npm:^0.12.2"
     expo: "npm:~53.0.23"
+    expo-audio: "npm:~0.4.9"
     expo-build-properties: "npm:~0.14.8"
+    expo-file-system: "npm:~18.1.11"
     expo-font: "npm:~13.3.2"
     expo-linking: "npm:~7.1.7"
     expo-router: "npm:~5.1.7"
@@ -8747,6 +8777,7 @@ __metadata:
     react-native-web: "npm:^0.20.0"
     tamagui: "npm:^1.135.4"
     typescript: "npm:~5.8.3"
+    zod: "npm:^4.1.12"
   languageName: unknown
   linkType: soft
 
@@ -14174,5 +14205,12 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10c0/dceb44c28578b31641e13695d200d34ec4ab3966a5729814d5445b194933c096b7ced71494ce53a0e8820685d1d010df8b2422e5bf2cdea7e469d97ffbea306f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.1.12":
+  version: 4.1.12
+  resolution: "zod@npm:4.1.12"
+  checksum: 10c0/b64c1feb19e99d77075261eaf613e0b2be4dfcd3551eff65ad8b4f2a079b61e379854d066f7d447491fcf193f45babd8095551a9d47973d30b46b6d8e2c46774
   languageName: node
   linkType: hard
