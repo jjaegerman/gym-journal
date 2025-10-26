@@ -1,6 +1,7 @@
 import { ExternalLink } from '@tamagui/lucide-icons'
 import { Anchor, H2, Paragraph, XStack, YStack } from 'tamagui'
 import { ToastControl } from 'components/CurrentToast'
+import CallFunc from 'components/CallFunc'
 
 export default function TabOneScreen() {
   return (
@@ -50,6 +51,7 @@ export default function TabOneScreen() {
           to configure your themes and tokens.
         </Paragraph>
       </XStack>
+      <CallFunc />
     </YStack>
   )
 }
