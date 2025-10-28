@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    const exerciseLog = structured.output_text;
+    const exerciseLog = JSON.parse(structured.output_text);
 
     console.log(exerciseLog);
     for (let i: number = 0; i < (exerciseLog.sets ?? 1); i++) {
@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
       if (exerciseLog.effort) {
         log_input.p_effort = String(exerciseLog.effort);
       }
+      console.log('Log input:', log_input);
       const { data, error } = await supabase.rpc('add_log', log_input);
       if (error) {
         console.error('Error adding log:', error);

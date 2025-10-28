@@ -1,40 +1,47 @@
 import { z } from "zod";
 
-export type EffortLevel = "low" | "medium" | "high";
-export type WeightUnit = "kg" | "lbs";
+/* --- Literal enums --- */
+export const EffortLevelSchema = z.enum(["low", "medium", "high"]);
+export type EffortLevel = z.infer<typeof EffortLevelSchema>;
 
-/**
- * Represents a single set performed for an exercise.
- */
-export interface Log {
-  id: string;
-  exerciseId: string;
-  datetime: Date;
-  weight?: { value: number; unit: WeightUnit };
-  repetitions?: number;
-  duration?: number; // in seconds, for time-based exercises
-  effort?: EffortLevel;
-}
+export const WeightUnitSchema = z.enum(["kg", "lbs"]);
+export type WeightUnit = z.infer<typeof WeightUnitSchema>;
 
-/**
- * Represents a specific exercise performed in a workout (e.g. "Bench Press").
- * Groups all its sets (logs).
- */
-export interface Exercise {
-  id: string;
-  workoutId: string;
-  name: string; // e.g., "Bench Press"
-  logs: Log[]; // each log = one set
-}
+/* --- Log (single set) --- */
+export const LogSchema = z.object({
+  id: z.string(),
+  datetime: z.coerce.date(),          // converts ISO string → Date
+  weight: z.coerce.number().nullable().optional(), // converts "135" → 135
+  weightUnit: WeightUnitSchema.nullable().optional(),
+  repetitions: z.coerce.number().int().nullable().optional(),
+  duration: z.coerce.number().int().nullable().optional(),
+  effort: EffortLevelSchema.nullable().optional(),
+});
+export type Log = z.infer<typeof LogSchema>;
 
-/**
- * Represents a full workout session (e.g., "Leg Day - Oct 26").
- * Groups multiple exercises.
- */
-export interface Workout {
-  id: string;
-  user_id: string;
-  datetime: Date;
-  exercises: Exercise[];
-  duration: number; // total workout duration seconds
-}
+/* --- Exercise (groups logs) --- */
+export const ExerciseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  logs: z.array(LogSchema),
+});
+export type Exercise = z.infer<typeof ExerciseSchema>;
+
+/* --- Workout (summary) --- */
+export const WorkoutSchema = z.object({
+  id: z.string(),
+  datetime: z.coerce.date(),
+  exerciseCount: z.coerce.number().int(),
+  logCount: z.coerce.number().int(),
+  mostRecentLog: z.coerce.date(),
+});
+export type Workout = z.infer<typeof WorkoutSchema>;
+export const WorkoutsArraySchema = z.array(WorkoutSchema);
+
+/* --- WorkoutDetails (full with exercises) --- */
+export const WorkoutDetailsSchema = z.object({
+  id: z.string(),
+  datetime: z.coerce.date(),
+  exercises: z.array(ExerciseSchema),
+});
+export type WorkoutDetails = z.infer<typeof WorkoutDetailsSchema>;

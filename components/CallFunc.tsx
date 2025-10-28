@@ -11,6 +11,7 @@ import {
 import { Alert, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { Session } from '@supabase/supabase-js';
+import { Workout, WorkoutDetails, WorkoutDetailsSchema, WorkoutsArraySchema, WorkoutSchema } from 'types/exercise';
 
 export default function CallFunc() {
   async function audioFileToBase64(uri) {
@@ -58,7 +59,6 @@ export default function CallFunc() {
   const callFunction = async (query: string) => {
     const base64Audio = await audioFileToBase64(audioRecorder.uri!);
     const fileExtension = Platform.OS === 'web' ? "webm" : audioRecorder.uri?.split('.').pop() || 'webm';
-    console.log('URI:', audioRecorder.uri, " DONE");
     const fileName = "audio." + fileExtension;
 
     const { data, error } = await supabase.functions.invoke('openai', {
@@ -85,7 +85,8 @@ export default function CallFunc() {
       return;
     }
     console.log('Workouts:', data);
-  }
+    console.log(WorkoutsArraySchema.parse(data));
+}
   const getWorkout = async () => {
     const { data, error } = await supabase.rpc("get_workout_details", { p_workout_id: workoutId });
     if (error) {
@@ -93,6 +94,7 @@ export default function CallFunc() {
       return;
     }
     console.log('Workout Details:', data);
+    console.log('Typed Workout Details:', WorkoutDetailsSchema.parse(data));
   }
   const [responseText, setResponseText] = useState('')
   const [query, setQuery] = useState('')
