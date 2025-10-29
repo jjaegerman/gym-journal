@@ -1,10 +1,7 @@
-import { useState } from 'react'
-import {
-  Pressable,
-  StyleSheet,
-} from 'react-native'
-import { selectionAsync } from 'expo-haptics'
-import { View, useTheme } from "tamagui"
+import { useState } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { selectionAsync } from "expo-haptics";
+import { View, useTheme } from "tamagui";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -12,57 +9,70 @@ import Animated, {
   useSharedValue,
   withSpring,
   type WithSpringConfig,
-} from 'react-native-reanimated'
+} from "react-native-reanimated";
 
-const RECORD_BUTTON_SIZE = 60
-const RECORD_BUTTON_BACKGROUND_SIZE = RECORD_BUTTON_SIZE + 16
-const RECORDING_INDICATOR_COLOR = '#d72d66'
-const RECORDING_INDICATOR_SCALE = 0.5
+const RECORD_BUTTON_SIZE = 60;
+const RECORD_BUTTON_BACKGROUND_SIZE = RECORD_BUTTON_SIZE + 16;
+const RECORDING_INDICATOR_COLOR = "#d72d66";
+const RECORDING_INDICATOR_SCALE = 0.5;
 const SPRING_SHORT_CONFIG: WithSpringConfig = {
   stiffness: 120,
   overshootClamping: true,
-}
+};
 
-export const RecordButton = ({startCallback, stopCallback}: {startCallback: () => Promise<void>, stopCallback: () => Promise<void>}) => {
-  const [isRecording, setIsRecording] = useState(false)  
+export const RecordButton = ({
+  startCallback,
+  stopCallback,
+}: {
+  startCallback: () => Promise<void>;
+  stopCallback: () => Promise<void>;
+}) => {
+  const [isRecording, setIsRecording] = useState(false);
   const theme = useTheme();
-  
 
-  const recordBorderColor = theme.color.val
-  const scale = useSharedValue(1)
+  const recordBorderColor = theme.color.val;
+  const scale = useSharedValue(1);
 
-  const recordIndicatorAnimation =
-    useAnimatedStyle(() => ({
-      borderRadius: interpolate(
-        scale.value,
-        [1, RECORDING_INDICATOR_SCALE],
-        [RECORD_BUTTON_SIZE / 2, 8],
-        Extrapolation.CLAMP
-      ),
-      transform: [{ scale: scale.value }],
-    }))
+  const recordIndicatorAnimation = useAnimatedStyle(() => ({
+    borderRadius: interpolate(
+      scale.value,
+      [1, RECORDING_INDICATOR_SCALE],
+      [RECORD_BUTTON_SIZE / 2, 8],
+      Extrapolation.CLAMP
+    ),
+    transform: [{ scale: scale.value }],
+  }));
 
   const handlePress = async () => {
-    selectionAsync()
+    selectionAsync();
     if (isRecording) {
-      await stopCallback()
-      scale.value = withSpring(1, SPRING_SHORT_CONFIG)
-      setIsRecording(false)
+      await stopCallback();
+      scale.value = withSpring(1, SPRING_SHORT_CONFIG);
+      setIsRecording(false);
     } else {
-      await startCallback()
+      await startCallback();
 
-      scale.value = withSpring(RECORDING_INDICATOR_SCALE, SPRING_SHORT_CONFIG)
-      setIsRecording(true)
+      scale.value = withSpring(RECORDING_INDICATOR_SCALE, SPRING_SHORT_CONFIG);
+      setIsRecording(true);
     }
-  }
+  };
 
-  return (<>
-    <View style={[styles.recordButtonBackground, { borderColor: recordBorderColor }]} />
-    <Pressable style={styles.recordButton} onPress={handlePress}>
-    <Animated.View style={[styles.recordIndicator, recordIndicatorAnimation]} />
-    </Pressable>
-    </>)
-}
+  return (
+    <View style={{ alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={[
+          styles.recordButtonBackground,
+          { borderColor: recordBorderColor },
+        ]}
+      />
+      <Pressable style={styles.recordButton} onPress={handlePress}>
+        <Animated.View
+          style={[styles.recordIndicator, recordIndicatorAnimation]}
+        />
+      </Pressable>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   recordIndicator: {
@@ -80,6 +90,6 @@ const styles = StyleSheet.create({
   },
 
   recordButton: {
-    position: 'absolute',
+    position: "absolute",
   },
-})
+});
