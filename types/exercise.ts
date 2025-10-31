@@ -14,7 +14,7 @@ export const LogSchema = z.object({
   weight: z.coerce.number().nullable().optional(), // converts "135" → 135
   weightUnit: WeightUnitSchema.nullable().optional(),
   repetitions: z.coerce.number().int().nullable().optional(),
-  duration: z.coerce.number().int().nullable().optional(),
+  duration: z.iso.duration().nullable().optional(),
   effort: EffortLevelSchema.nullable().optional(),
 });
 export type Log = z.infer<typeof LogSchema>;
