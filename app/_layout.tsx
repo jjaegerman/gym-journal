@@ -86,7 +86,7 @@ function RootLayoutNav() {
           name="workout"
           options={{
             title: "Workout Details",
-            presentation: "formSheet",
+            presentation: "modal",
             animation: "slide_from_right",
             gestureEnabled: true,
             gestureDirection: "horizontal",

@@ -15,13 +15,22 @@ import {
   Spacer,
   Separator,
 } from "tamagui";
-import { Workout, WorkoutDetails, WorkoutDetailsSchema } from "types/exercise";
+import {
+  Exercise,
+  Workout,
+  WorkoutDetails,
+  WorkoutDetailsSchema,
+} from "types/exercise";
+import { ExerciseLogs } from "./ExerciseLogs";
+import { Expand, Eye } from "@tamagui/lucide-icons";
 
 const spModes = ["percent", "constant", "fit", "mixed"] as const;
 
 export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
+  const [focusedExerciseIdx, setFocusedExerciseIdx] = useState<number>(0);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,11 +60,36 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
     console.log("Typed Workout Details:", WorkoutDetailsSchema.parse(data));
   };
 
+  const lastLog = workout ? lastLogTime(workout.exercises) : undefined;
+  const workoutStart = workout?.datetime;
+  const showEndTime =
+    lastLog && workoutStart && lastLog.getTime() !== workoutStart.getTime();
+
   return (
-    <YStack flex={1} items="center" gap="$1">
+    <YStack items="center" gap="$1">
+      <Spacer />
+      <Text>
+        {workout?.datetime.toLocaleString(undefined, {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+        {showEndTime && (
+          <>
+            {" "}
+            to{" "}
+            {lastLog?.toLocaleString(undefined, {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </>
+        )}
+      </Text>
       <Spacer />
       <YGroup items="center" bordered width="70%" separator={<Separator />}>
-        {workout?.exercises.map((exercise) => {
+        {workout?.exercises.map((exercise, i) => {
           const summary = SummarizeExerciseLogs(exercise.logs);
           const description = descriptionFromSummary(summary);
           return (
@@ -67,11 +101,21 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
                 hoverTheme
                 pressTheme
                 key={exercise.id}
+                iconAfter={Expand}
+                onPress={() => {
+                  setFocusedExerciseIdx(i);
+                  setDialogOpen(true);
+                }}
               />
             </YGroup.Item>
           );
         })}
       </YGroup>
+      <ExerciseLogs
+        exercise={workout?.exercises[focusedExerciseIdx] || ({} as Exercise)}
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+      />
     </YStack>
   );
 };
@@ -184,4 +228,20 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
     );
   }
   return parts.join(", ");
+}
+
+function lastLogTime(exercises: any[] | undefined): Date | undefined {
+  if (!exercises || exercises.length === 0) {
+    return undefined;
+  }
+  let lastTime: Date | null = null;
+  exercises.forEach((exercise) => {
+    exercise.logs.forEach((log: any) => {
+      const logTime = new Date(log.datetime);
+      if (!lastTime || logTime > lastTime) {
+        lastTime = logTime;
+      }
+    });
+  });
+  return lastTime || undefined;
 }
