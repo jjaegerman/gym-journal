@@ -4060,6 +4060,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tamagui-extras/core@npm:1.12.3":
+  version: 1.12.3
+  resolution: "@tamagui-extras/core@npm:1.12.3"
+  peerDependencies:
+    react: ^18.2.0
+    react-native: 0.72.6
+    react-native-svg: ^13.9.0
+    tamagui: 1.29.3
+  checksum: 10c0/d7d9f2b04a6c7c81757ce104ac81e30b5e98ac9293a862aa8ed185c9a8d95d15f1ada48dc016a7227d0944d33fac3a91ac13ef34f31fc492478ae7db14403a99
+  languageName: node
+  linkType: hard
+
+"@tamagui-extras/form@npm:^1.17.3":
+  version: 1.17.3
+  resolution: "@tamagui-extras/form@npm:1.17.3"
+  dependencies:
+    "@tamagui-extras/core": "npm:1.12.3"
+    react-hook-form: "npm:^7.43.9"
+  peerDependencies:
+    react: ^18.2.0
+    react-native: 0.72.6
+    tamagui: 1.29.3
+  checksum: 10c0/0c3728103ff27451967fa3ba6846a07d83afeaca5331fd92562da4212defa5ba807b201998fee1753621c30a9eb2525d5924d5715436d291c501f4eb9473da3e
+  languageName: node
+  linkType: hard
+
 "@tamagui/accordion@npm:1.135.7":
   version: 1.135.7
   resolution: "@tamagui/accordion@npm:1.135.7"
@@ -8776,6 +8802,7 @@ __metadata:
     "@rneui/base": "npm:^4.0.0-rc.8"
     "@rneui/themed": "npm:^4.0.0-rc.8"
     "@supabase/supabase-js": "npm:^2.76.1"
+    "@tamagui-extras/form": "npm:^1.17.3"
     "@tamagui/babel-plugin": "npm:^1.135.7"
     "@tamagui/cli": "npm:^1.135.7"
     "@tamagui/config": "npm:^1.135.7"
@@ -11925,6 +11952,15 @@ __metadata:
   peerDependencies:
     react: ">=17.0.0"
   checksum: 10c0/8f51257c261bfefff86f618e958683536248f708019632d309ee5ebdd52f25d3c130660d06fb6f0f4fdef79f00f8ec7177233a872c2321f7d46b7e77ccc522a1
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.43.9":
+  version: 7.66.0
+  resolution: "react-hook-form@npm:7.66.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/9faeafdaedfabfcbf5f8bb1aeefb81863b8e158eef4b089e2a32180fe474aec47d05fe3ed7d4faea085ca9f689118fb1135b94cdeed2022bd7d3fa3a56530c63
   languageName: node
   linkType: hard
 

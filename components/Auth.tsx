@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { Button, Input } from "@rneui/themed";
 import SignInForm from "./auth/SignInForm";
 import { Spacer, View } from "tamagui";
+import SignUpForm from "./auth/SignUpForm";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -21,12 +22,12 @@ export default function Auth() {
   const [signUpElseSignIn, setSignUpElseSignIn] = useState(true);
 
   return (
-    <View width="75%" self="center">
+    <View bg="$background" width="60%" self="center">
       <Spacer size="$10" />
       {signUpElseSignIn ? (
-        <SignInForm setSignUpElseSignIn={setSignUpElseSignIn} />
+        <SignUpForm setSignUpElseSignIn={setSignUpElseSignIn} />
       ) : (
-        "doesnt exist"
+        <SignInForm setSignUpElseSignIn={setSignUpElseSignIn} />
       )}
     </View>
   );

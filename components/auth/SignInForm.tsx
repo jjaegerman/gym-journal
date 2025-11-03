@@ -16,7 +16,7 @@ import {
 import { Input } from "components/auth/inputParts";
 import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
-import { Alert, TouchableOpacity } from "react-native";
+import { Alert, Platform, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 
 export default function SignInForm({
@@ -55,20 +55,6 @@ export default function SignInForm({
     setLoading(false);
   }
 
-  const handleSubmit = (event) => {
-    // Prevent default form submission behavior (page reload)
-    event.preventDefault();
-
-    // Access form elements and their values
-    const form = event.target;
-    const data = new FormData(form); // Use FormData API to easily extract values
-
-    const email = data.get("email");
-    const password = data.get("password");
-
-    console.log("Form Submitted:", { email, password });
-  };
-
   return (
     <FormCard>
       <View
@@ -79,13 +65,7 @@ export default function SignInForm({
         width="100%"
         style={{ borderRadius: 15 }}
       >
-        <H1
-          self="center"
-          size="$8"
-          $xs={{
-            size: "$7",
-          }}
-        >
+        <H1 self="center" size="$8">
           Sign in to your account
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
@@ -149,9 +129,9 @@ export default function SignInForm({
             <Button.Text>Sign In</Button.Text>
           </Button>
         </Theme>
+        {/* TODO: Social Auth Providers
         <View flexDirection="column" gap="$3" width="100%" items="center">
           <Theme>
-            {/* TODO: Social Auth Providers
               <View
                 flexDirection="column"
                 gap="$3"
@@ -179,9 +159,9 @@ export default function SignInForm({
                   </Button>
                 </View>
               </View>
-              */}
           </Theme>
         </View>
+        */}
         <SignUpLink setSignUpElseSignIn={setSignUpElseSignIn} />
       </View>
     </FormCard>

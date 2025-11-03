@@ -28762,19 +28762,43 @@
         "minWidth": 1280
       },
       "lg": {
-        "minWidth": 1024
+        "maxWidth": 1120
       },
       "md": {
-        "minWidth": 768
+        "maxWidth": 980
       },
       "sm": {
-        "minWidth": 640
+        "maxWidth": 860
       },
       "xs": {
-        "minWidth": 460
+        "maxWidth": 660
       },
       "2xs": {
         "minWidth": 340
+      },
+      "gtXs": {
+        "minWidth": 661
+      },
+      "gtSm": {
+        "minWidth": 861
+      },
+      "gtMd": {
+        "minWidth": 981
+      },
+      "gtLg": {
+        "minWidth": 1121
+      },
+      "short": {
+        "maxHeight": 820
+      },
+      "tall": {
+        "minHeight": 820
+      },
+      "hoverNone": {
+        "hover": "none"
+      },
+      "pointerCoarse": {
+        "pointer": "coarse"
       }
     },
     "shorthands": {
