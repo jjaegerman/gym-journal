@@ -1,13 +1,9 @@
-import { Facebook, Github } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import {
-  Anchor,
   AnimatePresence,
   Button,
-  Form,
   H1,
   Paragraph,
-  Separator,
   SizableText,
   Spinner,
   Theme,
@@ -18,12 +14,10 @@ import {
   LmInputRhf,
   LmSubmitButtonRhf,
 } from "@tamagui-extras/form";
-import { Input } from "components/auth/inputParts";
 import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
-import { Alert, TouchableOpacity } from "react-native";
-import { Link } from "expo-router";
-import { useForm } from "react-hook-form";
+import { TouchableOpacity } from "react-native";
+import { useToastController, useToastState } from "@tamagui/toast";
 
 export default function SignUpForm({
   setSignUpElseSignIn,
@@ -32,7 +26,10 @@ export default function SignUpForm({
   setSignUpElseSignIn: (value: boolean) => void;
   redirectTo: string;
 }) {
+  const toast = useToastController();
+
   const [loading, setLoading] = useState(false);
+  const [complete, setComplete] = useState(false);
 
   async function signUpWithEmail({
     email,
@@ -53,10 +50,19 @@ export default function SignUpForm({
       },
     });
 
-    if (error) Alert.alert(error.message);
+    if (error)
+      toast.show(error.message, {
+        duration: 30000,
+        customData: { theme: "red" },
+      });
     if (!session)
-      Alert.alert("Please check your inbox for email verification!");
+      toast.show("Please check your inbox for email verification!", {
+        duration: 10000,
+        customData: { theme: "green" },
+      });
+    setComplete(true);
     setLoading(false);
+    setSignUpElseSignIn(false);
   }
 
   return (
@@ -108,9 +114,12 @@ export default function SignUpForm({
             <Theme inverse>
               <LmSubmitButtonRhf
                 onSubmit={(data) => {
-                  console.log(data);
                   if (data.password !== data.confirmPassword) {
-                    Alert.alert("Passwords do not match");
+                    toast.show("Passwords do not match", {
+                      message: "Please make sure both passwords are the same.",
+                      duration: 3000,
+                      customData: { theme: "red" },
+                    });
                     return;
                   }
                   signUpWithEmail({
@@ -118,7 +127,7 @@ export default function SignUpForm({
                     password: data.password,
                   });
                 }}
-                disabled={loading}
+                disabled={loading || complete}
                 width="50%"
                 self="center"
                 iconAfter={

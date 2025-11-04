@@ -18,40 +18,42 @@ import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
 import { Alert, Platform, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
+import { useToastController } from "@tamagui/toast";
+import {
+  LmFormRhfProvider,
+  LmInputRhf,
+  LmSubmitButtonRhf,
+} from "@tamagui-extras/form";
 
 export default function SignInForm({
   setSignUpElseSignIn,
 }: {
   setSignUpElseSignIn: (value: boolean) => void;
 }) {
+  const toast = useToastController();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function signInWithEmail() {
+  async function signInWithEmail({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
 
-    if (error) Alert.alert(error.message);
-    setLoading(false);
-  }
-
-  async function signUpWithEmail() {
-    setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
-    if (error) Alert.alert(error.message);
-    if (!session)
-      Alert.alert("Please check your inbox for email verification!");
+    if (error)
+      toast.show(error.message, {
+        duration: 3000,
+        customData: { theme: "red" },
+      });
     setLoading(false);
   }
 
@@ -69,66 +71,64 @@ export default function SignInForm({
           Sign in to your account
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
-          <Input size="$4">
-            <Input.Label htmlFor="email">Email</Input.Label>
-            <Input.Box>
-              <Input.Area
-                value={email}
-                onChangeText={setEmail}
-                id="email"
-                placeholder="email@example.com"
-              />
-            </Input.Box>
-          </Input>
-          <Input size="$4">
-            <View flexDirection="row" items="center" justify="space-between">
-              <Input.Label htmlFor={"password"}>Password</Input.Label>
-            </View>
-            <Input.Box>
-              <Input.Area
-                textContentType="password"
-                secureTextEntry
-                id={"password"}
-                placeholder="Enter password"
-                value={password}
-                onChangeText={setPassword}
-              />
-            </Input.Box>
-            <ForgotPasswordLink />
-          </Input>
+          <LmFormRhfProvider>
+            <LmInputRhf
+              name="email"
+              label="Email"
+              id="email"
+              placeholder="email@example.com"
+              rules={{ required: "Email is required" }}
+            />
+            <LmInputRhf
+              name="password"
+              label="Password"
+              id="password"
+              placeholder="Enter password"
+              secureTextEntry
+              rules={{
+                required: "Password is required",
+              }}
+            />
+            <Theme inverse>
+              <LmSubmitButtonRhf
+                onSubmit={(data) => {
+                  signInWithEmail({
+                    email: data.email,
+                    password: data.password,
+                  });
+                }}
+                disabled={loading}
+                width="50%"
+                self="center"
+                iconAfter={
+                  <AnimatePresence>
+                    {loading && (
+                      <Spinner
+                        color="$color"
+                        key="loading-spinner"
+                        opacity={1}
+                        scale={1}
+                        animation="quick"
+                        position="absolute"
+                        l="60%"
+                        enterStyle={{
+                          opacity: 0,
+                          scale: 0.5,
+                        }}
+                        exitStyle={{
+                          opacity: 0,
+                          scale: 0.5,
+                        }}
+                      />
+                    )}
+                  </AnimatePresence>
+                }
+              >
+                <Button.Text>Sign In</Button.Text>
+              </LmSubmitButtonRhf>
+            </Theme>
+          </LmFormRhfProvider>
         </View>
-        <Theme inverse>
-          <Button
-            disabled={loading}
-            onPress={signInWithEmail}
-            width="50%"
-            iconAfter={
-              <AnimatePresence>
-                {loading && (
-                  <Spinner
-                    color="$color"
-                    key="loading-spinner"
-                    opacity={1}
-                    scale={1}
-                    animation="quick"
-                    position="absolute"
-                    l="60%"
-                    enterStyle={{
-                      opacity: 0,
-                      scale: 0.5,
-                    }}
-                    exitStyle={{
-                      opacity: 0,
-                      scale: 0.5,
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-            }
-          >
-            <Button.Text>Sign In</Button.Text>
-          </Button>
-        </Theme>
         {/* TODO: Social Auth Providers
         <View flexDirection="column" gap="$3" width="100%" items="center">
           <Theme>
