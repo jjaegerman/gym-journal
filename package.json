@@ -32,6 +32,7 @@
     "burnt": "^0.12.2",
     "expo": "~53.0.23",
     "expo-audio": "~0.4.9",
+    "expo-auth-session": "~6.2.1",
     "expo-build-properties": "~0.14.8",
     "expo-constants": "~17.1.7",
     "expo-file-system": "~18.1.11",

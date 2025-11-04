@@ -27,19 +27,30 @@ import { useForm } from "react-hook-form";
 
 export default function SignUpForm({
   setSignUpElseSignIn,
+  redirectTo,
 }: {
   setSignUpElseSignIn: (value: boolean) => void;
+  redirectTo: string;
 }) {
   const [loading, setLoading] = useState(false);
 
-  async function signUpWithEmail() {
+  async function signUpWithEmail({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) {
     setLoading(true);
     const {
       data: { session },
       error,
     } = await supabase.auth.signUp({
-      email: "asd",
-      password: "foo",
+      email: email,
+      password: password,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
     });
 
     if (error) Alert.alert(error.message);
@@ -102,7 +113,10 @@ export default function SignUpForm({
                     Alert.alert("Passwords do not match");
                     return;
                   }
-                  // TODO: Proceed with sign-up logic
+                  signUpWithEmail({
+                    email: data.email,
+                    password: data.password,
+                  });
                 }}
                 disabled={loading}
                 width="50%"
@@ -131,7 +145,7 @@ export default function SignUpForm({
                   </AnimatePresence>
                 }
               >
-                <Button.Text>Sign In</Button.Text>
+                <Button.Text>Sign Up</Button.Text>
               </LmSubmitButtonRhf>
             </Theme>
           </LmFormRhfProvider>
