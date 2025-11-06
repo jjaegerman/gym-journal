@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  AnimatePresence,
-  Button,
-  H1,
-  Paragraph,
-  SizableText,
-  Spinner,
-  Theme,
-  View,
-} from "tamagui";
+import { AnimatePresence, Button, H1, Spinner, Theme, View } from "tamagui";
 import {
   LmFormRhfProvider,
   LmInputRhf,
@@ -16,53 +7,39 @@ import {
 } from "@tamagui-extras/form";
 import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
-import { TouchableOpacity } from "react-native";
 import { useToastController, useToastState } from "@tamagui/toast";
+import { useRouter } from "expo-router";
 
-export default function SignUpForm({
-  setSignUpElseSignIn,
-  redirectTo,
-}: {
-  setSignUpElseSignIn: (value: boolean) => void;
-  redirectTo: string;
-}) {
+export default function ChangePasswordForm() {
   const toast = useToastController();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
-  async function signUpWithEmail({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) {
+  async function updatePassword({ password }: { password: string }) {
     setLoading(true);
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.signUp({
-      email: email,
+    } = await supabase.auth.updateUser({
       password: password,
-      options: {
-        emailRedirectTo: redirectTo,
-      },
     });
 
-    if (error)
+    if (error) {
       toast.show(error.message, {
         duration: 30000,
         customData: { theme: "red" },
       });
-    if (!session)
-      toast.show("Please check your inbox for email verification!", {
+    } else {
+      toast.show("Password updated successfully!", {
         duration: 10000,
         customData: { theme: "green" },
       });
+    }
     setComplete(true);
     setLoading(false);
-    setSignUpElseSignIn(false);
+    router.push("/");
   }
 
   return (
@@ -76,22 +53,15 @@ export default function SignUpForm({
         style={{ borderRadius: 15 }}
       >
         <H1 self="center" size="$8">
-          Create an account
+          Change password
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
           <LmFormRhfProvider>
             <LmInputRhf
-              name="email"
-              label="Email"
-              id="email"
-              placeholder="email@example.com"
-              rules={{ required: "Email is required", pattern: /^\S+@\S+$/i }}
-            />
-            <LmInputRhf
               name="password"
-              label="Password"
+              label="New Password"
               id="password"
-              placeholder="Enter password"
+              placeholder="Enter new password"
               secureTextEntry
               rules={{
                 required: "Password is required",
@@ -103,9 +73,9 @@ export default function SignUpForm({
             />
             <LmInputRhf
               name="confirmPassword"
-              label="Confirm Password"
+              label="Confirm New Password"
               id="confirmPassword"
-              placeholder="Confirm password"
+              placeholder="Confirm new password"
               secureTextEntry
               rules={{
                 required: "Please confirm your password",
@@ -122,8 +92,7 @@ export default function SignUpForm({
                     });
                     return;
                   }
-                  signUpWithEmail({
-                    email: data.email,
+                  updatePassword({
                     password: data.password,
                   });
                 }}
@@ -154,35 +123,12 @@ export default function SignUpForm({
                   </AnimatePresence>
                 }
               >
-                <Button.Text>Sign Up</Button.Text>
+                <Button.Text>Reset Password</Button.Text>
               </LmSubmitButtonRhf>
             </Theme>
           </LmFormRhfProvider>
         </View>
-        <SignInLink setSignUpElseSignIn={setSignUpElseSignIn} />
       </View>
     </FormCard>
   );
 }
-
-const SignInLink = ({
-  setSignUpElseSignIn,
-}: {
-  setSignUpElseSignIn: (value: boolean) => void;
-}) => {
-  return (
-    <TouchableOpacity onPress={() => setSignUpElseSignIn(false)}>
-      <Paragraph textDecorationStyle="unset">
-        Already have an account?{" "}
-        <SizableText
-          hoverStyle={{
-            color: "$colorHover",
-          }}
-          textDecorationLine="underline"
-        >
-          Sign in
-        </SizableText>
-      </Paragraph>
-    </TouchableOpacity>
-  );
-};

@@ -1,6 +1,4 @@
 import { View, styled } from "tamagui";
-import { useMedia } from "tamagui";
-import type { MediaQueryKey } from "@tamagui/web";
 
 export const FormCard = styled(View, {
   tag: "form",

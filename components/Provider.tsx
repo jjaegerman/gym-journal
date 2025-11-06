@@ -1,30 +1,66 @@
-import { useColorScheme } from 'react-native'
-import { TamaguiProvider, type TamaguiProviderProps } from 'tamagui'
-import { ToastProvider, ToastViewport } from '@tamagui/toast'
-import { CurrentToast } from './CurrentToast'
-import { config } from '../tamagui.config'
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import Auth from '../components/Auth'
-import Account from '../components/Account'
-import { Session } from '@supabase/supabase-js'
+import { useColorScheme } from "react-native";
+import { TamaguiProvider, type TamaguiProviderProps } from "tamagui";
+import { ToastProvider, ToastViewport } from "@tamagui/toast";
+import { CurrentToast } from "./CurrentToast";
+import { config } from "../tamagui.config";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+import Auth from "../components/Auth";
+import { Session } from "@supabase/supabase-js";
+import { AppState } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+import * as QueryParams from "expo-auth-session/build/QueryParams";
 
-export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'config'>) {
-  const colorScheme = useColorScheme()
-  const [session, setSession] = useState<Session | null>(null)
-    useEffect(() => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setSession(session)
-      })
-      supabase.auth.onAuthStateChange((_event, session) => {
-        setSession(session)
-      })
-    }, [])
+// Tells Supabase Auth to continuously refresh the session automatically if
+// the app is in the foreground. When this is added, you will continue to receive
+// `onAuthStateChange` events with the `TOKEN_REFRESHED` or `SIGNED_OUT` event
+// if the user's session is terminated. This should only be registered once.
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
+
+WebBrowser.maybeCompleteAuthSession();
+
+const createSessionFromUrl = async (url: string) => {
+  const { params, errorCode } = QueryParams.getQueryParams(url);
+  if (errorCode) throw new Error(errorCode);
+  const { access_token, refresh_token } = params;
+  if (!access_token) return;
+  const { data, error } = await supabase.auth.setSession({
+    access_token,
+    refresh_token,
+  });
+  if (error) throw error;
+  return data.session;
+};
+
+export function Provider({
+  children,
+  ...rest
+}: Omit<TamaguiProviderProps, "config">) {
+  const colorScheme = useColorScheme();
+  const [session, setSession] = useState<Session | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
+
+  const url = Linking.useLinkingURL();
+  if (url) createSessionFromUrl(url);
 
   return (
     <TamaguiProvider
       config={config}
-      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+      defaultTheme={colorScheme === "dark" ? "dark" : "light"}
       {...rest}
     >
       <ToastProvider
@@ -37,10 +73,10 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'conf
           ]
         }
       >
-          {session && session.user ? children : <Auth />}
+        {session && session.user ? children : <Auth />}
         <CurrentToast />
-        <ToastViewport top="$8" left={0} right={0} />
+        <ToastViewport top="$8" left={0} right={0} portalToRoot />
       </ToastProvider>
     </TamaguiProvider>
-  )
+  );
 }
