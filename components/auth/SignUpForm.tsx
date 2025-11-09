@@ -103,7 +103,13 @@ export default function SignUpForm({
               label="Email"
               id="email"
               placeholder="email@example.com"
-              rules={{ required: "Email is required", pattern: /^\S+@\S+$/i }}
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "Please enter a valid email address"
+                }
+              }}
             />
             <Form.Input
               name="password"

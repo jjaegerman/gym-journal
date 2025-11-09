@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useId } from "react";
 import {
   useForm,
   UseFormReturn,
@@ -14,6 +14,7 @@ import {
   YStack,
   Button,
   ButtonProps,
+  Text,
 } from "tamagui";
 import { Controller } from "react-hook-form";
 
@@ -78,25 +79,34 @@ function FormInput({
   rules,
 }: FormInputProps) {
   const { form } = useFormContext();
+  const error = form.formState.errors[name];
+  const generatedId = useId();
+  const inputId = id || `${generatedId}-${name}`;
 
   return (
     <YStack gap="$2">
-      {label && <Label htmlFor={id || name}>{label}</Label>}
+      {label && <Label htmlFor={inputId}>{label}</Label>}
       <Controller
         control={form.control}
         name={name}
         rules={rules}
         render={({ field: { onChange, onBlur, value } }) => (
           <Input
-            id={id || name}
+            id={inputId}
             placeholder={placeholder}
             secureTextEntry={secureTextEntry}
-            value={value}
+            value={value ?? ""}
             onChangeText={onChange}
             onBlur={onBlur}
+            borderColor={error ? "$red10" : undefined}
           />
         )}
       />
+      {error && (
+        <Text color="$red10" fontSize="$2">
+          {error.message as string}
+        </Text>
+      )}
     </YStack>
   );
 }
