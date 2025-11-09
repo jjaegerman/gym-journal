@@ -1,29 +1,43 @@
 import { ReactNode } from "react";
-import { useForm, UseFormReturn, FieldValues, SubmitHandler, RegisterOptions } from "react-hook-form";
-import { Form as TamaguiForm, Input, Label, YStack, Button, ButtonProps } from "tamagui";
+import {
+  useForm,
+  UseFormReturn,
+  FieldValues,
+  SubmitHandler,
+  RegisterOptions,
+} from "react-hook-form";
+import {
+  Form as TamaguiForm,
+  Input,
+  InputProps,
+  Label,
+  YStack,
+  Button,
+  ButtonProps,
+} from "tamagui";
 import { Controller } from "react-hook-form";
 
 // Form Context
 import { createContext, useContext } from "react";
 
-interface FormContextValue<TFieldValues extends FieldValues = FieldValues> {
-  form: UseFormReturn<TFieldValues>;
+interface FormContextValue {
+  form: UseFormReturn<any>;
 }
 
 const FormContext = createContext<FormContextValue | null>(null);
 
-function useFormContext<TFieldValues extends FieldValues = FieldValues>() {
+function useFormContext() {
   const context = useContext(FormContext);
   if (!context) {
     throw new Error("Form components must be used within a Form component");
   }
-  return context as FormContextValue<TFieldValues>;
+  return context;
 }
 
 // Form Component
 interface FormProps<TFieldValues extends FieldValues> {
   onSubmit: SubmitHandler<TFieldValues>;
-  defaultValues: TFieldValues;
+  defaultValues?: TFieldValues;
   children: ReactNode;
 }
 
@@ -32,7 +46,9 @@ export function Form<TFieldValues extends FieldValues>({
   defaultValues,
   children,
 }: FormProps<TFieldValues>) {
-  const form = useForm<TFieldValues>({ defaultValues });
+  const form = useForm<TFieldValues>({
+    defaultValues: defaultValues as any,
+  });
 
   return (
     <FormContext.Provider value={{ form }}>
@@ -93,7 +109,11 @@ interface FormTriggerProps extends ButtonProps {
 
 function FormTrigger({ asChild, children, ...props }: FormTriggerProps) {
   if (asChild) {
-    return <TamaguiForm.Trigger asChild {...props}>{children}</TamaguiForm.Trigger>;
+    return (
+      <TamaguiForm.Trigger asChild {...props}>
+        {children}
+      </TamaguiForm.Trigger>
+    );
   }
   return <TamaguiForm.Trigger {...props}>{children}</TamaguiForm.Trigger>;
 }

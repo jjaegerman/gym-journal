@@ -1,26 +1,20 @@
-import { Facebook, Github } from "@tamagui/lucide-icons";
+import { Facebook, Github, X } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import {
-  Anchor,
   AnimatePresence,
   Button,
   Dialog,
   H1,
   Paragraph,
-  Separator,
   SizableText,
-  Spacer,
   Spinner,
   Theme,
   View,
-  Text,
   PortalProvider,
 } from "tamagui";
-import { Input } from "components/auth/inputParts";
 import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
-import { Alert, Platform, TouchableOpacity } from "react-native";
-import { Link } from "expo-router";
+import { TouchableOpacity } from "react-native";
 import { useToastController } from "@tamagui/toast";
 import { Form } from "components/auth/form";
 
@@ -33,8 +27,6 @@ export default function SignInForm({
 }) {
   const toast = useToastController();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function signInWithEmail({
@@ -249,13 +241,31 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
   return (
     <Dialog.Portal>
       <Dialog.Overlay key="overlay" background="$shadow6" />
-      <Dialog.Content bg="$backgroundHover" p="$6" width="60%" items="center">
-        <Dialog.Title>Forgot your password</Dialog.Title>
-        <Dialog.Description text="center" mt="$2" size="$3" width="85%">
+      <Dialog.Content
+        bg="$backgroundHover"
+        p="$6"
+        width="45%"
+        $sm={{ width: "100%" }}
+        style={{ borderRadius: 15 }}
+        items="center"
+      >
+        <Dialog.Title $sm={{ size: "$8" }}>Forgot your password</Dialog.Title>
+        <Dialog.Description
+          text="center"
+          mt="$2"
+          size="$3"
+          width="80%"
+          $sm={{ width: "100%" }}
+        >
           Enter the email associated with your account and we'll send you
           password reset instructions.
         </Dialog.Description>
-        <View flexDirection="column" gap="$3" width="80%">
+        <View
+          flexDirection="column"
+          gap="$3"
+          width="80%"
+          $sm={{ width: "100%" }}
+        >
           <Form
             onSubmit={(data) => {
               sendResetPasswordEmail(data.email);
@@ -272,11 +282,10 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
               rules={{ required: "Email is required" }}
             />
 
-            <ForgotPasswordLink />
             <Theme inverse>
               <Form.Trigger asChild disabled={loading}>
                 <Button
-                  width="50%"
+                  width="60%"
                   self="center"
                   iconAfter={
                     <AnimatePresence>
@@ -307,6 +316,11 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
               </Form.Trigger>
             </Theme>
           </Form>
+          <Dialog.Close asChild>
+            <Button width="60%" self="center">
+              Cancel
+            </Button>
+          </Dialog.Close>
         </View>
       </Dialog.Content>
     </Dialog.Portal>

@@ -58,8 +58,8 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+    <ThemeProvider value={DarkTheme}>
+      <StatusBar style={"dark"} />
       <Stack>
         <Stack.Screen
           name="(tabs)"

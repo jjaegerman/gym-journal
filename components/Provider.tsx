@@ -11,6 +11,7 @@ import { AppState } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
+import { View } from "tamagui";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -58,11 +59,7 @@ export function Provider({
   if (url) createSessionFromUrl(url);
 
   return (
-    <TamaguiProvider
-      config={config}
-      defaultTheme={colorScheme === "dark" ? "dark" : "light"}
-      {...rest}
-    >
+    <TamaguiProvider config={config} defaultTheme={"dark"} {...rest}>
       <ToastProvider
         swipeDirection="horizontal"
         duration={6000}
@@ -73,7 +70,9 @@ export function Provider({
           ]
         }
       >
-        {session && session.user ? children : <Auth />}
+        <View bg="$background" flex={1}>
+          {session && session.user ? children : <Auth />}
+        </View>
         <CurrentToast />
         <ToastViewport top="$8" left={0} right={0} portalToRoot />
       </ToastProvider>

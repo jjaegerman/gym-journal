@@ -8,6 +8,8 @@ import {
   Spinner,
   Theme,
   View,
+  Text,
+  YStack,
 } from "tamagui";
 import { Form } from "components/auth/form";
 import { FormCard } from "components/auth/layoutParts";

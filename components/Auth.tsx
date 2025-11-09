@@ -18,7 +18,7 @@ export default function Auth() {
   const [signUpElseSignIn, setSignUpElseSignIn] = useState(true);
 
   return (
-    <View bg="$background" width="60%" self="center">
+    <View bg="$background" width="70%" $sm={{ width: "90%" }} self="center">
       <Spacer size="$10" />
       {signUpElseSignIn ? (
         <SignUpForm
