@@ -9,11 +9,7 @@ import {
   Theme,
   View,
 } from "tamagui";
-import {
-  LmFormRhfProvider,
-  LmInputRhf,
-  LmSubmitButtonRhf,
-} from "@tamagui-extras/form";
+import { Form } from "components/auth/form";
 import { FormCard } from "components/auth/layoutParts";
 import { supabase } from "lib/supabase";
 import { TouchableOpacity } from "react-native";
@@ -79,15 +75,35 @@ export default function SignUpForm({
           Create an account
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
-          <LmFormRhfProvider>
-            <LmInputRhf
+          <Form
+            onSubmit={(data) => {
+              if (data.password !== data.confirmPassword) {
+                toast.show("Passwords do not match", {
+                  message: "Please make sure both passwords are the same.",
+                  duration: 3000,
+                  customData: { theme: "red" },
+                });
+                return;
+              }
+              signUpWithEmail({
+                email: data.email,
+                password: data.password,
+              });
+            }}
+            defaultValues={{
+              email: "",
+              password: "",
+              confirmPassword: "",
+            }}
+          >
+            <Form.Input
               name="email"
               label="Email"
               id="email"
               placeholder="email@example.com"
               rules={{ required: "Email is required", pattern: /^\S+@\S+$/i }}
             />
-            <LmInputRhf
+            <Form.Input
               name="password"
               label="Password"
               id="password"
@@ -101,7 +117,7 @@ export default function SignUpForm({
                 },
               }}
             />
-            <LmInputRhf
+            <Form.Input
               name="confirmPassword"
               label="Confirm Password"
               id="confirmPassword"
@@ -112,52 +128,39 @@ export default function SignUpForm({
               }}
             />
             <Theme inverse>
-              <LmSubmitButtonRhf
-                onSubmit={(data) => {
-                  if (data.password !== data.confirmPassword) {
-                    toast.show("Passwords do not match", {
-                      message: "Please make sure both passwords are the same.",
-                      duration: 3000,
-                      customData: { theme: "red" },
-                    });
-                    return;
+              <Form.Trigger asChild disabled={loading || complete}>
+                <Button
+                  width="50%"
+                  self="center"
+                  iconAfter={
+                    <AnimatePresence>
+                      {loading && (
+                        <Spinner
+                          color="$color"
+                          key="loading-spinner"
+                          opacity={1}
+                          scale={1}
+                          animation="quick"
+                          position="absolute"
+                          self="center"
+                          enterStyle={{
+                            opacity: 0,
+                            scale: 0.5,
+                          }}
+                          exitStyle={{
+                            opacity: 0,
+                            scale: 0.5,
+                          }}
+                        />
+                      )}
+                    </AnimatePresence>
                   }
-                  signUpWithEmail({
-                    email: data.email,
-                    password: data.password,
-                  });
-                }}
-                disabled={loading || complete}
-                width="50%"
-                self="center"
-                iconAfter={
-                  <AnimatePresence>
-                    {loading && (
-                      <Spinner
-                        color="$color"
-                        key="loading-spinner"
-                        opacity={1}
-                        scale={1}
-                        animation="quick"
-                        position="absolute"
-                        self="center"
-                        enterStyle={{
-                          opacity: 0,
-                          scale: 0.5,
-                        }}
-                        exitStyle={{
-                          opacity: 0,
-                          scale: 0.5,
-                        }}
-                      />
-                    )}
-                  </AnimatePresence>
-                }
-              >
-                <Button.Text>Sign Up</Button.Text>
-              </LmSubmitButtonRhf>
+                >
+                  Sign Up
+                </Button>
+              </Form.Trigger>
             </Theme>
-          </LmFormRhfProvider>
+          </Form>
         </View>
         <SignInLink setSignUpElseSignIn={setSignUpElseSignIn} />
       </View>

@@ -5,7 +5,6 @@ import {
   AnimatePresence,
   Button,
   Dialog,
-  Form,
   H1,
   Paragraph,
   Separator,
@@ -23,11 +22,7 @@ import { supabase } from "lib/supabase";
 import { Alert, Platform, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 import { useToastController } from "@tamagui/toast";
-import {
-  LmFormRhfProvider,
-  LmInputRhf,
-  LmSubmitButtonRhf,
-} from "@tamagui-extras/form";
+import { Form } from "components/auth/form";
 
 export default function SignInForm({
   setSignUpElseSignIn,
@@ -79,15 +74,26 @@ export default function SignInForm({
               Sign in to your account
             </H1>
             <View flexDirection="column" gap="$3" width="80%">
-              <LmFormRhfProvider>
-                <LmInputRhf
+              <Form
+                onSubmit={(data) => {
+                  signInWithEmail({
+                    email: data.email,
+                    password: data.password,
+                  });
+                }}
+                defaultValues={{
+                  email: "",
+                  password: "",
+                }}
+              >
+                <Form.Input
                   name="email"
                   label="Email"
                   id="email"
                   placeholder="email@example.com"
                   rules={{ required: "Email is required" }}
                 />
-                <LmInputRhf
+                <Form.Input
                   name="password"
                   label="Password"
                   id="password"
@@ -100,44 +106,39 @@ export default function SignInForm({
 
                 <ForgotPasswordLink />
                 <Theme inverse>
-                  <LmSubmitButtonRhf
-                    onSubmit={(data) => {
-                      signInWithEmail({
-                        email: data.email,
-                        password: data.password,
-                      });
-                    }}
-                    disabled={loading}
-                    width="50%"
-                    self="center"
-                    iconAfter={
-                      <AnimatePresence>
-                        {loading && (
-                          <Spinner
-                            color="$color"
-                            key="loading-spinner"
-                            opacity={1}
-                            scale={1}
-                            animation="quick"
-                            position="absolute"
-                            self="center"
-                            enterStyle={{
-                              opacity: 0,
-                              scale: 0.5,
-                            }}
-                            exitStyle={{
-                              opacity: 0,
-                              scale: 0.5,
-                            }}
-                          />
-                        )}
-                      </AnimatePresence>
-                    }
-                  >
-                    <Button.Text>Sign In</Button.Text>
-                  </LmSubmitButtonRhf>
+                  <Form.Trigger asChild disabled={loading}>
+                    <Button
+                      width="50%"
+                      self="center"
+                      iconAfter={
+                        <AnimatePresence>
+                          {loading && (
+                            <Spinner
+                              color="$color"
+                              key="loading-spinner"
+                              opacity={1}
+                              scale={1}
+                              animation="quick"
+                              position="absolute"
+                              self="center"
+                              enterStyle={{
+                                opacity: 0,
+                                scale: 0.5,
+                              }}
+                              exitStyle={{
+                                opacity: 0,
+                                scale: 0.5,
+                              }}
+                            />
+                          )}
+                        </AnimatePresence>
+                      }
+                    >
+                      Sign In
+                    </Button>
+                  </Form.Trigger>
                 </Theme>
-              </LmFormRhfProvider>
+              </Form>
             </View>
             {/* TODO: Social Auth Providers
         <View flexDirection="column" gap="$3" width="100%" items="center">
@@ -255,8 +256,15 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
           password reset instructions.
         </Dialog.Description>
         <View flexDirection="column" gap="$3" width="80%">
-          <LmFormRhfProvider>
-            <LmInputRhf
+          <Form
+            onSubmit={(data) => {
+              sendResetPasswordEmail(data.email);
+            }}
+            defaultValues={{
+              email: "",
+            }}
+          >
+            <Form.Input
               name="email"
               label="Email"
               id="email"
@@ -266,41 +274,39 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
 
             <ForgotPasswordLink />
             <Theme inverse>
-              <LmSubmitButtonRhf
-                onSubmit={(data) => {
-                  sendResetPasswordEmail(data.email);
-                }}
-                disabled={loading}
-                width="50%"
-                self="center"
-                iconAfter={
-                  <AnimatePresence>
-                    {loading && (
-                      <Spinner
-                        color="$color"
-                        key="loading-spinner"
-                        opacity={1}
-                        scale={1}
-                        animation="quick"
-                        position="absolute"
-                        self="center"
-                        enterStyle={{
-                          opacity: 0,
-                          scale: 0.5,
-                        }}
-                        exitStyle={{
-                          opacity: 0,
-                          scale: 0.5,
-                        }}
-                      />
-                    )}
-                  </AnimatePresence>
-                }
-              >
-                <Button.Text>Reset Password</Button.Text>
-              </LmSubmitButtonRhf>
+              <Form.Trigger asChild disabled={loading}>
+                <Button
+                  width="50%"
+                  self="center"
+                  iconAfter={
+                    <AnimatePresence>
+                      {loading && (
+                        <Spinner
+                          color="$color"
+                          key="loading-spinner"
+                          opacity={1}
+                          scale={1}
+                          animation="quick"
+                          position="absolute"
+                          self="center"
+                          enterStyle={{
+                            opacity: 0,
+                            scale: 0.5,
+                          }}
+                          exitStyle={{
+                            opacity: 0,
+                            scale: 0.5,
+                          }}
+                        />
+                      )}
+                    </AnimatePresence>
+                  }
+                >
+                  Reset Password
+                </Button>
+              </Form.Trigger>
             </Theme>
-          </LmFormRhfProvider>
+          </Form>
         </View>
       </Dialog.Content>
     </Dialog.Portal>
