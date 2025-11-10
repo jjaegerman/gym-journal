@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import { Alert, StyleSheet, AppState } from "react-native";
-import { supabase } from "../lib/supabase";
-import { Button, Input } from "@rneui/themed";
-import SignInForm from "./auth/SignInForm";
-import { Spacer, View } from "tamagui";
-import SignUpForm from "./auth/SignUpForm";
-import * as WebBrowser from "expo-web-browser";
+import { View } from "tamagui";
+import SignInForm from "./SignInForm";
+import SignUpForm from "./SignUpForm";
 import { makeRedirectUri } from "expo-auth-session";
-import * as Linking from "expo-linking";
-import * as QueryParams from "expo-auth-session/build/QueryParams";
-import { useLocalSearchParams } from "expo-router";
-import ChangePasswordForm from "./auth/ChangePasswordForm";
+import { Spacer } from "@/components/ui/layout";
 
 const redirectTo = makeRedirectUri();
 

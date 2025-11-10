@@ -1,4 +1,4 @@
-import ChangePasswordForm from "components/auth/ChangePasswordForm";
+import { ChangePasswordForm } from "@/components/features/auth";
 import { Spacer, View } from "tamagui";
 
 export default function Page() {

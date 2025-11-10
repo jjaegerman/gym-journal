@@ -1,66 +1,23 @@
 import { useState } from "react";
-import {
-  AnimatePresence,
-  Button,
-  H1,
-  Paragraph,
-  SizableText,
-  Spinner,
-  Theme,
-  View,
-  Text,
-  YStack,
-} from "tamagui";
-import { Form } from "components/auth/form";
-import { FormCard } from "components/auth/layoutParts";
-import { supabase } from "lib/supabase";
-import { TouchableOpacity } from "react-native";
-import { useToastController, useToastState } from "@tamagui/toast";
+import { AnimatePresence, Button, H1, Spinner, Theme, View } from "tamagui";
+import { Form } from "@/components/ui/forms";
+import { FormCard } from "./layoutParts";
+import { useToastController } from "@tamagui/toast";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/lib/hooks";
 
-export default function SignUpForm({
-  setSignUpElseSignIn,
-  redirectTo,
-}: {
-  setSignUpElseSignIn: (value: boolean) => void;
-  redirectTo: string;
-}) {
+export default function ChangePasswordForm() {
   const toast = useToastController();
-
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { updatePassword, loading } = useAuth();
   const [complete, setComplete] = useState(false);
 
-  async function signUpWithEmail({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) {
-    setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        emailRedirectTo: redirectTo,
-      },
-    });
-
-    if (error)
-      toast.show(error.message, {
-        duration: 30000,
-        customData: { theme: "red" },
-      });
-    if (!session)
-      toast.show("Please check your inbox for email verification!", {
-        duration: 10000,
-        customData: { theme: "green" },
-      });
-    setComplete(true);
-    setLoading(false);
-    setSignUpElseSignIn(false);
+  async function handleUpdatePassword({ password }: { password: string }) {
+    const { error } = await updatePassword(password);
+    if (!error) {
+      setComplete(true);
+      router.push("/");
+    }
   }
 
   return (
@@ -74,7 +31,7 @@ export default function SignUpForm({
         style={{ borderRadius: 15 }}
       >
         <H1 self="center" size="$8">
-          Create an account
+          Change password
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
           <Form
@@ -87,33 +44,19 @@ export default function SignUpForm({
                 });
                 return;
               }
-              signUpWithEmail({
-                email: data.email,
+              handleUpdatePassword({
                 password: data.password,
               });
             }}
             defaultValues={{
-              email: "",
               password: "",
               confirmPassword: "",
             }}
           >
             <Form.Input
-              name="email"
-              label="Email"
-              placeholder="email@example.com"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^\S+@\S+$/i,
-                  message: "Please enter a valid email address"
-                }
-              }}
-            />
-            <Form.Input
               name="password"
-              label="Password"
-              placeholder="Enter password"
+              label="New Password"
+              placeholder="Enter new password"
               secureTextEntry
               rules={{
                 required: "Password is required",
@@ -125,8 +68,8 @@ export default function SignUpForm({
             />
             <Form.Input
               name="confirmPassword"
-              label="Confirm Password"
-              placeholder="Confirm password"
+              label="Confirm New Password"
+              placeholder="Confirm new password"
               secureTextEntry
               rules={{
                 required: "Please confirm your password",
@@ -161,36 +104,13 @@ export default function SignUpForm({
                     </AnimatePresence>
                   }
                 >
-                  Sign Up
+                  Reset Password
                 </Button>
               </Form.Trigger>
             </Theme>
           </Form>
         </View>
-        <SignInLink setSignUpElseSignIn={setSignUpElseSignIn} />
       </View>
     </FormCard>
   );
 }
-
-const SignInLink = ({
-  setSignUpElseSignIn,
-}: {
-  setSignUpElseSignIn: (value: boolean) => void;
-}) => {
-  return (
-    <TouchableOpacity onPress={() => setSignUpElseSignIn(false)}>
-      <Paragraph textDecorationStyle="unset">
-        Already have an account?{" "}
-        <SizableText
-          hoverStyle={{
-            color: "$colorHover",
-          }}
-          textDecorationLine="underline"
-        >
-          Sign in
-        </SizableText>
-      </Paragraph>
-    </TouchableOpacity>
-  );
-};

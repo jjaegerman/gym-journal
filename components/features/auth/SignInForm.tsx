@@ -1,5 +1,4 @@
 import { Facebook, Github, X } from "@tamagui/lucide-icons";
-import { useState } from "react";
 import {
   AnimatePresence,
   Button,
@@ -12,11 +11,10 @@ import {
   View,
   PortalProvider,
 } from "tamagui";
-import { FormCard } from "components/auth/layoutParts";
-import { supabase } from "lib/supabase";
+import { FormCard } from "./layoutParts";
 import { TouchableOpacity } from "react-native";
-import { useToastController } from "@tamagui/toast";
-import { Form } from "components/auth/form";
+import { Form } from "@/components/ui/forms";
+import { useAuth } from "@/lib/hooks";
 
 export default function SignInForm({
   setSignUpElseSignIn,
@@ -25,30 +23,7 @@ export default function SignInForm({
   setSignUpElseSignIn: (value: boolean) => void;
   redirectTo: string;
 }) {
-  const toast = useToastController();
-
-  const [loading, setLoading] = useState(false);
-
-  async function signInWithEmail({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error)
-      toast.show(error.message, {
-        duration: 3000,
-        customData: { theme: "red" },
-      });
-    setLoading(false);
-  }
+  const { signIn, loading } = useAuth();
 
   return (
     <PortalProvider>
@@ -68,10 +43,7 @@ export default function SignInForm({
             <View flexDirection="column" gap="$3" width="80%">
               <Form
                 onSubmit={(data) => {
-                  signInWithEmail({
-                    email: data.email,
-                    password: data.password,
-                  });
+                  signIn(data.email, data.password);
                 }}
                 defaultValues={{
                   email: "",
@@ -216,24 +188,10 @@ const ForgotPasswordLink = () => {
 };
 
 const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
-  const [loading, setLoading] = useState(false);
-  const toast = useToastController();
+  const { resetPassword, loading } = useAuth();
 
   const sendResetPasswordEmail = async (email: string) => {
-    setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectTo + "/reset-password",
-    });
-
-    setLoading(false);
-    if (error) {
-      console.error(error);
-    } else {
-      toast.show("Password reset email sent successfully!", {
-        duration: 10000,
-        customData: { theme: "green" },
-      });
-    }
+    await resetPassword(email, redirectTo + "/reset-password");
   };
 
   return (

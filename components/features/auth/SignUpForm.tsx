@@ -1,41 +1,43 @@
 import { useState } from "react";
-import { AnimatePresence, Button, H1, Spinner, Theme, View } from "tamagui";
-import { Form } from "components/auth/form";
-import { FormCard } from "components/auth/layoutParts";
-import { supabase } from "lib/supabase";
-import { useToastController, useToastState } from "@tamagui/toast";
-import { useRouter } from "expo-router";
+import {
+  AnimatePresence,
+  Button,
+  H1,
+  Paragraph,
+  SizableText,
+  Spinner,
+  Theme,
+  View,
+  Text,
+  YStack,
+} from "tamagui";
+import { Form } from "@/components/ui/forms";
+import { FormCard } from "./layoutParts";
+import { TouchableOpacity } from "react-native";
+import { useToastController } from "@tamagui/toast";
+import { useAuth } from "@/lib/hooks";
 
-export default function ChangePasswordForm() {
+export default function SignUpForm({
+  setSignUpElseSignIn,
+  redirectTo,
+}: {
+  setSignUpElseSignIn: (value: boolean) => void;
+  redirectTo: string;
+}) {
   const toast = useToastController();
-  const router = useRouter();
-
-  const [loading, setLoading] = useState(false);
+  const { signUp, loading } = useAuth();
   const [complete, setComplete] = useState(false);
 
-  async function updatePassword({ password }: { password: string }) {
-    setLoading(true);
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.updateUser({
-      password: password,
-    });
-
-    if (error) {
-      toast.show(error.message, {
-        duration: 30000,
-        customData: { theme: "red" },
-      });
-    } else {
-      toast.show("Password updated successfully!", {
-        duration: 10000,
-        customData: { theme: "green" },
-      });
-    }
+  async function signUpWithEmail({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) {
+    await signUp(email, password, redirectTo);
     setComplete(true);
-    setLoading(false);
-    router.push("/");
+    setSignUpElseSignIn(false);
   }
 
   return (
@@ -49,7 +51,7 @@ export default function ChangePasswordForm() {
         style={{ borderRadius: 15 }}
       >
         <H1 self="center" size="$8">
-          Change password
+          Create an account
         </H1>
         <View flexDirection="column" gap="$3" width="80%">
           <Form
@@ -62,19 +64,33 @@ export default function ChangePasswordForm() {
                 });
                 return;
               }
-              updatePassword({
+              signUpWithEmail({
+                email: data.email,
                 password: data.password,
               });
             }}
             defaultValues={{
+              email: "",
               password: "",
               confirmPassword: "",
             }}
           >
             <Form.Input
+              name="email"
+              label="Email"
+              placeholder="email@example.com"
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "Please enter a valid email address"
+                }
+              }}
+            />
+            <Form.Input
               name="password"
-              label="New Password"
-              placeholder="Enter new password"
+              label="Password"
+              placeholder="Enter password"
               secureTextEntry
               rules={{
                 required: "Password is required",
@@ -86,8 +102,8 @@ export default function ChangePasswordForm() {
             />
             <Form.Input
               name="confirmPassword"
-              label="Confirm New Password"
-              placeholder="Confirm new password"
+              label="Confirm Password"
+              placeholder="Confirm password"
               secureTextEntry
               rules={{
                 required: "Please confirm your password",
@@ -122,13 +138,36 @@ export default function ChangePasswordForm() {
                     </AnimatePresence>
                   }
                 >
-                  Reset Password
+                  Sign Up
                 </Button>
               </Form.Trigger>
             </Theme>
           </Form>
         </View>
+        <SignInLink setSignUpElseSignIn={setSignUpElseSignIn} />
       </View>
     </FormCard>
   );
 }
+
+const SignInLink = ({
+  setSignUpElseSignIn,
+}: {
+  setSignUpElseSignIn: (value: boolean) => void;
+}) => {
+  return (
+    <TouchableOpacity onPress={() => setSignUpElseSignIn(false)}>
+      <Paragraph textDecorationStyle="unset">
+        Already have an account?{" "}
+        <SizableText
+          hoverStyle={{
+            color: "$colorHover",
+          }}
+          textDecorationLine="underline"
+        >
+          Sign in
+        </SizableText>
+      </Paragraph>
+    </TouchableOpacity>
+  );
+};
