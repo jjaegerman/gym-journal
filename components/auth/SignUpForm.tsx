@@ -101,7 +101,6 @@ export default function SignUpForm({
             <Form.Input
               name="email"
               label="Email"
-              id="email"
               placeholder="email@example.com"
               rules={{
                 required: "Email is required",
@@ -114,7 +113,6 @@ export default function SignUpForm({
             <Form.Input
               name="password"
               label="Password"
-              id="password"
               placeholder="Enter password"
               secureTextEntry
               rules={{
@@ -128,7 +126,6 @@ export default function SignUpForm({
             <Form.Input
               name="confirmPassword"
               label="Confirm Password"
-              id="confirmPassword"
               placeholder="Confirm password"
               secureTextEntry
               rules={{

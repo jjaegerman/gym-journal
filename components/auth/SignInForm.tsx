@@ -81,14 +81,12 @@ export default function SignInForm({
                 <Form.Input
                   name="email"
                   label="Email"
-                  id="email"
                   placeholder="email@example.com"
                   rules={{ required: "Email is required" }}
                 />
                 <Form.Input
                   name="password"
                   label="Password"
-                  id="password"
                   placeholder="Enter password"
                   secureTextEntry
                   rules={{
@@ -277,7 +275,6 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
             <Form.Input
               name="email"
               label="Email"
-              id="email"
               placeholder="email@example.com"
               rules={{ required: "Email is required" }}
             />

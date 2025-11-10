@@ -3,7 +3,7 @@ import { ChevronRight } from "@tamagui/lucide-icons";
 import { router } from "expo-router";
 import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
-import { Heading, ListItem, Separator, Spacer, YGroup, YStack } from "tamagui";
+import { Text, ListItem, Separator, Spacer, YGroup, YStack } from "tamagui";
 import { Workout, WorkoutsArraySchema } from "types/exercise";
 
 export default function TabThreeScreen() {
@@ -39,40 +39,45 @@ export default function TabThreeScreen() {
   return (
     <YStack flex={1} items="center" gap="$1">
       <Spacer />
-      <YGroup items="center" bordered width="60%" separator={<Separator />}>
-        {workouts?.map((workout) => {
-          const workoutDuration = Math.max(
-            Math.round(
-              (workout.mostRecentLog.getTime() - workout.datetime.getTime()) /
-                60000
-            ),
-            1
-          );
-          return (
-            <YGroup.Item key={workout.id}>
-              <ListItem
-                size="$3"
-                hoverTheme
-                pressTheme
-                key={workout.id}
-                title={workout.datetime.toLocaleString(undefined, {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                subTitle={`Total Duration: ${workoutDuration} min`}
-                iconAfter={ChevronRight}
-                onPress={() => {
-                  router.setParams({ workoutId: workout.id });
-                  router.push(`/workout?workoutId=${workout.id}`);
-                }}
-              />
-            </YGroup.Item>
-          );
-        })}
-      </YGroup>
+      {workouts && workouts.length > 0 ? (
+        <YGroup items="center" bordered width="60%" separator={<Separator />}>
+          {workouts?.map((workout) => {
+            const workoutDuration = Math.max(
+              Math.round(
+                (workout.mostRecentLog.getTime() - workout.datetime.getTime()) /
+                  60000
+              ),
+              1
+            );
+            return (
+              <YGroup.Item key={workout.id}>
+                <ListItem
+                  size="$3"
+                  hoverTheme
+                  pressTheme
+                  key={workout.id}
+                  title={workout.datetime.toLocaleString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  subTitle={`Total Duration: ${workoutDuration} min`}
+                  iconAfter={ChevronRight}
+                  onPress={() => {
+                    router.setParams({ workoutId: workout.id });
+                    router.push(`/workout?workoutId=${workout.id}`);
+                  }}
+                />
+              </YGroup.Item>
+            );
+          })}
+        </YGroup>
+      ) : (
+        <Text>No workouts found.</Text>
+      )}
+      <Spacer />
     </YStack>
   );
 }

@@ -74,7 +74,6 @@ export default function ChangePasswordForm() {
             <Form.Input
               name="password"
               label="New Password"
-              id="password"
               placeholder="Enter new password"
               secureTextEntry
               rules={{
@@ -88,7 +87,6 @@ export default function ChangePasswordForm() {
             <Form.Input
               name="confirmPassword"
               label="Confirm New Password"
-              id="confirmPassword"
               placeholder="Confirm new password"
               secureTextEntry
               rules={{
