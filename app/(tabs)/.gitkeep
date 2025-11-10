@@ -1,0 +1,3 @@
+# Tab structure:
+# - index.tsx: Record Activity (main tab)
+# - three.tsx: Workout History
