@@ -9,42 +9,11 @@ import {
   useAudioRecorderState,
 } from 'expo-audio';
 import { Alert, Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
 import { Session } from '@supabase/supabase-js';
 import { Workout, WorkoutDetails, WorkoutDetailsSchema, WorkoutsArraySchema, WorkoutSchema } from 'types/exercise';
+import { audioFileToBase64 } from '@/lib/utils';
 
 export default function CallFunc() {
-  async function audioFileToBase64(uri) {
-    if (Platform.OS === 'web') {
-      // Web environment
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      return await blobToBase64(blob);
-    } else {
-      // Native (iOS / Android)
-      return await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-    }
-  }
-
-  // Helper for web: convert Blob → Base64
-  function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        if (typeof result === 'string') {
-          // Strip "data:*/*;base64," prefix
-          resolve(result.split(',')[1]);
-        } else {
-          reject(new Error('Failed to convert blob to base64: result is not a string'));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  }
 
   const [session, setSession] = useState<Session | null>(null)
       useEffect(() => {

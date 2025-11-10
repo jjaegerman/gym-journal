@@ -17,6 +17,7 @@ import {
   YGroup,
 } from "tamagui";
 import { Exercise } from "types/exercise";
+import { capitalizeEachWord } from "@/lib/utils";
 
 export const ExerciseLogs = ({
   exercise,
@@ -116,13 +117,3 @@ function logDescription(log: any): string {
   return parts.join(" ");
 }
 
-function capitalizeEachWord(sentence: string): string {
-  const words = sentence?.split(" ");
-  const capitalizedWords = words?.map((word) => {
-    if (word.length === 0) {
-      return "";
-    }
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  });
-  return capitalizedWords?.join(" ");
-}

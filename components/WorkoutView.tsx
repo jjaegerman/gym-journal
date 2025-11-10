@@ -1,6 +1,7 @@
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
+import { capitalizeEachWord } from "@/lib/utils";
 import {
   View,
   Text,
@@ -120,16 +121,6 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   );
 };
 
-function capitalizeEachWord(sentence: string): string {
-  const words = sentence.split(" ");
-  const capitalizedWords = words.map((word) => {
-    if (word.length === 0) {
-      return "";
-    }
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  });
-  return capitalizedWords.join(" ");
-}
 
 interface ExerciseLogSummary {
   sets: number | undefined;
