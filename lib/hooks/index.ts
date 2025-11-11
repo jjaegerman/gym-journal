@@ -9,3 +9,4 @@ export { useAuth } from './useAuth';
 export { useWorkoutHistory } from './useWorkoutHistory';
 export { useAudioRecording } from './useAudioRecording';
 export { useExerciseSubmit } from './useExerciseSubmit';
+export { useProfileStats } from './useProfileStats';

@@ -366,3 +366,33 @@
   }
 .t_dark_green_SwitchThumb ::selection, .t_dark_green_SliderThumb ::selection, .t_dark_green_Tooltip ::selection, .t_dark_green_ProgressIndicator ::selection{background:var(--color5);color:var(--color11)}
   
+/* Custom scrollbar styles using Tamagui theme colors */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color2);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color7);
+  border-radius: 6px;
+  border: 2px solid var(--color2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color9);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color10);
+}
+
+/* Firefox scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color7) var(--color2);
+}

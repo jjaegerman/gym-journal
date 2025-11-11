@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Button, useTheme } from "tamagui";
-import { List, Plus } from "@tamagui/lucide-icons";
+import { List, Plus, User } from "@tamagui/lucide-icons";
 import { signOut } from "@/lib/api/supabase/auth";
 
 export default function TabLayout() {
@@ -39,6 +39,13 @@ export default function TabLayout() {
         options={{
           title: "Workout History",
           tabBarIcon: ({ color }) => <List color={color as any} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => <User color={color as any} />,
         }}
       />
     </Tabs>

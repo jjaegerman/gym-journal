@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 
 /**
  * Converts an audio file URI to a base64 encoded string
@@ -14,9 +14,11 @@ export async function audioFileToBase64(uri: string): Promise<string> {
     return await blobToBase64(blob);
   } else {
     // Native (iOS / Android)
-    return await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    // Using the new expo-file-system v19+ File API
+    const file = new File(uri);
+    const arrayBuffer = await file.arrayBuffer();
+    // Convert ArrayBuffer to base64
+    return arrayBufferToBase64(arrayBuffer);
   }
 }
 
@@ -44,4 +46,18 @@ function blobToBase64(blob: Blob): Promise<string> {
     };
     reader.readAsDataURL(blob);
   });
+}
+
+/**
+ * Converts an ArrayBuffer to base64 string (native only)
+ * @param buffer - The ArrayBuffer to convert
+ * @returns string - Base64 encoded string
+ */
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }

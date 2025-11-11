@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Workout, WorkoutsArraySchema } from '@/types/exercise';
 import { getUserWorkouts } from '@/lib/api/supabase/workouts';
 import { useSession } from './useSession';
@@ -13,17 +13,10 @@ export function useWorkoutHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch workouts when session changes
-  useEffect(() => {
-    if (session) {
-      fetchWorkouts();
-    } else {
-      setWorkouts(null);
-      setLoading(false);
-    }
-  }, [session]);
+  // Use ref to keep stable refetch function
+  const fetchWorkoutsRef = useRef<() => Promise<void>>();
 
-  const fetchWorkouts = async () => {
+  const fetchWorkouts = useCallback(async () => {
     if (!session?.user.id) return;
 
     try {
@@ -39,12 +32,30 @@ export function useWorkoutHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user.id]);
+
+  // Store the latest version in ref
+  fetchWorkoutsRef.current = fetchWorkouts;
+
+  // Fetch workouts when session changes
+  useEffect(() => {
+    if (session) {
+      fetchWorkouts();
+    } else {
+      setWorkouts(null);
+      setLoading(false);
+    }
+  }, [session, fetchWorkouts]);
+
+  // Return a stable refetch function
+  const stableRefetch = useCallback(() => {
+    return fetchWorkoutsRef.current?.() ?? Promise.resolve();
+  }, []);
 
   return {
     workouts,
     loading,
     error,
-    refetch: fetchWorkouts,
+    refetch: stableRefetch,
   };
 }

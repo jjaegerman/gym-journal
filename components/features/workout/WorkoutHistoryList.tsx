@@ -14,6 +14,7 @@ interface WorkoutHistoryListProps {
 /**
  * Workout History List Component
  * Displays a list of workouts or appropriate empty/loading states
+ * Only shows loading state on initial load, subsequent loads update silently
  */
 export function WorkoutHistoryList({
   workouts,
@@ -25,7 +26,8 @@ export function WorkoutHistoryList({
     router.push(`/workout?workoutId=${workoutId}`);
   };
 
-  if (loading) {
+  // Only show loading state if we don't have any data yet
+  if (loading && !workouts) {
     return <LoadingState message="Loading workouts..." />;
   }
 
