@@ -17,7 +17,7 @@ export interface ProfileStats {
 }
 
 export interface ExerciseStats {
-  exercise_name: string;
+  exercise_type: string;
   total_workouts: number;
   total_sets: number;
   max_weight: number | null;

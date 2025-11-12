@@ -11,9 +11,18 @@ export type WeightUnit = z.infer<typeof WeightUnitSchema>;
 export const LogSchema = z.object({
   id: z.string(),
   datetime: z.coerce.date(),          // converts ISO string → Date
+
+  // Strength metrics
   weight: z.coerce.number().nullable().optional(), // converts "135" → 135
   weightUnit: WeightUnitSchema.nullable().optional(),
   repetitions: z.coerce.number().int().nullable().optional(),
+
+  // Cardio metrics
+  distance: z.coerce.number().nullable().optional(),
+  distance_unit: z.string().nullable().optional(),
+  resistance_level: z.coerce.number().int().nullable().optional(),
+
+  // General
   duration: z.iso.duration().nullable().optional(),
   effort: EffortLevelSchema.nullable().optional(),
 });
@@ -22,7 +31,9 @@ export type Log = z.infer<typeof LogSchema>;
 /* --- Exercise (groups logs) --- */
 export const ExerciseSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  variant: z.string(),
+  type: z.string().nullable().optional(),
+  equipment: z.string().nullable().optional(),
   logs: z.array(LogSchema),
 });
 export type Exercise = z.infer<typeof ExerciseSchema>;

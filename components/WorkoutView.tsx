@@ -93,11 +93,22 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
         {workout?.exercises.map((exercise, i) => {
           const summary = SummarizeExerciseLogs(exercise.logs);
           const description = descriptionFromSummary(summary);
+
+          // Build title with type if available
+          const title = exercise.type
+            ? `${exercise.type} - ${capitalizeEachWord(exercise.variant)}`
+            : capitalizeEachWord(exercise.variant);
+
+          // Add equipment to description if available
+          const fullDescription = exercise.equipment
+            ? `${exercise.equipment} • ${description}`
+            : description;
+
           return (
             <YGroup.Item key={exercise.id}>
               <ListItem
-                title={capitalizeEachWord(exercise.name)}
-                subTitle={description}
+                title={title}
+                subTitle={fullDescription}
                 size="$4"
                 hoverTheme
                 pressTheme
@@ -129,6 +140,11 @@ interface ExerciseLogSummary {
   minWeight: number | undefined;
   maxWeight: number | undefined;
   weightUnit: string | undefined;
+  minDistance: number | undefined;
+  maxDistance: number | undefined;
+  distanceUnit: string | undefined;
+  minResistanceLevel: number | undefined;
+  maxResistanceLevel: number | undefined;
   minDuration: string | undefined;
   maxDuration: string | undefined;
   minEffort: string | undefined;
@@ -140,6 +156,11 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
   let minWeight = Infinity;
   let maxWeight = -Infinity;
   let weightUnit = "";
+  let minDistance = Infinity;
+  let maxDistance = -Infinity;
+  let distanceUnit = "";
+  let minResistanceLevel = Infinity;
+  let maxResistanceLevel = -Infinity;
   let minDuration = Infinity;
   let maxDuration = -Infinity;
   let minEffort = Infinity;
@@ -154,6 +175,15 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
       minWeight = Math.min(minWeight, log.weight);
       maxWeight = Math.max(maxWeight, log.weight);
       weightUnit = log.weightUnit;
+    }
+    if (log.distance) {
+      minDistance = Math.min(minDistance, log.distance);
+      maxDistance = Math.max(maxDistance, log.distance);
+      distanceUnit = log.distance_unit;
+    }
+    if (log.resistance_level) {
+      minResistanceLevel = Math.min(minResistanceLevel, log.resistance_level);
+      maxResistanceLevel = Math.max(maxResistanceLevel, log.resistance_level);
     }
     if (log.duration) {
       minDuration = Math.min(minDuration, log.duration);
@@ -175,6 +205,11 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
     minWeight: minWeight === Infinity ? undefined : minWeight,
     maxWeight: maxWeight === -Infinity ? undefined : maxWeight,
     weightUnit: weightUnit === "" ? undefined : weightUnit,
+    minDistance: minDistance === Infinity ? undefined : minDistance,
+    maxDistance: maxDistance === -Infinity ? undefined : maxDistance,
+    distanceUnit: distanceUnit === "" ? undefined : distanceUnit,
+    minResistanceLevel: minResistanceLevel === Infinity ? undefined : minResistanceLevel,
+    maxResistanceLevel: maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
     minDuration: minDuration === Infinity ? undefined : minDuration.toString(),
     maxDuration: maxDuration === -Infinity ? undefined : maxDuration.toString(),
     minEffort: minEffort === Infinity ? undefined : minEffort.toString(),
@@ -193,6 +228,8 @@ function asRangeIfDifferent(min: any, max: any): string {
 function descriptionFromSummary(summary: ExerciseLogSummary): string {
   const parts: string[] = [];
   parts.push(`${summary.sets} ${addSIfPlural(summary.sets!, "set")}`);
+
+  // Strength metrics
   if (summary.minReps !== undefined && summary.maxReps !== undefined) {
     parts.push(
       `${asRangeIfDifferent(summary.minReps, summary.maxReps)} ${addSIfPlural(
@@ -208,6 +245,22 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
       }`
     );
   }
+
+  // Cardio metrics
+  if (summary.minDistance !== undefined && summary.maxDistance !== undefined) {
+    parts.push(
+      `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${
+        summary.distanceUnit ? summary.distanceUnit : "units"
+      }`
+    );
+  }
+  if (summary.minResistanceLevel !== undefined && summary.maxResistanceLevel !== undefined) {
+    parts.push(
+      `resistance ${asRangeIfDifferent(summary.minResistanceLevel, summary.maxResistanceLevel)}`
+    );
+  }
+
+  // General
   if (summary.minDuration !== undefined && summary.maxDuration !== undefined) {
     parts.push(
       `${asRangeIfDifferent(summary.minDuration, summary.maxDuration)} duration`
@@ -218,6 +271,7 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
       `${asRangeIfDifferent(summary.minEffort, summary.maxEffort)} effort`
     );
   }
+
   return parts.join(", ");
 }
 

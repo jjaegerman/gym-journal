@@ -21,10 +21,10 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
   return (
     <Card elevate size="$4" bordered p="$4">
       <YStack gap="$3">
-        <H5 fontWeight="bold">{capitalizeEachWord(exercise.exercise_name)}</H5>
+        <H5 fontWeight="bold">{exercise.exercise_type}</H5>
 
         <XStack gap="$4" flexWrap="wrap">
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               Workouts
             </Paragraph>
@@ -33,7 +33,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
             </Paragraph>
           </YStack>
 
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               Total Sets
             </Paragraph>
@@ -43,7 +43,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
           </YStack>
 
           {exercise.max_weight && (
-            <YStack flex={1} minWidth={120}>
+            <YStack flex={1} minW={120}>
               <Paragraph size="$1" opacity={0.6}>
                 Max Weight
               </Paragraph>
@@ -53,7 +53,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
             </YStack>
           )}
 
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               Max Volume
             </Paragraph>
@@ -66,7 +66,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
         <Separator />
 
         <XStack gap="$4" flexWrap="wrap">
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               Per Week
             </Paragraph>
@@ -75,14 +75,14 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
             </Paragraph>
           </YStack>
 
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               First Logged
             </Paragraph>
             <Paragraph size="$3">{formatDate(exercise.first_logged)}</Paragraph>
           </YStack>
 
-          <YStack flex={1} minWidth={120}>
+          <YStack flex={1} minW={120}>
             <Paragraph size="$1" opacity={0.6}>
               Last Logged
             </Paragraph>

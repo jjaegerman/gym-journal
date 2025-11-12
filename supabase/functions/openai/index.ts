@@ -50,7 +50,12 @@ Deno.serve(async (req) => {
         {
           role: "system",
           content:
-            "You are an expert at structured data extraction. You will be given unstructured transcribed logs from a user that is working out and must convert it into the given structure."
+            `Extract structured workout data from user's transcribed audio.
+
+exerciseType: Select the best matching category from the schema.
+exerciseVariant: Full specific name with ALL modifiers (equipment, grip, angle, stance, etc.). Examples: "Barbell Back Squat", "Dumbbell Incline Bench Press", "Treadmill Running".
+primaryEquipment: Main equipment used. Omit for outdoor cardio/yoga.
+resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting.`
         },
         {
           role: "user",
@@ -68,7 +73,11 @@ Deno.serve(async (req) => {
     for (let i: number = 0; i < (exerciseLog.sets ?? 1); i++) {
       console.log('Adding log set', i + 1);
       var log_input = {
-        p_exercise_name: String(exerciseLog.exerciseName),
+        p_exercise_variant: String(exerciseLog.exerciseVariant),
+        p_exercise_type: String(exerciseLog.exerciseType),
+      }
+      if (exerciseLog.primaryEquipment) {
+        log_input.p_equipment = String(exerciseLog.primaryEquipment);
       }
       if (exerciseLog.weight) {
         log_input.p_weight = Number(exerciseLog.weight);
@@ -84,6 +93,15 @@ Deno.serve(async (req) => {
       }
       if (exerciseLog.effort) {
         log_input.p_effort = String(exerciseLog.effort);
+      }
+      if (exerciseLog.distance) {
+        log_input.p_distance = Number(exerciseLog.distance);
+      }
+      if (exerciseLog.distanceUnit) {
+        log_input.p_distance_unit = String(exerciseLog.distanceUnit);
+      }
+      if (exerciseLog.resistanceLevel) {
+        log_input.p_resistance_level = parseInt(exerciseLog.resistanceLevel);
       }
       console.log('Log input:', log_input);
       const { data, error } = await supabase.rpc('add_log', log_input);

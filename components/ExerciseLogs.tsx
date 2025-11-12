@@ -67,7 +67,28 @@ export const ExerciseLogs = ({
             t="$10"
           >
             <View gap="$4" paddingBlock="$3" paddingInline="$3">
-              <Dialog.Title>{capitalizeEachWord(exercise.name)}</Dialog.Title>
+              <Dialog.Title>{capitalizeEachWord(exercise.variant)}</Dialog.Title>
+              {(exercise.type || exercise.equipment) && (
+                <XStack gap="$2" flexWrap="wrap">
+                  {exercise.type && (
+                    <Paragraph size="$2" opacity={0.7}>
+                      {exercise.type}
+                    </Paragraph>
+                  )}
+                  {exercise.equipment && (
+                    <>
+                      {exercise.type && (
+                        <Paragraph size="$2" opacity={0.5}>
+                          •
+                        </Paragraph>
+                      )}
+                      <Paragraph size="$2" opacity={0.7}>
+                        {exercise.equipment}
+                      </Paragraph>
+                    </>
+                  )}
+                </XStack>
+              )}
               <YGroup separator={<Separator />} bordered>
                 {exercise?.logs?.map((log) => (
                   <YGroup.Item key={log.id}>
@@ -102,18 +123,31 @@ export const ExerciseLogs = ({
 
 function logDescription(log: any): string {
   const parts: string[] = [];
+
+  // Strength metrics
   if (log.repetitions) {
     parts.push(`${log.repetitions} reps`);
   }
   if (log.weight) {
     parts.push(`@ ${log.weight} ${log.weightUnit}`);
   }
+
+  // Cardio metrics
+  if (log.distance) {
+    parts.push(`${log.distance} ${log.distance_unit || 'units'}`);
+  }
+  if (log.resistance_level) {
+    parts.push(`resistance ${log.resistance_level}`);
+  }
+
+  // General
   if (log.duration) {
     parts.push(`for ${log.duration}`);
   }
   if (log.effort) {
     parts.push(`(${log.effort} effort)`);
   }
+
   return parts.join(" ");
 }
 

@@ -31,7 +31,7 @@ export function ProfileSummary() {
         isFirstFocus.current = false;
         return;
       }
-      console.log('Profile tab focused - refetching...');
+      console.log("Profile tab focused - refetching...");
       refetch();
     }, []) // Empty deps - refetch is now stable
   );
@@ -68,7 +68,7 @@ export function ProfileSummary() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <YStack p="$4" gap="$4" maxWidth={800} width="100%" alignSelf="center">
+      <YStack p="$4" gap="$4" maxW={800} width="100%" self="center">
         {/* Overview Section */}
         <YStack gap="$3">
           <H3>Your Progress</H3>
@@ -151,7 +151,7 @@ export function ProfileSummary() {
           <YStack gap="$3">
             {exerciseStats.map((exercise) => (
               <ExerciseStatsCard
-                key={exercise.exercise_name}
+                key={exercise.exercise_type}
                 exercise={exercise}
               />
             ))}

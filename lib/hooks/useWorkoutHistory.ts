@@ -14,7 +14,7 @@ export function useWorkoutHistory() {
   const [error, setError] = useState<Error | null>(null);
 
   // Use ref to keep stable refetch function
-  const fetchWorkoutsRef = useRef<() => Promise<void>>();
+  const fetchWorkoutsRef = useRef<() => Promise<void> | undefined>(undefined);
 
   const fetchWorkouts = useCallback(async () => {
     if (!session?.user.id) return;
