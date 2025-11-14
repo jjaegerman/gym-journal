@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Button, TextArea, Spinner } from "tamagui";
+import { View, Button, TextArea, Spinner, XStack } from "tamagui";
 import { SendHorizontal } from "@tamagui/lucide-icons";
 import { useExerciseSubmit } from "@/lib/hooks";
 
@@ -15,23 +15,26 @@ export const RecordTextBox = () => {
   };
 
   return (
-    <View style={{ width: "80%" }}>
-      <View>
-        <TextArea
-          value={text}
-          onChangeText={setText}
-          placeholder="Or type it out..."
-          onSubmitEditing={handleSubmit}
-          numberOfLines={5}
-          style={{ fontSize: 16, paddingRight: 55 }}
-        />
-      </View>
+    <View width="100%">
+      <TextArea
+        value={text}
+        onChangeText={setText}
+        placeholder="Type your workout..."
+        numberOfLines={4}
+        size="$4"
+        borderRadius="$4"
+        paddingRight="$10"
+      />
       <Button
-        style={{ position: "absolute", right: 4, bottom: 4 }}
+        position="absolute"
+        right="$2"
+        bottom="$2"
         onPress={handleSubmit}
         icon={loading ? Spinner : SendHorizontal}
-        size="$4"
+        size="$3"
         disabled={loading || !text.trim()}
+        circular
+        chromeless={!text.trim()}
       />
     </View>
   );

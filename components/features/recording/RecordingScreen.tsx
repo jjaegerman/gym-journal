@@ -1,6 +1,6 @@
 import { RecordButton } from "./RecordButton";
 import { RecordTextBox } from "./RecordTextBox";
-import { SizableText, useTheme, View, YStack } from "tamagui";
+import { Paragraph, View, YStack, XStack, Separator } from "tamagui";
 import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
 
 /**
@@ -8,7 +8,6 @@ import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
  * Allows users to log exercises via audio recording or text input
  */
 export function RecordingScreen() {
-  const theme = useTheme();
   const { startRecording, stopRecording } = useAudioRecording();
   const { submitAudio } = useExerciseSubmit();
 
@@ -20,26 +19,35 @@ export function RecordingScreen() {
   };
 
   return (
-    <View flex={1} justify="center">
-      <YStack height="90%" items="center" justify="center" gap="$4">
-        <YStack items="center" justify="center" flex={1} gap="$3">
-          <SizableText fontSize="$6">Record an Exercise Log</SizableText>
-          <YStack items="center">
-            <SizableText color={theme.placeholderColor}>
-              "10 repetitions of bench press at 135 pounds"
-            </SizableText>
-            <SizableText color={theme.placeholderColor}>
-              "3 sets of squats with 185 pounds for 8 repetitions each"
-            </SizableText>
-            <SizableText color={theme.placeholderColor}>
-              "30 minutes of cycling at moderate effort"
-            </SizableText>
-          </YStack>
+    <View flex={1} justifyContent="center" alignItems="center" paddingHorizontal="$4">
+      <YStack gap="$6" maxWidth={500} width="100%">
+        {/* Examples */}
+        <YStack gap="$2" alignItems="center">
+          <Paragraph size="$3" opacity={0.6} textAlign="center">
+            10 reps at 135 lbs
+          </Paragraph>
+          <Paragraph size="$3" opacity={0.6} textAlign="center">
+            3 sets of squats, 8 reps, 185 lbs
+          </Paragraph>
+          <Paragraph size="$3" opacity={0.6} textAlign="center">
+            Ran for 30 minutes
+          </Paragraph>
         </YStack>
+
+        {/* Voice Recording */}
         <RecordButton
           startCallback={startRecording}
           stopCallback={handleStopRecording}
         />
+
+        {/* Divider */}
+        <XStack alignItems="center" gap="$3">
+          <Separator flex={1} />
+          <Paragraph size="$2" opacity={0.5}>or</Paragraph>
+          <Separator flex={1} />
+        </XStack>
+
+        {/* Text Input */}
         <RecordTextBox />
       </YStack>
     </View>
