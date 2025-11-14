@@ -45,6 +45,10 @@ export const WorkoutSchema = z.object({
   exerciseCount: z.coerce.number().int(),
   logCount: z.coerce.number().int(),
   mostRecentLog: z.coerce.date(),
+  exercisePreview: z.array(z.string()).nullable().optional(),
+  totalVolume: z.coerce.number().nullable().optional(),
+  totalDistance: z.coerce.number().nullable().optional(),
+  distanceUnit: z.string().nullable().optional(),
 });
 export type Workout = z.infer<typeof WorkoutSchema>;
 export const WorkoutsArraySchema = z.array(WorkoutSchema);

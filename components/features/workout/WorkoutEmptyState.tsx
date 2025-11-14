@@ -6,8 +6,8 @@ import { EmptyState } from "@/components/ui/feedback";
 export function WorkoutEmptyState() {
   return (
     <EmptyState
-      title="No workouts found"
-      description="Start recording your first workout to see your history here"
+      title="No Workouts Yet"
+      description="Start tracking your fitness journey! Go to the Record tab to log your first workout."
     />
   );
 }

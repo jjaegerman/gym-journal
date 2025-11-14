@@ -1,5 +1,5 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { ListItem, XStack, Paragraph } from "tamagui";
+import { ListItem, XStack, Paragraph, YStack } from "tamagui";
 import { Workout } from "@/types/exercise";
 import { formatRelativeDate, formatDuration, getWorkoutCardColors } from "@/lib/utils";
 
@@ -24,12 +24,41 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
   // Format datetime with relative dates
   const formattedDate = formatRelativeDate(workout.datetime);
 
-  // Build subtitle with exercise count and duration
+  // Build first line: exercise count and duration
   const exerciseText = workout.exerciseCount === 1
     ? "1 exercise"
     : `${workout.exerciseCount} exercises`;
 
-  const subtitle = `${exerciseText} • ${formatDuration(workoutDuration)}`;
+  const firstLine = `${exerciseText} • ${formatDuration(workoutDuration)}`;
+
+  // Build second line: exercise preview and stats
+  const secondLineParts: string[] = [];
+
+  // Show up to 3 exercises with a visual separator
+  if (workout.exercisePreview && workout.exercisePreview.length > 0) {
+    const previewText = workout.exercisePreview.slice(0, 3).join(", ");
+    secondLineParts.push(`• ${previewText}`);
+  }
+
+  // Build stats (volume/distance)
+  const statsParts: string[] = [];
+  if (workout.totalVolume && workout.totalVolume > 0) {
+    statsParts.push(`${Math.round(workout.totalVolume).toLocaleString()} lbs volume`);
+  }
+
+  if (workout.totalDistance && workout.totalDistance > 0) {
+    const unit = workout.distanceUnit || "mi";
+    statsParts.push(`${workout.totalDistance.toFixed(1)} ${unit}`);
+  }
+
+  // Combine exercise preview and stats with separator
+  const secondLine = statsParts.length > 0
+    ? [...secondLineParts, ...statsParts].join(" • ")
+    : secondLineParts.join(" • ");
+
+  const subtitle = secondLine.length > 0
+    ? `${firstLine}\n${secondLine}`
+    : firstLine;
 
   // Get colors based on recency
   const colors = getWorkoutCardColors(workout.datetime);
