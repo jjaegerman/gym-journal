@@ -1,7 +1,7 @@
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
-import { capitalizeEachWord } from "@/lib/utils";
+import { capitalizeEachWord, getExerciseIcon, getExerciseIconColor } from "@/lib/utils";
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import {
   WorkoutDetailsSchema,
 } from "types/exercise";
 import { ExerciseLogs } from "./ExerciseLogs";
-import { Expand, Eye } from "@tamagui/lucide-icons";
+import { Expand } from "@tamagui/lucide-icons";
 
 const spModes = ["percent", "constant", "fit", "mixed"] as const;
 
@@ -31,7 +31,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState<number>(0);
-  const [dialogOpen, setDialogOpen] = useState<boolean>(true);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,8 +57,6 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
       return;
     }
     setWorkout(WorkoutDetailsSchema.parse(data));
-    console.log("Workout Details:", data);
-    console.log("Typed Workout Details:", WorkoutDetailsSchema.parse(data));
   };
 
   const lastLog = workout ? lastLogTime(workout.exercises) : undefined;
@@ -104,6 +102,9 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
             ? `${exercise.equipment} • ${description}`
             : description;
 
+          const ExerciseIcon = () => getExerciseIcon(exercise.type, 24);
+          const iconColor = getExerciseIconColor(exercise.type);
+
           return (
             <YGroup.Item key={exercise.id}>
               <ListItem
@@ -113,6 +114,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
                 hoverTheme
                 pressTheme
                 key={exercise.id}
+                icon={<View color={iconColor}><ExerciseIcon /></View>}
                 iconAfter={Expand}
                 onPress={() => {
                   setFocusedExerciseIdx(i);
@@ -234,45 +236,41 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
     parts.push(
       `${asRangeIfDifferent(summary.minReps, summary.maxReps)} ${addSIfPlural(
         summary.maxReps!,
-        "repetition"
+        "rep"
       )}`
     );
   }
   if (summary.minWeight !== undefined && summary.maxWeight !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minWeight, summary.maxWeight)} ${
-        summary.weightUnit ? summary.weightUnit : "weight"
-      }`
+      `${asRangeIfDifferent(summary.minWeight, summary.maxWeight)} ${summary.weightUnit || "lbs"}`
     );
   }
 
   // Cardio metrics
   if (summary.minDistance !== undefined && summary.maxDistance !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${
-        summary.distanceUnit ? summary.distanceUnit : "units"
-      }`
+      `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${summary.distanceUnit || "mi"}`
     );
   }
   if (summary.minResistanceLevel !== undefined && summary.maxResistanceLevel !== undefined) {
     parts.push(
-      `resistance ${asRangeIfDifferent(summary.minResistanceLevel, summary.maxResistanceLevel)}`
+      `lvl ${asRangeIfDifferent(summary.minResistanceLevel, summary.maxResistanceLevel)}`
     );
   }
 
   // General
   if (summary.minDuration !== undefined && summary.maxDuration !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minDuration, summary.maxDuration)} duration`
+      `${asRangeIfDifferent(summary.minDuration, summary.maxDuration)}`
     );
   }
   if (summary.minEffort !== undefined && summary.maxEffort !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minEffort, summary.maxEffort)} effort`
+      `effort: ${asRangeIfDifferent(summary.minEffort, summary.maxEffort)}`
     );
   }
 
-  return parts.join(", ");
+  return parts.join(" • ");
 }
 
 function lastLogTime(exercises: any[] | undefined): Date | undefined {

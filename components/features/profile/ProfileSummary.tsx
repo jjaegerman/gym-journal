@@ -31,7 +31,6 @@ export function ProfileSummary() {
         isFirstFocus.current = false;
         return;
       }
-      console.log("Profile tab focused - refetching...");
       refetch();
     }, []) // Empty deps - refetch is now stable
   );

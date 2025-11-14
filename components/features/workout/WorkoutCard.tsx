@@ -1,6 +1,7 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { ListItem } from "tamagui";
+import { ListItem, XStack, Paragraph } from "tamagui";
 import { Workout } from "@/types/exercise";
+import { formatRelativeDate, formatDuration, getWorkoutCardColors } from "@/lib/utils";
 
 interface WorkoutCardProps {
   workout: Workout;
@@ -20,24 +21,40 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
     1
   );
 
-  // Format datetime
-  const formattedDate = workout.datetime.toLocaleString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // Format datetime with relative dates
+  const formattedDate = formatRelativeDate(workout.datetime);
+
+  // Build subtitle with exercise count and duration
+  const exerciseText = workout.exerciseCount === 1
+    ? "1 exercise"
+    : `${workout.exerciseCount} exercises`;
+
+  const subtitle = `${exerciseText} • ${formatDuration(workoutDuration)}`;
+
+  // Get colors based on recency
+  const colors = getWorkoutCardColors(workout.datetime);
 
   return (
     <ListItem
-      size="$3"
+      size="$4"
       hoverTheme
       pressTheme
       title={formattedDate}
-      subTitle={`Total Duration: ${workoutDuration} min`}
+      subTitle={subtitle}
       iconAfter={ChevronRight}
       onPress={onPress}
+      backgroundColor={colors.backgroundColor}
+      borderLeftWidth={3}
+      borderLeftColor={colors.accentColor}
+      paddingVertical="$3.5"
+      titleProps={{
+        fontWeight: "600",
+        size: "$5",
+      }}
+      subTitleProps={{
+        opacity: 0.7,
+        marginTop: "$1",
+      }}
     />
   );
 }

@@ -1,9 +1,10 @@
 import { router } from "expo-router";
-import { Separator, YGroup } from "tamagui";
+import { Separator, YGroup, YStack, H5 } from "tamagui";
 import { Workout } from "@/types/exercise";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutEmptyState } from "./WorkoutEmptyState";
 import { LoadingState, ErrorState } from "@/components/ui/feedback";
+import { getTimePeriodLabel } from "@/lib/utils";
 
 interface WorkoutHistoryListProps {
   workouts: Workout[] | null;
@@ -39,16 +40,38 @@ export function WorkoutHistoryList({
     return <WorkoutEmptyState />;
   }
 
+  // Group workouts by time period
+  const groupedWorkouts: { [key: string]: Workout[] } = {};
+  const periodOrder: string[] = [];
+
+  workouts.forEach((workout) => {
+    const period = getTimePeriodLabel(workout.datetime);
+    if (!groupedWorkouts[period]) {
+      groupedWorkouts[period] = [];
+      periodOrder.push(period);
+    }
+    groupedWorkouts[period].push(workout);
+  });
+
   return (
-    <YGroup items="center" bordered width="60%" separator={<Separator />}>
-      {workouts.map((workout) => (
-        <YGroup.Item key={workout.id}>
-          <WorkoutCard
-            workout={workout}
-            onPress={() => handleWorkoutPress(workout.id)}
-          />
-        </YGroup.Item>
+    <YStack width="90%" maxWidth={600} gap="$4">
+      {periodOrder.map((period) => (
+        <YStack key={period} gap="$2">
+          <H5 paddingHorizontal="$3" opacity={0.6} fontWeight="600">
+            {period}
+          </H5>
+          <YGroup bordered separator={<Separator />} borderRadius="$4" overflow="hidden">
+            {groupedWorkouts[period].map((workout) => (
+              <YGroup.Item key={workout.id}>
+                <WorkoutCard
+                  workout={workout}
+                  onPress={() => handleWorkoutPress(workout.id)}
+                />
+              </YGroup.Item>
+            ))}
+          </YGroup>
+        </YStack>
       ))}
-    </YGroup>
+    </YStack>
   );
 }
