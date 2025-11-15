@@ -1,7 +1,11 @@
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
-import { capitalizeEachWord, getExerciseIcon, getExerciseIconColor } from "@/lib/utils";
+import {
+  capitalizeEachWord,
+  getExerciseIcon,
+  getExerciseIconColor,
+} from "@/lib/utils";
 import {
   View,
   Text,
@@ -87,7 +91,14 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
         )}
       </Text>
       <Spacer />
-      <YGroup items="center" bordered width="70%" separator={<Separator />}>
+      <YGroup
+        items="center"
+        bordered
+        width="70%"
+        separator={<Separator />}
+        rounded="$4"
+        overflow="hidden"
+      >
         {workout?.exercises.map((exercise, i) => {
           const summary = SummarizeExerciseLogs(exercise.logs);
           const description = descriptionFromSummary(summary);
@@ -114,7 +125,11 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
                 hoverTheme
                 pressTheme
                 key={exercise.id}
-                icon={<View color={iconColor}><ExerciseIcon /></View>}
+                icon={
+                  <View color={iconColor}>
+                    <ExerciseIcon />
+                  </View>
+                }
                 iconAfter={Expand}
                 onPress={() => {
                   setFocusedExerciseIdx(i);
@@ -133,7 +148,6 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
     </YStack>
   );
 };
-
 
 interface ExerciseLogSummary {
   sets: number | undefined;
@@ -210,8 +224,10 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
     minDistance: minDistance === Infinity ? undefined : minDistance,
     maxDistance: maxDistance === -Infinity ? undefined : maxDistance,
     distanceUnit: distanceUnit === "" ? undefined : distanceUnit,
-    minResistanceLevel: minResistanceLevel === Infinity ? undefined : minResistanceLevel,
-    maxResistanceLevel: maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
+    minResistanceLevel:
+      minResistanceLevel === Infinity ? undefined : minResistanceLevel,
+    maxResistanceLevel:
+      maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
     minDuration: minDuration === Infinity ? undefined : minDuration.toString(),
     maxDuration: maxDuration === -Infinity ? undefined : maxDuration.toString(),
     minEffort: minEffort === Infinity ? undefined : minEffort.toString(),
@@ -242,19 +258,29 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
   }
   if (summary.minWeight !== undefined && summary.maxWeight !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minWeight, summary.maxWeight)} ${summary.weightUnit || "lbs"}`
+      `${asRangeIfDifferent(summary.minWeight, summary.maxWeight)} ${
+        summary.weightUnit || "lbs"
+      }`
     );
   }
 
   // Cardio metrics
   if (summary.minDistance !== undefined && summary.maxDistance !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${summary.distanceUnit || "mi"}`
+      `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${
+        summary.distanceUnit || "mi"
+      }`
     );
   }
-  if (summary.minResistanceLevel !== undefined && summary.maxResistanceLevel !== undefined) {
+  if (
+    summary.minResistanceLevel !== undefined &&
+    summary.maxResistanceLevel !== undefined
+  ) {
     parts.push(
-      `lvl ${asRangeIfDifferent(summary.minResistanceLevel, summary.maxResistanceLevel)}`
+      `lvl ${asRangeIfDifferent(
+        summary.minResistanceLevel,
+        summary.maxResistanceLevel
+      )}`
     );
   }
 

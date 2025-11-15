@@ -55,7 +55,9 @@ Deno.serve(async (req) => {
 exerciseType: Select the best matching category from the schema.
 exerciseVariant: Full specific name with ALL modifiers (equipment, grip, angle, stance, etc.). Examples: "Barbell Back Squat", "Dumbbell Incline Bench Press", "Treadmill Running".
 primaryEquipment: Main equipment used. Omit for outdoor cardio/yoga.
-resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting.`
+resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting.
+
+A user may confuse "sets" with "reps"; interpret accordingly.`
         },
         {
           role: "user",

@@ -13,7 +13,7 @@ interface EmptyStateProps {
  */
 export function EmptyState({ title, description, icon }: EmptyStateProps) {
   return (
-    <YStack items="center" gap="$3" p="$6">
+    <YStack items="center" gap="$4" p="$6">
       {icon && <YStack mb="$2">{icon}</YStack>}
       <Text fontSize="$6" opacity={0.6}>
         {title}

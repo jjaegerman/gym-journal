@@ -73,9 +73,9 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
       iconAfter={ChevronRight}
       onPress={onPress}
       backgroundColor={colors.backgroundColor}
-      borderLeftWidth={3}
+      borderLeftWidth={4}
       borderLeftColor={colors.accentColor}
-      paddingVertical="$3.5"
+      paddingVertical="$3"
       titleProps={{
         fontWeight: "600",
         size: "$5",

@@ -33,7 +33,9 @@ export function WorkoutHistoryList({
   }
 
   if (error) {
-    return <ErrorState title="Error loading workouts" message={error.message} />;
+    return (
+      <ErrorState title="Error loading workouts" message={error.message} />
+    );
   }
 
   if (!workouts || workouts.length === 0) {
@@ -54,13 +56,18 @@ export function WorkoutHistoryList({
   });
 
   return (
-    <YStack width="90%" maxWidth={600} gap="$4">
+    <YStack width="90%" maxW={600} gap="$4">
       {periodOrder.map((period) => (
         <YStack key={period} gap="$2">
-          <H5 paddingHorizontal="$3" opacity={0.6} fontWeight="600">
+          <H5 paddingHorizontal="$3" opacity={0.7} fontWeight="600">
             {period}
           </H5>
-          <YGroup bordered separator={<Separator />} borderRadius="$4" overflow="hidden">
+          <YGroup
+            bordered
+            separator={<Separator />}
+            borderRadius="$4"
+            overflow="hidden"
+          >
             {groupedWorkouts[period].map((workout) => (
               <YGroup.Item key={workout.id}>
                 <WorkoutCard

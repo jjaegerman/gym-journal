@@ -71,7 +71,7 @@ export function ProfileSummary() {
         {/* Overview Section */}
         <YStack gap="$3">
           <H3>Your Progress</H3>
-          <Paragraph opacity={0.6}>Last 90 days</Paragraph>
+          <Paragraph opacity={0.7}>Last 90 days</Paragraph>
         </YStack>
 
         {/* Core Stats Grid */}
@@ -141,7 +141,7 @@ export function ProfileSummary() {
         {/* Exercise Breakdown */}
         <YStack gap="$3">
           <H3>Exercise Breakdown</H3>
-          <Paragraph opacity={0.6}>
+          <Paragraph opacity={0.7}>
             Your most performed exercises and their stats
           </Paragraph>
         </YStack>

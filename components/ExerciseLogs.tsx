@@ -66,7 +66,7 @@ export const ExerciseLogs = ({
             position="absolute"
             t="$10"
           >
-            <View gap="$4" paddingBlock="$3" paddingInline="$3">
+            <View gap="$4" p="$4">
               <Dialog.Title>{capitalizeEachWord(exercise.variant)}</Dialog.Title>
               {(exercise.type || exercise.equipment) && (
                 <XStack gap="$2" flexWrap="wrap">
@@ -89,7 +89,7 @@ export const ExerciseLogs = ({
                   )}
                 </XStack>
               )}
-              <YGroup separator={<Separator />} bordered>
+              <YGroup separator={<Separator />} bordered borderRadius="$4" overflow="hidden">
                 {exercise?.logs?.map((log) => (
                   <YGroup.Item key={log.id}>
                     <ListItem

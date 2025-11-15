@@ -13,7 +13,6 @@ import Animated, {
 
 const RECORD_BUTTON_SIZE = 60;
 const RECORD_BUTTON_BACKGROUND_SIZE = RECORD_BUTTON_SIZE + 16;
-const RECORDING_INDICATOR_COLOR = "#d72d66";
 const RECORDING_INDICATOR_SCALE = 0.5;
 const SPRING_SHORT_CONFIG: WithSpringConfig = {
   stiffness: 120,
@@ -31,6 +30,7 @@ export const RecordButton = ({
   const theme = useTheme();
 
   const recordBorderColor = theme.color.val;
+  const recordIndicatorColor = theme.red10.val;
   const scale = useSharedValue(1);
 
   const recordIndicatorAnimation = useAnimatedStyle(() => ({
@@ -67,7 +67,11 @@ export const RecordButton = ({
       />
       <Pressable style={styles.recordButton} onPress={handlePress}>
         <Animated.View
-          style={[styles.recordIndicator, recordIndicatorAnimation]}
+          style={[
+            styles.recordIndicator,
+            { backgroundColor: recordIndicatorColor },
+            recordIndicatorAnimation,
+          ]}
         />
       </Pressable>
     </View>
@@ -76,7 +80,6 @@ export const RecordButton = ({
 
 const styles = StyleSheet.create({
   recordIndicator: {
-    backgroundColor: RECORDING_INDICATOR_COLOR,
     borderRadius: RECORD_BUTTON_SIZE / 2,
     height: RECORD_BUTTON_SIZE,
     width: RECORD_BUTTON_SIZE,

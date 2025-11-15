@@ -16,7 +16,7 @@ export function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <YStack flex={1} items="center" justify="center" p="$4" gap="$3">
+    <YStack flex={1} items="center" justify="center" p="$6" gap="$4">
       <Text color="$red10" fontSize="$5">
         {title}
       </Text>
@@ -24,7 +24,7 @@ export function ErrorState({
         {message}
       </Text>
       {onRetry && (
-        <Button onPress={onRetry} mt="$2">
+        <Button onPress={onRetry}>
           Try Again
         </Button>
       )}
