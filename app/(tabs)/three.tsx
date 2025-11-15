@@ -36,14 +36,18 @@ export default function TabThreeScreen() {
   return (
     <ScrollView
       flex={1}
-      contentContainerStyle={{ flexGrow: 1 }}
+      contentContainerStyle={{ grow: 1 }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <YStack flex={1} items="center" gap="$1">
         <Spacer />
-        <WorkoutHistoryList workouts={workouts} loading={loading} error={error} />
+        <WorkoutHistoryList
+          workouts={workouts}
+          loading={loading}
+          error={error}
+        />
         <Spacer />
       </YStack>
     </ScrollView>

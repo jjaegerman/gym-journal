@@ -4,31 +4,49 @@ export const ExerciseCategory = z.enum([
   // Compound Lower Body
   "Squat",
   "Deadlift",
-  "Lunge & Split",
+  "Lunge",
+  "Split",
 
   // Compound Upper Body
   "Bench Press",
   "Overhead Press",
   "Row",
-  "Pull-up & Pulldown",
+  "Pulldown",
 
   // Olympic & Power
-  "Olympic Lift",
-  "Power",
+  "Snatch",
+  "Clean and Jerk",
 
   // Isolation - Lower
-  "Leg Isolation",
+  "Quad Isolation",
   "Glute Isolation",
-  "Calf",
+  "Hip Isolation",
+  "Calf Isolation",
+  "Legs Other",
 
   // Isolation - Upper
   "Chest Isolation",
   "Shoulder Isolation",
-  "Arm",
+  "Tricep Isolation",
+  "Bicep Curl",
+  "Forearm Isolation",
+  "Arms Other",
+
+  // Calisthenics
+  "Pull-up",
+  "Push-up",
+  "Dip",
+  "Calisthenics Other",
 
   // Core & Cardio
   "Core",
-  "Cardio",
+  "Running",
+  "Cycling",
+  "Swimming",
+  "Rowing",
+  "Cardio Other",
+
+  // Other
   "Other"
 ]);
 
@@ -50,21 +68,18 @@ export const Equipment = z.enum([
   "Rowing Machine",
   "Stationary Bike",
   "Elliptical",
+  "Stair Climber",
 
   // Bodyweight & Functional
-  "Bodyweight",
   "Pull-up Bar",
   "Dip Bar",
-  "Suspension Trainer",
   "Resistance Band",
 
   // Specialized
   "Medicine Ball",
   "Stability Ball",
-  "Landmine",
   "Sled",
   "Battle Rope",
-  "Sandbag",
   "Jump Rope",
   "Box",
   "Ab Wheel",
@@ -83,7 +98,6 @@ export const OpenAILogDetails = z.object({
     weight: z.number().nullable().optional(),
     weightUnit: z.enum(["kg", "lbs"]).nullable().optional(),
     repetitions: z.number().nullable().optional(),
-    sets: z.number().nullable().optional(),
 
     // Cardio metrics
     distance: z.number().nullable().optional(),
@@ -94,3 +108,7 @@ export const OpenAILogDetails = z.object({
     // General effort
     effort: z.enum(["low", "medium", "high"]).nullable().optional(),
 })
+
+export const OpenAILogDetailsArray = z.object({
+    items: z.array(OpenAILogDetails).nullable().optional(),
+});

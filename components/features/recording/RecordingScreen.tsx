@@ -20,16 +20,16 @@ export function RecordingScreen() {
 
   return (
     <View flex={1} justify="center" items="center" px="$4">
-      <YStack gap="$6" maxWidth={500} width="100%">
+      <YStack gap="$6" maxW={500} width="100%">
         {/* Examples */}
         <YStack gap="$2" items="center">
-          <Paragraph size="$3" opacity={0.5} textAlign="center">
+          <Paragraph size="$3" opacity={0.5} text="center">
             10 reps at 135 lbs
           </Paragraph>
-          <Paragraph size="$3" opacity={0.5} textAlign="center">
+          <Paragraph size="$3" opacity={0.5} text="center">
             3 sets of squats, 8 reps, 185 lbs
           </Paragraph>
-          <Paragraph size="$3" opacity={0.5} textAlign="center">
+          <Paragraph size="$3" opacity={0.5} text="center">
             Ran for 30 minutes
           </Paragraph>
         </YStack>
@@ -43,7 +43,9 @@ export function RecordingScreen() {
         {/* Divider */}
         <XStack items="center" gap="$3">
           <Separator flex={1} />
-          <Paragraph size="$2" opacity={0.5}>or</Paragraph>
+          <Paragraph size="$2" opacity={0.5}>
+            or
+          </Paragraph>
           <Separator flex={1} />
         </XStack>
 

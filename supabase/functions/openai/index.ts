@@ -1,6 +1,6 @@
 import OpenAI from 'npm:openai'
 import { zodTextFormat } from 'npm:openai/helpers/zod';
-import { OpenAILogDetails } from '../_shared/types.ts';
+import { OpenAILogDetailsArray } from '../_shared/types.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -52,12 +52,18 @@ Deno.serve(async (req) => {
           content:
             `Extract structured workout data from user's transcribed audio.
 
-exerciseType: Select the best matching category from the schema.
-exerciseVariant: Full specific name with ALL modifiers (equipment, grip, angle, stance, etc.). Examples: "Barbell Back Squat", "Dumbbell Incline Bench Press", "Treadmill Running".
-primaryEquipment: Main equipment used. Omit for outdoor cardio/yoga.
-resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting.
+FORMATTING RULES:
+- exerciseVariant: The specific variation WITHOUT equipment. Use Title Case.
+  Examples: "Back Squat", "Incline Bench Press", "Running", "Bicep Curl"
+  DO NOT include equipment in the variant name (equipment goes in primaryEquipment field)
 
-A user may confuse "sets" with "reps"; interpret accordingly.`
+- exerciseType: Select the best matching category from the schema
+- primaryEquipment: Main equipment used (use full names: "Barbell" not "BB", "Dumbbell" not "DB")
+  Omit for bodyweight exercises, outdoor cardio, or yoga
+- resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting
+
+LOGIC:
+If repetitions are not specified but sets are, assume repetitions equal sets and sets equals 1.`
         },
         {
           role: "user",
@@ -65,17 +71,19 @@ A user may confuse "sets" with "reps"; interpret accordingly.`
         },
       ],
       text: {
-        format: zodTextFormat(OpenAILogDetails, "log")
+        format: zodTextFormat(OpenAILogDetailsArray, "log")
       },
     });
 
-    const exerciseLog = JSON.parse(structured.output_text);
+    const exerciseLogs = JSON.parse(structured.output_text).items ?? [];
 
-    console.log(exerciseLog);
-    for (let i: number = 0; i < (exerciseLog.sets ?? 1); i++) {
-      console.log('Adding log set', i + 1);
+    console.log(exerciseLogs);
+    for (const exerciseLog of exerciseLogs) {
+      // Normalize variant name for consistency
+      const normalizedVariant = normalizeExerciseVariant(exerciseLog.exerciseVariant);
+
       var log_input = {
-        p_exercise_variant: String(exerciseLog.exerciseVariant),
+        p_exercise_variant: normalizedVariant,
         p_exercise_type: String(exerciseLog.exerciseType),
       }
       if (exerciseLog.primaryEquipment) {
@@ -105,7 +113,7 @@ A user may confuse "sets" with "reps"; interpret accordingly.`
       if (exerciseLog.resistanceLevel) {
         log_input.p_resistance_level = parseInt(exerciseLog.resistanceLevel);
       }
-      console.log('Log input:', log_input);
+
       const { data, error } = await supabase.rpc('add_log', log_input);
       if (error) {
         console.error('Error adding log:', error);
@@ -130,4 +138,41 @@ function base64ToUint8Array(base64: string): Uint8Array {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
+}
+
+/**
+ * Normalize exercise variant names for consistency
+ * - Converts to Title Case
+ * - Trims and removes extra whitespace
+ * - Strips equipment prefixes (equipment should be in separate field)
+ */
+function normalizeExerciseVariant(variant: string): string {
+  if (!variant) return variant;
+
+  // Trim and collapse multiple spaces
+  let normalized = variant.trim().replace(/\s+/g, ' ');
+
+  // Convert to Title Case (capitalize first letter of each word)
+  normalized = normalized
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  // Strip common equipment prefixes (these should be in primaryEquipment field)
+  const equipmentPrefixes = [
+    'Barbell ', 'Bb ', 'Dumbbell ', 'Db ', 'Kettlebell ', 'Kb ',
+    'Ez Bar ', 'Ez ', 'Cable ', 'Machine ', 'Smith Machine ',
+    'Treadmill ', 'Rowing Machine ', 'Stationary Bike ',
+    'Resistance Band ', 'Bodyweight '
+  ];
+
+  for (const prefix of equipmentPrefixes) {
+    if (normalized.startsWith(prefix)) {
+      normalized = normalized.substring(prefix.length);
+      break; // Only remove first match
+    }
+  }
+
+  return normalized.trim();
 }

@@ -113,7 +113,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
             ? `${exercise.equipment} • ${description}`
             : description;
 
-          const ExerciseIcon = () => getExerciseIcon(exercise.type, 24);
+          const ExerciseIcon: any = () => getExerciseIcon(exercise.type, 24);
           const iconColor = getExerciseIconColor(exercise.type);
 
           return (
@@ -126,8 +126,8 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
                 pressTheme
                 key={exercise.id}
                 icon={
-                  <View color={iconColor}>
-                    <ExerciseIcon />
+                  <View>
+                    <ExerciseIcon color={iconColor} />
                   </View>
                 }
                 iconAfter={Expand}
