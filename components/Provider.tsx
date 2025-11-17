@@ -63,7 +63,7 @@ export function Provider({
         }
       >
         <View bg="$background" flex={1}>
-          {session && session.user ? children : <Auth />}
+          {session ? session.user ? children : <Auth /> : <></>}
         </View>
         <CurrentToast />
         <ToastViewport top="$8" left={0} right={0} />
