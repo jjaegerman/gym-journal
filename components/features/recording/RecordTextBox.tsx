@@ -22,13 +22,13 @@ export const RecordTextBox = () => {
         placeholder="Type your workout..."
         numberOfLines={4}
         size="$4"
-        borderRadius="$4"
-        paddingRight="$10"
+        rounded="$4"
+        paddingInlineEnd="$10"
       />
       <Button
         position="absolute"
-        right="$2"
-        bottom="$2"
+        r="$2"
+        b="$2"
         onPress={handleSubmit}
         icon={loading ? Spinner : SendHorizontal}
         size="$3"

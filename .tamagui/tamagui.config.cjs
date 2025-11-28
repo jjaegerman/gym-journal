@@ -212,6 +212,24 @@ var setThemeInfo = /* @__PURE__ */ __name((theme, info) => {
 
 // node_modules/@tamagui/create-theme/dist/esm/createTheme.mjs
 var identityCache = /* @__PURE__ */ new Map();
+function createThemeWithPalettes(palettes, defaultPalette, definition, options, name, skipCache = false) {
+  if (!palettes[defaultPalette]) throw new Error(`No pallete: ${defaultPalette}`);
+  const newDef = {
+    ...definition
+  };
+  for (const key in definition) {
+    let val = definition[key];
+    if (typeof val == "string" && val[0] === "$") {
+      const [altPaletteName$, altPaletteIndex] = val.split("."), altPaletteName = altPaletteName$.slice(1), parentName = defaultPalette.split("_")[0], altPalette = palettes[altPaletteName] || palettes[`${parentName}_${altPaletteName}`];
+      if (altPalette) {
+        const next = getValue(altPalette, +altPaletteIndex);
+        typeof next < "u" && (newDef[key] = next);
+      }
+    }
+  }
+  return createTheme(palettes[defaultPalette], newDef, options, name, skipCache);
+}
+__name(createThemeWithPalettes, "createThemeWithPalettes");
 function createTheme(palette, definition, options, name, skipCache = false) {
   const cacheKey = skipCache ? "" : JSON.stringify([name, palette, definition, options]);
   if (!skipCache && identityCache.has(cacheKey)) return identityCache.get(cacheKey);
@@ -330,6 +348,17 @@ var createStrengthenMask = /* @__PURE__ */ __name((defaultOptions) => ({
 }), "createStrengthenMask");
 
 // node_modules/@tamagui/create-theme/dist/esm/applyMask.mjs
+function applyMask(theme, mask, options = {}, parentName, nextName) {
+  const info = getThemeInfo(theme, parentName);
+  if (!info) throw new Error(process.env.NODE_ENV !== "production" ? "No info found for theme, you must pass the theme created by createThemeFromPalette directly to extendTheme" : "\u274C Err2");
+  const next = applyMaskStateless(info, mask, options, parentName);
+  return setThemeInfo(next.theme, {
+    definition: next.definition,
+    palette: info.palette,
+    name: nextName
+  }), next.theme;
+}
+__name(applyMask, "applyMask");
 function applyMaskStateless(info, mask, options = {}, parentName) {
   const skip = {
     ...options.skip
@@ -363,6 +392,144 @@ var combineMasks = /* @__PURE__ */ __name((...masks2) => ({
     return theme;
   }, "mask")
 }), "combineMasks");
+
+// node_modules/@tamagui/theme-builder/dist/esm/ThemeBuilder.mjs
+var ThemeBuilder = class {
+  static {
+    __name(this, "ThemeBuilder");
+  }
+  constructor(state) {
+    this.state = state;
+  }
+  addPalettes(palettes) {
+    return this.state.palettes = {
+      // as {} prevents generic string key merge messing up types
+      ...this.state.palettes,
+      ...palettes
+    }, this;
+  }
+  addTemplates(templates) {
+    return this.state.templates = {
+      // as {} prevents generic string key merge messing up types
+      ...this.state.templates,
+      ...templates
+    }, this;
+  }
+  addMasks(masks2) {
+    return this.state.masks = {
+      // as {} prevents generic string key merge messing up types
+      ...this.state.masks,
+      ...objectFromEntries(objectEntries(masks2).map(([key, val]) => [key, createMask(val)]))
+    }, this;
+  }
+  // for dev mode only really
+  _addedThemes = [];
+  addThemes(themes3) {
+    return this._addedThemes.push({
+      type: "themes",
+      args: [themes3]
+    }), this.state.themes = {
+      // as {} prevents generic string key merge messing up types
+      ...this.state.themes,
+      ...themes3
+    }, this;
+  }
+  // these wont be typed to save some complexity and because they don't need to be typed!
+  addComponentThemes(childThemeDefinition, options) {
+    return this.addChildThemes(childThemeDefinition, options), this;
+  }
+  addChildThemes(childThemeDefinition, options) {
+    const currentThemes = this.state.themes;
+    if (!currentThemes) throw new Error("No themes defined yet, use addThemes first to set your base themes");
+    this._addedThemes.push({
+      type: "childThemes",
+      args: [childThemeDefinition, options]
+    });
+    const currentThemeNames = Object.keys(currentThemes), incomingThemeNames = Object.keys(childThemeDefinition), namesWithDefinitions = currentThemeNames.flatMap((prefix) => {
+      const avoidNestingWithin = options?.avoidNestingWithin;
+      return avoidNestingWithin && avoidNestingWithin.some((avoidName) => prefix.startsWith(avoidName) || prefix.endsWith(avoidName)) ? [] : incomingThemeNames.map((subName) => {
+        const fullName = `${prefix}_${subName}`, definition = childThemeDefinition[subName];
+        return "avoidNestingWithin" in definition && definition.avoidNestingWithin.some((name) => prefix.startsWith(name) || prefix.endsWith(name)) ? null : [fullName, definition];
+      }).filter(Boolean);
+    }), childThemes = Object.fromEntries(namesWithDefinitions), next = {
+      // as {} prevents generic string key merge messing up types
+      ...this.state.themes,
+      ...childThemes
+    };
+    return this.state.themes = next, this;
+  }
+  build() {
+    if (!this.state.themes) return {};
+    const out = {}, maskedThemes = [];
+    for (const themeName in this.state.themes) {
+      const nameParts = themeName.split("_"), parentName = nameParts.slice(0, nameParts.length - 1).join("_"), definitions = this.state.themes[themeName], themeDefinition = Array.isArray(definitions) ? (() => {
+        const found = definitions.find(
+          // endWith match stronger than startsWith
+          (d) => d.parent ? parentName.endsWith(d.parent) || parentName.startsWith(d.parent) : true
+        );
+        return found || null;
+      })() : definitions;
+      if (themeDefinition) if ("theme" in themeDefinition) out[themeName] = themeDefinition.theme;
+      else if ("mask" in themeDefinition) maskedThemes.push({
+        parentName,
+        themeName,
+        mask: themeDefinition
+      });
+      else {
+        let {
+          palette: paletteName = "",
+          template: templateName,
+          ...options
+        } = themeDefinition;
+        const parentDefinition = this.state.themes[parentName];
+        if (!this.state.palettes) throw new Error(`No palettes defined for theme with palette expected: ${themeName}`);
+        let palette = this.state.palettes[paletteName || ""], attemptParentName = `${parentName}_${paletteName}`;
+        for (; !palette && attemptParentName; ) attemptParentName in this.state.palettes ? (palette = this.state.palettes[attemptParentName], paletteName = attemptParentName) : attemptParentName = attemptParentName.split("_").slice(0, -1).join("_");
+        if (!palette) {
+          const msg = process.env.NODE_ENV !== "production" ? `: ${themeName}: ${paletteName}
+          Definition: ${JSON.stringify(themeDefinition)}
+          Parent: ${JSON.stringify(parentDefinition)}
+          Potential: (${Object.keys(this.state.palettes).join(", ")})` : "";
+          throw new Error(`No palette for theme${msg}`);
+        }
+        const template = this.state.templates?.[templateName] ?? // fall back to finding the scheme specific on if it exists
+        this.state.templates?.[`${nameParts[0]}_${templateName}`];
+        if (!template) throw new Error(`No template for theme ${themeName}: ${templateName} in templates:
+- ${Object.keys(this.state.templates || {}).join(`
+ - `)}`);
+        out[themeName] = createThemeWithPalettes(this.state.palettes, paletteName, template, options, themeName, true);
+      }
+    }
+    for (const {
+      mask,
+      themeName,
+      parentName
+    } of maskedThemes) {
+      const parent = out[parentName];
+      if (!parent) continue;
+      const {
+        mask: maskName,
+        ...options
+      } = mask;
+      let maskFunction = this.state.masks?.[maskName];
+      if (!maskFunction) throw new Error(`No mask ${maskName}`);
+      const parentTheme = this.state.themes[parentName];
+      if (parentTheme && "childOptions" in parentTheme) {
+        const {
+          mask: mask2,
+          ...childOpts
+        } = parentTheme.childOptions;
+        mask2 && (maskFunction = this.state.masks?.[mask2]), Object.assign(options, childOpts);
+      }
+      out[themeName] = applyMask(parent, maskFunction, options, parentName, themeName);
+    }
+    return out;
+  }
+};
+function createThemeBuilder() {
+  return new ThemeBuilder({});
+}
+__name(createThemeBuilder, "createThemeBuilder");
 
 // node_modules/color2k/dist/index.exports.import.es.mjs
 function guard(low, high, value) {
@@ -452,46 +619,46 @@ var hslToRgb = /* @__PURE__ */ __name((hue, saturation, lightness) => {
   const huePrime = (hue % 360 + 360) % 360 / 60;
   const chroma = (1 - Math.abs(2 * l - 1)) * (saturation / 100);
   const secondComponent = chroma * (1 - Math.abs(huePrime % 2 - 1));
-  let red = 0;
-  let green = 0;
+  let red3 = 0;
+  let green3 = 0;
   let blue = 0;
   if (huePrime >= 0 && huePrime < 1) {
-    red = chroma;
-    green = secondComponent;
+    red3 = chroma;
+    green3 = secondComponent;
   } else if (huePrime >= 1 && huePrime < 2) {
-    red = secondComponent;
-    green = chroma;
+    red3 = secondComponent;
+    green3 = chroma;
   } else if (huePrime >= 2 && huePrime < 3) {
-    green = chroma;
+    green3 = chroma;
     blue = secondComponent;
   } else if (huePrime >= 3 && huePrime < 4) {
-    green = secondComponent;
+    green3 = secondComponent;
     blue = chroma;
   } else if (huePrime >= 4 && huePrime < 5) {
-    red = secondComponent;
+    red3 = secondComponent;
     blue = chroma;
   } else if (huePrime >= 5 && huePrime < 6) {
-    red = chroma;
+    red3 = chroma;
     blue = secondComponent;
   }
   const lightnessModification = l - chroma / 2;
-  const finalRed = red + lightnessModification;
-  const finalGreen = green + lightnessModification;
+  const finalRed = red3 + lightnessModification;
+  const finalGreen = green3 + lightnessModification;
   const finalBlue = blue + lightnessModification;
   return [finalRed, finalGreen, finalBlue].map(roundColor);
 }, "hslToRgb");
 function parseToHsla(color) {
-  const [red, green, blue, alpha] = parseToRgba(color).map((value, index) => (
+  const [red3, green3, blue, alpha] = parseToRgba(color).map((value, index) => (
     // 3rd index is alpha channel which is already normalized
     index === 3 ? value : value / 255
   ));
-  const max = Math.max(red, green, blue);
-  const min = Math.min(red, green, blue);
+  const max = Math.max(red3, green3, blue);
+  const min = Math.min(red3, green3, blue);
   const lightness = (max + min) / 2;
   if (max === min) return [0, 0, lightness, alpha];
   const delta = max - min;
   const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
-  const hue = 60 * (red === max ? (green - blue) / delta + (green < blue ? 6 : 0) : green === max ? (blue - red) / delta + 2 : (red - green) / delta + 4);
+  const hue = 60 * (red3 === max ? (green3 - blue) / delta + (green3 < blue ? 6 : 0) : green3 === max ? (blue - red3) / delta + 2 : (red3 - green3) / delta + 4);
   return [hue, saturation, lightness, alpha];
 }
 __name(parseToHsla, "parseToHsla");
@@ -499,6 +666,64 @@ function hsla(hue, saturation, lightness, alpha) {
   return `hsla(${(hue % 360).toFixed()}, ${guard(0, 100, saturation * 100).toFixed()}%, ${guard(0, 100, lightness * 100).toFixed()}%, ${parseFloat(guard(0, 1, alpha).toFixed(3))})`;
 }
 __name(hsla, "hsla");
+
+// node_modules/@tamagui/theme-builder/dist/esm/defaultComponentThemes.mjs
+var defaultComponentThemes = {
+  ListItem: {
+    template: "surface1"
+  },
+  SelectTrigger: {
+    template: "surface1"
+  },
+  Card: {
+    template: "surface1"
+  },
+  Button: {
+    template: "surface3"
+  },
+  Checkbox: {
+    template: "surface2"
+  },
+  Switch: {
+    template: "surface2"
+  },
+  SwitchThumb: {
+    template: "inverse"
+  },
+  TooltipContent: {
+    template: "surface2"
+  },
+  Progress: {
+    template: "surface1"
+  },
+  RadioGroupItem: {
+    template: "surface2"
+  },
+  TooltipArrow: {
+    template: "surface1"
+  },
+  SliderTrackActive: {
+    template: "surface3"
+  },
+  SliderTrack: {
+    template: "surface1"
+  },
+  SliderThumb: {
+    template: "inverse"
+  },
+  Tooltip: {
+    template: "inverse"
+  },
+  ProgressIndicator: {
+    template: "inverse"
+  },
+  Input: {
+    template: "surface1"
+  },
+  TextArea: {
+    template: "surface1"
+  }
+};
 
 // node_modules/@tamagui/theme-builder/dist/esm/helpers.mjs
 var objectKeys = /* @__PURE__ */ __name((obj) => Object.keys(obj), "objectKeys");
@@ -619,6 +844,7 @@ var defaultTemplates = getTemplates();
 
 // node_modules/@tamagui/theme-builder/dist/esm/getThemeSuitePalettes.mjs
 var paletteSize = 12;
+var PALETTE_BACKGROUND_OFFSET = 6;
 var generateColorPalette = /* @__PURE__ */ __name(({
   palette: buildPalette,
   scheme
@@ -663,6 +889,33 @@ function getThemeSuitePalettes(palette) {
 __name(getThemeSuitePalettes, "getThemeSuitePalettes");
 
 // node_modules/@tamagui/theme-builder/dist/esm/createThemes.mjs
+function createThemes(props) {
+  const {
+    accent,
+    childrenThemes,
+    grandChildrenThemes,
+    templates = defaultTemplates,
+    componentThemes
+  } = props, builder = createSimpleThemeBuilder({
+    extra: props.base.extra,
+    componentThemes,
+    palettes: createPalettes(getThemesPalettes(props)),
+    templates,
+    accentTheme: !!accent,
+    childrenThemes: normalizeSubThemes(childrenThemes),
+    grandChildrenThemes: grandChildrenThemes ? normalizeSubThemes(grandChildrenThemes) : void 0
+  });
+  return lastBuilder = builder.themeBuilder, builder.themes;
+}
+__name(createThemes, "createThemes");
+var lastBuilder = null;
+function normalizeSubThemes(defs) {
+  return Object.fromEntries(Object.entries(defs || {}).map(([name, value]) => [name, {
+    palette: name,
+    template: value.template || "base"
+  }]));
+}
+__name(normalizeSubThemes, "normalizeSubThemes");
 var defaultPalettes = createPalettes(getThemesPalettes({
   base: {
     palette: ["#fff", "#000"]
@@ -671,6 +924,85 @@ var defaultPalettes = createPalettes(getThemesPalettes({
     palette: ["#ff0000", "#ff9999"]
   }
 }));
+function createSimpleThemeBuilder(props) {
+  const {
+    extra,
+    childrenThemes = null,
+    grandChildrenThemes = null,
+    templates = defaultTemplates,
+    palettes = defaultPalettes,
+    accentTheme,
+    componentThemes = templates === defaultTemplates ? defaultComponentThemes : void 0
+  } = props;
+  let themeBuilder = createThemeBuilder().addPalettes(palettes).addTemplates(templates).addThemes({
+    light: {
+      template: "base",
+      palette: "light",
+      nonInheritedValues: {
+        ...extra?.light,
+        ...accentTheme && palettes.light_accent && {
+          accent1: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 0],
+          accent2: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 1],
+          accent3: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 2],
+          accent4: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 3],
+          accent5: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 4],
+          accent6: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 5],
+          accent7: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 6],
+          accent8: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 7],
+          accent9: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 8],
+          accent10: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 9],
+          accent11: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 10],
+          accent12: palettes.light_accent[PALETTE_BACKGROUND_OFFSET + 11]
+        }
+      }
+    },
+    dark: {
+      template: "base",
+      palette: "dark",
+      nonInheritedValues: {
+        ...extra?.dark,
+        ...accentTheme && palettes.dark_accent && {
+          accent1: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 0],
+          accent2: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 1],
+          accent3: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 2],
+          accent4: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 3],
+          accent5: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 4],
+          accent6: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 5],
+          accent7: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 6],
+          accent8: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 7],
+          accent9: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 8],
+          accent10: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 9],
+          accent11: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 10],
+          accent12: palettes.dark_accent[PALETTE_BACKGROUND_OFFSET + 11]
+        }
+      }
+    }
+  });
+  return palettes.light_accent && (themeBuilder = themeBuilder.addChildThemes({
+    accent: [{
+      parent: "light",
+      template: "base",
+      palette: "light_accent"
+    }, {
+      parent: "dark",
+      template: "base",
+      palette: "dark_accent"
+    }]
+  })), childrenThemes && (themeBuilder = themeBuilder.addChildThemes(childrenThemes, {
+    avoidNestingWithin: ["accent"]
+  })), grandChildrenThemes && (themeBuilder = themeBuilder.addChildThemes(grandChildrenThemes, {
+    avoidNestingWithin: ["accent"]
+  })), componentThemes && (themeBuilder = themeBuilder.addComponentThemes(getComponentThemes(componentThemes), {
+    avoidNestingWithin: [
+      // ...Object.keys(childrenThemes || {}),
+      ...Object.keys(grandChildrenThemes || {})
+    ]
+  })), {
+    themeBuilder,
+    themes: themeBuilder.build()
+  };
+}
+__name(createSimpleThemeBuilder, "createSimpleThemeBuilder");
 function getSchemePalette(colors2) {
   return {
     light: colors2,
@@ -733,6 +1065,12 @@ function getThemesPalettes(props) {
   };
 }
 __name(getThemesPalettes, "getThemesPalettes");
+var getComponentThemes = /* @__PURE__ */ __name((components) => Object.fromEntries(Object.entries(components).map(([componentName, {
+  template
+}]) => [componentName, {
+  parent: "",
+  template: template || "base"
+}])), "getComponentThemes");
 function createPalettes(palettes) {
   const accentPalettes = palettes.accent ? getThemeSuitePalettes(palettes.accent) : null, basePalettes = getThemeSuitePalettes(palettes.base);
   return Object.fromEntries(Object.entries(palettes).flatMap(([name, palette]) => {
@@ -1766,10 +2104,197 @@ Expected a subset of: ${expected.join(", ")}
   return tamaguiConfig;
 };
 
+// node_modules/@tamagui/colors/dist/esm/dark/green.mjs
+var green = {
+  green1: "hsl(146, 30.0%, 7.4%)",
+  green2: "hsl(155, 44.2%, 8.4%)",
+  green3: "hsl(155, 46.7%, 10.9%)",
+  green4: "hsl(154, 48.4%, 12.9%)",
+  green5: "hsl(154, 49.7%, 14.9%)",
+  green6: "hsl(154, 50.9%, 17.6%)",
+  green7: "hsl(153, 51.8%, 21.8%)",
+  green8: "hsl(151, 51.7%, 28.4%)",
+  green9: "hsl(151, 55.0%, 41.5%)",
+  green10: "hsl(151, 49.3%, 46.5%)",
+  green11: "hsl(151, 50.0%, 53.2%)",
+  green12: "hsl(137, 72.0%, 94.0%)"
+};
+
+// node_modules/@tamagui/colors/dist/esm/dark/red.mjs
+var red = {
+  red1: "hsl(353, 23.0%, 9.8%)",
+  red2: "hsl(357, 34.4%, 12.0%)",
+  red3: "hsl(356, 43.4%, 16.4%)",
+  red4: "hsl(356, 47.6%, 19.2%)",
+  red5: "hsl(356, 51.1%, 21.9%)",
+  red6: "hsl(356, 55.2%, 25.9%)",
+  red7: "hsl(357, 60.2%, 31.8%)",
+  red8: "hsl(358, 65.0%, 40.4%)",
+  red9: "hsl(358, 75.0%, 59.0%)",
+  red10: "hsl(358, 85.3%, 64.0%)",
+  red11: "hsl(358, 100%, 69.5%)",
+  red12: "hsl(351, 89.0%, 96.0%)"
+};
+
+// node_modules/@tamagui/colors/dist/esm/dark/yellow.mjs
+var yellow = {
+  yellow1: "hsl(45, 100%, 5.5%)",
+  yellow2: "hsl(46, 100%, 6.7%)",
+  yellow3: "hsl(45, 100%, 8.7%)",
+  yellow4: "hsl(45, 100%, 10.4%)",
+  yellow5: "hsl(47, 100%, 12.1%)",
+  yellow6: "hsl(49, 100%, 14.3%)",
+  yellow7: "hsl(49, 90.3%, 18.4%)",
+  yellow8: "hsl(50, 100%, 22.0%)",
+  yellow9: "hsl(53, 92.0%, 50.0%)",
+  yellow10: "hsl(54, 100%, 68.0%)",
+  yellow11: "hsl(48, 100%, 47.0%)",
+  yellow12: "hsl(53, 100%, 91.0%)"
+};
+
+// node_modules/@tamagui/colors/dist/esm/light/green.mjs
+var green2 = {
+  green1: "hsl(136, 50.0%, 98.9%)",
+  green2: "hsl(138, 62.5%, 96.9%)",
+  green3: "hsl(139, 55.2%, 94.5%)",
+  green4: "hsl(140, 48.7%, 91.0%)",
+  green5: "hsl(141, 43.7%, 86.0%)",
+  green6: "hsl(143, 40.3%, 79.0%)",
+  green7: "hsl(146, 38.5%, 69.0%)",
+  green8: "hsl(151, 40.2%, 54.1%)",
+  green9: "hsl(151, 55.0%, 41.5%)",
+  green10: "hsl(152, 57.5%, 37.6%)",
+  green11: "hsl(153, 67.0%, 28.5%)",
+  green12: "hsl(155, 40.0%, 14.0%)"
+};
+
+// node_modules/@tamagui/colors/dist/esm/light/red.mjs
+var red2 = {
+  red1: "hsl(359, 100%, 99.4%)",
+  red2: "hsl(359, 100%, 98.6%)",
+  red3: "hsl(360, 100%, 96.8%)",
+  red4: "hsl(360, 97.9%, 94.8%)",
+  red5: "hsl(360, 90.2%, 91.9%)",
+  red6: "hsl(360, 81.7%, 87.8%)",
+  red7: "hsl(359, 74.2%, 81.7%)",
+  red8: "hsl(359, 69.5%, 74.3%)",
+  red9: "hsl(358, 75.0%, 59.0%)",
+  red10: "hsl(358, 69.4%, 55.2%)",
+  red11: "hsl(358, 65.0%, 48.7%)",
+  red12: "hsl(354, 50.0%, 14.6%)"
+};
+
+// node_modules/@tamagui/colors/dist/esm/light/yellow.mjs
+var yellow2 = {
+  yellow1: "hsl(60, 54.0%, 98.5%)",
+  yellow2: "hsl(52, 100%, 95.5%)",
+  yellow3: "hsl(55, 100%, 90.9%)",
+  yellow4: "hsl(54, 100%, 86.6%)",
+  yellow5: "hsl(52, 97.9%, 82.0%)",
+  yellow6: "hsl(50, 89.4%, 76.1%)",
+  yellow7: "hsl(47, 80.4%, 68.0%)",
+  yellow8: "hsl(48, 100%, 46.1%)",
+  yellow9: "hsl(53, 92.0%, 50.0%)",
+  yellow10: "hsl(50, 100%, 48.5%)",
+  yellow11: "hsl(42, 100%, 29.0%)",
+  yellow12: "hsl(40, 55.0%, 13.5%)"
+};
+
+// themes.ts
+var darkPalette = ["hsla(0, 8%, 11%, 1)", "hsla(0, 7%, 15%, 1)", "hsla(0, 7%, 20%, 1)", "hsla(0, 7%, 24%, 1)", "hsla(0, 7%, 28%, 1)", "hsla(0, 7%, 33%, 1)", "hsla(0, 6%, 37%, 1)", "hsla(0, 6%, 41%, 1)", "hsla(0, 6%, 46%, 1)", "hsla(0, 6%, 50%, 1)", "hsla(0, 15%, 93%, 1)", "hsla(0, 15%, 99%, 1)"];
+var lightPalette = ["hsla(0, 8%, 75%, 1)", "hsla(0, 7%, 72%, 1)", "hsla(0, 7%, 69%, 1)", "hsla(0, 7%, 67%, 1)", "hsla(0, 7%, 64%, 1)", "hsla(0, 7%, 61%, 1)", "hsla(0, 6%, 58%, 1)", "hsla(0, 6%, 56%, 1)", "hsla(0, 6%, 53%, 1)", "hsla(0, 6%, 50%, 1)", "hsla(0, 15%, 15%, 1)", "hsla(0, 15%, 1%, 1)"];
+var lightShadows = {
+  shadow1: "rgba(0,0,0,0.04)",
+  shadow2: "rgba(0,0,0,0.08)",
+  shadow3: "rgba(0,0,0,0.16)",
+  shadow4: "rgba(0,0,0,0.24)",
+  shadow5: "rgba(0,0,0,0.32)",
+  shadow6: "rgba(0,0,0,0.4)"
+};
+var darkShadows = {
+  shadow1: "rgba(0,0,0,0.2)",
+  shadow2: "rgba(0,0,0,0.3)",
+  shadow3: "rgba(0,0,0,0.4)",
+  shadow4: "rgba(0,0,0,0.5)",
+  shadow5: "rgba(0,0,0,0.6)",
+  shadow6: "rgba(0,0,0,0.7)"
+};
+var builtThemes = createThemes({
+  componentThemes: defaultComponentThemes,
+  base: {
+    palette: {
+      dark: darkPalette,
+      light: lightPalette
+    },
+    extra: {
+      light: {
+        ...green2,
+        ...red2,
+        ...yellow2,
+        ...lightShadows,
+        shadowColor: lightShadows.shadow1
+      },
+      dark: {
+        ...green,
+        ...red,
+        ...yellow,
+        ...darkShadows,
+        shadowColor: darkShadows.shadow1
+      }
+    }
+  },
+  accent: {
+    palette: {
+      dark: ["hsla(0, 56%, 38%, 1)", "hsla(0, 56%, 40%, 1)", "hsla(0, 56%, 43%, 1)", "hsla(0, 56%, 45%, 1)", "hsla(0, 56%, 48%, 1)", "hsla(0, 56%, 50%, 1)", "hsla(0, 56%, 53%, 1)", "hsla(0, 56%, 55%, 1)", "hsla(0, 56%, 58%, 1)", "hsla(0, 56%, 60%, 1)", "hsla(250, 50%, 90%, 1)", "hsla(250, 50%, 95%, 1)"],
+      light: ["hsla(0, 56%, 43%, 1)", "hsla(0, 56%, 45%, 1)", "hsla(0, 56%, 48%, 1)", "hsla(0, 56%, 50%, 1)", "hsla(0, 56%, 53%, 1)", "hsla(0, 56%, 55%, 1)", "hsla(0, 56%, 58%, 1)", "hsla(0, 56%, 60%, 1)", "hsla(0, 56%, 63%, 1)", "hsla(0, 56%, 65%, 1)", "hsla(250, 50%, 95%, 1)", "hsla(250, 50%, 95%, 1)"]
+    }
+  },
+  childrenThemes: {
+    warning: {
+      palette: {
+        dark: Object.values(yellow),
+        light: Object.values(yellow2)
+      }
+    },
+    error: {
+      palette: {
+        dark: Object.values(red),
+        light: Object.values(red2)
+      }
+    },
+    success: {
+      palette: {
+        dark: Object.values(green),
+        light: Object.values(green2)
+      }
+    }
+  }
+  // optionally add more, can pass palette or template
+  // grandChildrenThemes: {
+  //   alt1: {
+  //     template: 'alt1',
+  //   },
+  //   alt2: {
+  //     template: 'alt2',
+  //   },
+  //   surface1: {
+  //     template: 'surface1',
+  //   },
+  //   surface2: {
+  //     template: 'surface2',
+  //   },
+  //   surface3: {
+  //     template: 'surface3',
+  //   },
+  // },
+});
+var themes2 = process.env.TAMAGUI_ENVIRONMENT === "client" && process.env.NODE_ENV === "production" ? {} : builtThemes;
+
 // tamagui.config.ts
 var config = createTamagui(
   {
     ...defaultConfig,
+    themes: themes2,
     media: {
       ...defaultConfig.media,
       xs: { maxWidth: 660 },
