@@ -12,11 +12,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: theme.accent5.val,
         tabBarInactiveTintColor: theme.color11.val,
         tabBarStyle: {
-          backgroundColor: theme.color3.val,
+          backgroundColor: theme.color1.val,
           borderTopColor: theme.color6.val,
         },
         headerStyle: {
-          backgroundColor: theme.color3.val,
+          backgroundColor: theme.color1.val,
           borderBottomColor: theme.color6.val,
         },
         headerShown: true,
@@ -27,15 +27,10 @@ export default function TabLayout() {
         options={{
           title: "Record Activity",
           tabBarIcon: ({ color }) => <Plus color={color as any} />,
-          headerRight: () => (
-            <Button mr="$4" size="$2.5" onPress={() => signOut()}>
-              Sign Out
-            </Button>
-          ),
         }}
       />
       <Tabs.Screen
-        name="three"
+        name="history"
         options={{
           title: "Workout History",
           tabBarIcon: ({ color }) => <List color={color as any} />,
@@ -46,6 +41,11 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => <User color={color as any} />,
+          headerRight: () => (
+            <Button mr="$4" size="$2.5" onPress={() => signOut()}>
+              Sign Out
+            </Button>
+          ),
         }}
       />
     </Tabs>
