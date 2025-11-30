@@ -8,7 +8,7 @@ import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
  * Allows users to log exercises via audio recording or text input
  */
 export function RecordingScreen() {
-  const { startRecording, stopRecording } = useAudioRecording();
+  const { startRecording, stopRecording, recorderState } = useAudioRecording();
   const { submitAudio } = useExerciseSubmit();
 
   const handleStopRecording = async () => {
@@ -44,6 +44,7 @@ export function RecordingScreen() {
         <RecordButton
           startCallback={startRecording}
           stopCallback={handleStopRecording}
+          durationMillis={recorderState.durationMillis}
         />
 
         {/* Divider */}

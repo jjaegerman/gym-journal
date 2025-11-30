@@ -150,3 +150,20 @@ export function formatIsoDuration(isoDuration: string): string {
   const minutes = parseIsoDuration(isoDuration);
   return formatDuration(minutes);
 }
+
+/**
+ * Format milliseconds to stopwatch format (MM:SS)
+ * @param millis - Duration in milliseconds
+ * @returns Formatted stopwatch string
+ * @example
+ * formatStopwatch(0) // "00:00"
+ * formatStopwatch(45000) // "00:45"
+ * formatStopwatch(125000) // "02:05"
+ * formatStopwatch(3661000) // "61:01"
+ */
+export function formatStopwatch(millis: number): string {
+  const totalSeconds = Math.floor(millis / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
