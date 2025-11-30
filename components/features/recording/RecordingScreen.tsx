@@ -2,6 +2,16 @@ import { RecordButton } from "./RecordButton";
 import { RecordTextBox } from "./RecordTextBox";
 import { Paragraph, View, YStack, XStack, Separator } from "tamagui";
 import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
+import { useTabContext } from "@/lib/context/TabContext";
+import { useEffect } from "react";
+import { BlurView } from "expo-blur";
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withTiming,
+} from "react-native-reanimated";
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 /**
  * Recording Screen Component
@@ -10,6 +20,21 @@ import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
 export function RecordingScreen() {
   const { startRecording, stopRecording, recorderState } = useAudioRecording();
   const { submitAudio } = useExerciseSubmit();
+  const { setTabsDisabled } = useTabContext();
+  const blurIntensity = useSharedValue(0);
+
+  // Disable tabs while recording
+  useEffect(() => {
+    setTabsDisabled(recorderState.isRecording);
+    // Animate blur intensity in/out
+    blurIntensity.value = withTiming(recorderState.isRecording ? 80 : 0, {
+      duration: 300,
+    });
+  }, [recorderState.isRecording, setTabsDisabled, blurIntensity]);
+
+  const animatedBlurProps = useAnimatedProps(() => ({
+    intensity: blurIntensity.value,
+  }));
 
   const handleStopRecording = async () => {
     const uri = await stopRecording();
@@ -26,6 +51,7 @@ export function RecordingScreen() {
       px="$4"
       background="$background"
     >
+      {/* Main content container */}
       <YStack gap="$6" maxW={500} width="100%">
         {/* Examples */}
         <YStack gap="$2" items="center">
@@ -40,12 +66,14 @@ export function RecordingScreen() {
           </Paragraph>
         </YStack>
 
-        {/* Voice Recording */}
-        <RecordButton
-          startCallback={startRecording}
-          stopCallback={handleStopRecording}
-          durationMillis={recorderState.durationMillis}
-        />
+        {/* Voice Recording Button - always visible with z-index */}
+        <View z={100}>
+          <RecordButton
+            startCallback={startRecording}
+            stopCallback={handleStopRecording}
+            durationMillis={recorderState.durationMillis}
+          />
+        </View>
 
         {/* Divider */}
         <XStack items="center" gap="$3">
@@ -59,6 +87,21 @@ export function RecordingScreen() {
         {/* Text Input */}
         <RecordTextBox />
       </YStack>
+
+      {/* Blur overlay - intensity animates in/out */}
+      <AnimatedBlurView
+        animatedProps={animatedBlurProps}
+        tint="dark"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+        }}
+        pointerEvents={recorderState.isRecording ? "auto" : "none"}
+      />
     </View>
   );
 }

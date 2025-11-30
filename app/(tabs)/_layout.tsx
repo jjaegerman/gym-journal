@@ -2,15 +2,19 @@ import { Tabs } from "expo-router";
 import { Button, useTheme } from "tamagui";
 import { List, Plus, User } from "@tamagui/lucide-icons";
 import { signOut } from "@/lib/api/supabase/auth";
+import { useTabContext } from "@/lib/context/TabContext";
 
 export default function TabLayout() {
   const theme = useTheme();
+  const { tabsDisabled } = useTabContext();
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.accent5.val,
-        tabBarInactiveTintColor: theme.color11.val,
+        tabBarInactiveTintColor: tabsDisabled
+          ? theme.color10.val
+          : theme.color11.val,
         tabBarStyle: {
           backgroundColor: theme.color1.val,
           borderTopColor: theme.color6.val,
@@ -28,12 +32,26 @@ export default function TabLayout() {
           title: "Record Activity",
           tabBarIcon: ({ color }) => <Plus color={color as any} />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            if (tabsDisabled) {
+              e.preventDefault();
+            }
+          },
+        }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: "Workout History",
           tabBarIcon: ({ color }) => <List color={color as any} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            if (tabsDisabled) {
+              e.preventDefault();
+            }
+          },
         }}
       />
       <Tabs.Screen
@@ -46,6 +64,13 @@ export default function TabLayout() {
               Sign Out
             </Button>
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            if (tabsDisabled) {
+              e.preventDefault();
+            }
+          },
         }}
       />
     </Tabs>

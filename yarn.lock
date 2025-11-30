@@ -6900,6 +6900,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~15.0.7":
+  version: 15.0.7
+  resolution: "expo-blur@npm:15.0.7"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/0285f0f39871fdcd94a397c07fd724b1ee1f4c055b5a733dc3b44cd6571a28016d863ae7e4205f00ce039ada730a8ad6d396b928ae4686cbc69cfcd232471431
+  languageName: node
+  linkType: hard
+
 "expo-build-properties@npm:~1.0.9":
   version: 1.0.9
   resolution: "expo-build-properties@npm:1.0.9"
@@ -7733,6 +7744,7 @@ __metadata:
     expo-asset: "npm:~12.0.9"
     expo-audio: "npm:~1.0.14"
     expo-auth-session: "npm:~7.0.8"
+    expo-blur: "npm:~15.0.7"
     expo-build-properties: "npm:~1.0.9"
     expo-constants: "npm:~18.0.10"
     expo-file-system: "npm:~19.0.17"
