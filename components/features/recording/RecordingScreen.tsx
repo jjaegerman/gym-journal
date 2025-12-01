@@ -1,6 +1,6 @@
 import { RecordButton } from "./RecordButton";
 import { RecordTextBox } from "./RecordTextBox";
-import { Paragraph, View, YStack, XStack, Separator } from "tamagui";
+import { Paragraph, View, YStack, XStack, Separator, Spinner } from "tamagui";
 import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
 import { useTabContext } from "@/lib/context/TabContext";
 import { useEffect } from "react";
@@ -19,18 +19,19 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
  */
 export function RecordingScreen() {
   const { startRecording, stopRecording, recorderState } = useAudioRecording();
-  const { submitAudio } = useExerciseSubmit();
+  const { submitAudio, loading } = useExerciseSubmit();
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
 
-  // Disable tabs while recording
+  // Disable tabs while recording or loading
   useEffect(() => {
-    setTabsDisabled(recorderState.isRecording);
+    const isActive = recorderState.isRecording || loading;
+    setTabsDisabled(isActive);
     // Animate blur intensity in/out
-    blurIntensity.value = withTiming(recorderState.isRecording ? 80 : 0, {
+    blurIntensity.value = withTiming(isActive ? 80 : 0, {
       duration: 300,
     });
-  }, [recorderState.isRecording, setTabsDisabled, blurIntensity]);
+  }, [recorderState.isRecording, loading, setTabsDisabled, blurIntensity]);
 
   const animatedBlurProps = useAnimatedProps(() => ({
     intensity: blurIntensity.value,
@@ -66,13 +67,17 @@ export function RecordingScreen() {
           </Paragraph>
         </YStack>
 
-        {/* Voice Recording Button - always visible with z-index */}
-        <View z={100}>
-          <RecordButton
-            startCallback={startRecording}
-            stopCallback={handleStopRecording}
-            durationMillis={recorderState.durationMillis}
-          />
+        {/* Voice Recording Button or Spinner - always visible with z-index */}
+        <View z={100} items="center" justify="center">
+          {loading ? (
+            <Spinner size="large" color="$color" />
+          ) : (
+            <RecordButton
+              startCallback={startRecording}
+              stopCallback={handleStopRecording}
+              durationMillis={recorderState.durationMillis}
+            />
+          )}
         </View>
 
         {/* Divider */}
@@ -100,7 +105,7 @@ export function RecordingScreen() {
           bottom: 0,
           zIndex: 50,
         }}
-        pointerEvents={recorderState.isRecording ? "auto" : "none"}
+        pointerEvents={recorderState.isRecording || loading ? "auto" : "none"}
       />
     </View>
   );

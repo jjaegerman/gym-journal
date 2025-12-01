@@ -3,6 +3,7 @@ import { Platform } from 'expo-modules-core';
 import { audioFileToBase64 } from '@/lib/utils';
 import { invokeOpenAI } from '@/lib/api/supabase/functions';
 import { useToastController } from '@tamagui/toast';
+import * as Haptics from 'expo-haptics';
 
 /**
  * Custom hook for submitting exercise data via audio or text
@@ -30,6 +31,7 @@ export function useExerciseSubmit() {
         query
       );
 
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show('Exercise logged successfully!', {
         duration: 3000,
         customData: { theme: 'green' },
@@ -38,6 +40,7 @@ export function useExerciseSubmit() {
       return { data };
     } catch (error) {
       console.error('Error submitting audio:', error);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       toast.show('Failed to log exercise', {
         duration: 3000,
         customData: { theme: 'red' },
@@ -55,6 +58,7 @@ export function useExerciseSubmit() {
       // TODO: Implement text-based exercise submission
       console.log('Submitting text:', text);
 
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show('Exercise logged successfully!', {
         duration: 3000,
         customData: { theme: 'green' },
@@ -63,6 +67,7 @@ export function useExerciseSubmit() {
       return {};
     } catch (error) {
       console.error('Error submitting text:', error);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       toast.show('Failed to log exercise', {
         duration: 3000,
         customData: { theme: 'red' },
