@@ -1,4 +1,4 @@
-import { ScrollView, YStack, H3, XStack, Paragraph, Separator } from "tamagui";
+import { ScrollView, YStack, H3, XStack, Paragraph, Separator, Text } from "tamagui";
 import { useProfileStats } from "@/lib/hooks";
 import { LoadingState, ErrorState } from "@/components/ui/feedback";
 import { StatCard } from "./StatCard";
@@ -130,7 +130,7 @@ export function ProfileSummary() {
               <Calendar size={20} />
               <Paragraph>
                 You most often train on{" "}
-                <Paragraph fontWeight="bold">{stats.most_common_day}</Paragraph>
+                <Text fontWeight="bold">{stats.most_common_day}</Text>
               </Paragraph>
             </XStack>
           </YStack>

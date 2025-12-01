@@ -31,16 +31,15 @@ export interface ExerciseStats {
 
 /**
  * Get comprehensive user profile statistics
+ * Automatically uses the authenticated user's ID (auth.uid())
  */
 export async function getUserProfileStats(
-  userId: string,
   daysBack: number = 90
 ): Promise<ProfileStats> {
   // Get user's timezone (e.g., "America/New_York")
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const { data, error } = await supabase.rpc('get_user_profile_stats', {
-    p_user_id: userId,
     p_days_back: daysBack,
     p_timezone: timezone,
   });
@@ -51,13 +50,12 @@ export async function getUserProfileStats(
 
 /**
  * Get per-exercise statistics
+ * Automatically uses the authenticated user's ID (auth.uid())
  */
 export async function getExerciseStats(
-  userId: string,
   daysBack: number = 90
 ): Promise<ExerciseStats[]> {
   const { data, error } = await supabase.rpc('get_exercise_stats', {
-    p_user_id: userId,
     p_days_back: daysBack,
   });
 
@@ -67,11 +65,10 @@ export async function getExerciseStats(
 
 /**
  * Get current workout streak
+ * Automatically uses the authenticated user's ID (auth.uid())
  */
-export async function getCurrentStreak(userId: string): Promise<number> {
-  const { data, error } = await supabase.rpc('calculate_current_streak', {
-    p_user_id: userId,
-  });
+export async function getCurrentStreak(): Promise<number> {
+  const { data, error } = await supabase.rpc('calculate_current_streak');
 
   if (error) throw error;
   return data as number;
@@ -79,11 +76,10 @@ export async function getCurrentStreak(userId: string): Promise<number> {
 
 /**
  * Get longest workout streak
+ * Automatically uses the authenticated user's ID (auth.uid())
  */
-export async function getLongestStreak(userId: string): Promise<number> {
-  const { data, error } = await supabase.rpc('calculate_longest_streak', {
-    p_user_id: userId,
-  });
+export async function getLongestStreak(): Promise<number> {
+  const { data, error } = await supabase.rpc('calculate_longest_streak');
 
   if (error) throw error;
   return data as number;

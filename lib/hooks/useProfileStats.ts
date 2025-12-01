@@ -29,8 +29,8 @@ export function useProfileStats(daysBack: number = 90) {
       setError(null);
 
       const [profileData, exerciseData] = await Promise.all([
-        getUserProfileStats(user.id, daysBack),
-        getExerciseStats(user.id, daysBack),
+        getUserProfileStats(daysBack),
+        getExerciseStats(daysBack),
       ]);
 
       setStats(profileData);

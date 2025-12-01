@@ -7,14 +7,12 @@ import { Workout, WorkoutDetails } from '@/types/exercise';
  */
 
 /**
- * Get all workouts for a user
- * @param userId - The user ID to fetch workouts for
+ * Get all workouts for the authenticated user
+ * Automatically uses the authenticated user's ID (auth.uid())
  * @returns Array of workout summaries
  */
-export async function getUserWorkouts(userId: string) {
-  const { data, error } = await supabase.rpc("get_user_workouts", {
-    p_user_id: userId,
-  });
+export async function getUserWorkouts() {
+  const { data, error } = await supabase.rpc("get_user_workouts");
 
   if (error) {
     console.error("Error fetching user workouts:", error);

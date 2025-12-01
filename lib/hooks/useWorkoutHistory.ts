@@ -23,7 +23,7 @@ export function useWorkoutHistory() {
       setLoading(true);
       setError(null);
 
-      const data = await getUserWorkouts(session.user.id);
+      const data = await getUserWorkouts();
       setWorkouts(WorkoutsArraySchema.parse(data));
     } catch (err) {
       console.error("Error fetching workouts:", err);
