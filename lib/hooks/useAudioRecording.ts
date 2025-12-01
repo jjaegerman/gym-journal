@@ -41,10 +41,16 @@ export function useAudioRecording() {
     return audioRecorder.uri;
   };
 
+  const cancelRecording = async () => {
+    await audioRecorder.stop();
+    // Don't return URI - this signals cancellation
+  };
+
   return {
     audioRecorder,
     recorderState,
     startRecording,
     stopRecording,
+    cancelRecording,
   };
 }

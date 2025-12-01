@@ -18,7 +18,8 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
  * Allows users to log exercises via audio recording or text input
  */
 export function RecordingScreen() {
-  const { startRecording, stopRecording, recorderState } = useAudioRecording();
+  const { startRecording, stopRecording, cancelRecording, recorderState } =
+    useAudioRecording();
   const { submitAudio, loading } = useExerciseSubmit();
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
@@ -70,11 +71,14 @@ export function RecordingScreen() {
         {/* Voice Recording Button or Spinner - always visible with z-index */}
         <View z={100} items="center" justify="center">
           {loading ? (
-            <Spinner size="large" color="$color" />
+            <View height={176} alignItems="center" justifyContent="center">
+              <Spinner size="large" color="$color" />
+            </View>
           ) : (
             <RecordButton
               startCallback={startRecording}
               stopCallback={handleStopRecording}
+              cancelCallback={cancelRecording}
               durationMillis={recorderState.durationMillis}
             />
           )}

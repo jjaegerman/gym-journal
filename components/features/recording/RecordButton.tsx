@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { selectionAsync } from "expo-haptics";
-import { Text, View, useTheme } from "tamagui";
+import { Text, View, useTheme, Button } from "tamagui";
+import { X } from "@tamagui/lucide-icons";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -23,10 +24,12 @@ const SPRING_SHORT_CONFIG: WithSpringConfig = {
 export const RecordButton = ({
   startCallback,
   stopCallback,
+  cancelCallback,
   durationMillis = 0,
 }: {
   startCallback: () => Promise<void>;
   stopCallback: () => Promise<void>;
+  cancelCallback?: () => Promise<void>;
   durationMillis?: number;
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -58,6 +61,15 @@ export const RecordButton = ({
       scale.value = withSpring(RECORDING_INDICATOR_SCALE, SPRING_SHORT_CONFIG);
       setIsRecording(true);
     }
+  };
+
+  const handleCancel = async () => {
+    selectionAsync();
+    if (cancelCallback) {
+      await cancelCallback();
+    }
+    scale.value = withSpring(1, SPRING_SHORT_CONFIG);
+    setIsRecording(false);
   };
 
   return (
@@ -97,6 +109,25 @@ export const RecordButton = ({
             ]}
           />
         </Pressable>
+      </View>
+
+      {/* Cancel button - always takes up space */}
+      <View style={{ height: 36, alignItems: "center", justifyContent: "center" }}>
+        {isRecording && cancelCallback && (
+          <Button
+            icon={X}
+            size="$2"
+            circular
+            onPress={handleCancel}
+            chromeless
+            color="$red10"
+            animation="quick"
+            enterStyle={{ opacity: 0, scale: 0.9 }}
+            exitStyle={{ opacity: 0, scale: 0.9 }}
+            opacity={1}
+            scale={1}
+          />
+        )}
       </View>
     </View>
   );
