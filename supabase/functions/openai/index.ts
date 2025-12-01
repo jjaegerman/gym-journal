@@ -63,7 +63,8 @@ FORMATTING RULES:
 - resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting
 
 LOGIC:
-If repetitions are not specified but sets are, assume repetitions equal sets and sets equals 1.`
+If repetitions are not specified but sets are, assume repetitions equal sets and sets equals 1.
+If both are specified, repeat the item with the same repetitions for each set.`
         },
         {
           role: "user",

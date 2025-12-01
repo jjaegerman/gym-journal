@@ -58,20 +58,20 @@ export function RecordingScreen() {
         {/* Examples */}
         <YStack gap="$2" items="center">
           <Paragraph size="$3" opacity={0.5} text="center">
-            10 reps at 135 lbs
+            "10 reps of bench press at 135 lbs"
           </Paragraph>
           <Paragraph size="$3" opacity={0.5} text="center">
-            3 sets of squats, 8 reps, 185 lbs
+            "3 sets of squats, 8 reps, 185 lbs"
           </Paragraph>
           <Paragraph size="$3" opacity={0.5} text="center">
-            Ran for 30 minutes
+            "Ran for 30 minutes"
           </Paragraph>
         </YStack>
 
         {/* Voice Recording Button or Spinner - always visible with z-index */}
         <View z={100} items="center" justify="center">
           {loading ? (
-            <View height={176} alignItems="center" justifyContent="center">
+            <View height={176} items="center" justify="center">
               <Spinner size="large" color="$color" />
             </View>
           ) : (
