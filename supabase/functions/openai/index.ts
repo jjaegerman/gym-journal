@@ -27,22 +27,28 @@ Deno.serve(async (req) => {
       apiKey: apiKey,
     });
 
-    if (!audio?.base64) {
-      return new Response(
-        JSON.stringify({ error: "Missing audio.base64 field" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    var textLog = "";
+    if (query != undefined && query != null && query.trim() !== "") {
+      textLog = query;
+      
+    } else {
+      if (!audio?.base64) {
+        return new Response(
+          JSON.stringify({ error: "Missing audio.base64 field" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      const audioBytes = base64ToUint8Array(audio.base64);
+      const audioFile = new File([audioBytes], audio.fileName, { type: `audio/${audio.fileExtension}` });
+
+      const transcription = await openai.audio.transcriptions.create({
+        file: audioFile,
+        model: "gpt-4o-mini-transcribe",
+      });
+
+      textLog = transcription.text;
     }
-
-    const audioBytes = base64ToUint8Array(audio.base64);
-    const audioFile = new File([audioBytes], audio.fileName, { type: `audio/${audio.fileExtension}` });
-
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: "gpt-4o-mini-transcribe",
-    });
-
-    const reply = transcription.text;
 
     const structured = await openai.responses.parse({
       model: "gpt-4.1",
@@ -68,7 +74,7 @@ If both are specified, repeat the item with the same repetitions for each set.`
         },
         {
           role: "user",
-          content: reply
+          content: textLog
         },
       ],
       text: {
@@ -121,8 +127,8 @@ If both are specified, repeat the item with the same repetitions for each set.`
       }
     }
 
-    return new Response(exerciseLog, {
-      headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+    return new Response(JSON.stringify(exerciseLogs), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {

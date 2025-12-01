@@ -6,7 +6,7 @@ import { supabase } from './client';
  */
 
 interface OpenAIRequestBody {
-  audio: {
+  audio?: {
     fileExtension: string;
     fileName: string;
     base64: string;
@@ -20,22 +20,29 @@ interface OpenAIResponse {
 }
 
 /**
- * Invoke the OpenAI edge function for audio transcription
- * @param audioData - Audio file data (base64 encoded)
- * @param query - Optional query/instruction for the AI
+ * Invoke the OpenAI edge function for audio transcription or text processing
+ * @param audioData - Optional audio file data (base64 encoded)
+ * @param query - Optional text query/instruction for the AI
  * @returns Transcribed text or error
  */
 export async function invokeOpenAI(
-  audioData: {
+  audioData?: {
     base64: string;
     fileExtension: string;
     fileName: string;
   },
   query?: string
 ): Promise<OpenAIResponse> {
-  const body: OpenAIRequestBody = {
-    audio: audioData,
-  };
+  // Require either audioData or query
+  if (!audioData && !query) {
+    return { error: 'Either audioData or query must be provided' };
+  }
+
+  const body: OpenAIRequestBody = {};
+
+  if (audioData) {
+    body.audio = audioData;
+  }
 
   if (query) {
     body.query = query;

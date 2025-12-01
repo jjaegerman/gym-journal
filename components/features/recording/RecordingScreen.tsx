@@ -20,7 +20,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 export function RecordingScreen() {
   const { startRecording, stopRecording, cancelRecording, recorderState } =
     useAudioRecording();
-  const { submitAudio, loading } = useExerciseSubmit();
+  const { submitAudio, submitText, loading } = useExerciseSubmit();
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
 
@@ -94,7 +94,7 @@ export function RecordingScreen() {
         </XStack>
 
         {/* Text Input */}
-        <RecordTextBox />
+        <RecordTextBox submitText={submitText} loading={loading} />
       </YStack>
 
       {/* Blur overlay - intensity animates in/out */}

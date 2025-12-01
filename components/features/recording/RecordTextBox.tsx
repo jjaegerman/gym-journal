@@ -3,9 +3,14 @@ import { View, Button, TextArea, Spinner, XStack } from "tamagui";
 import { SendHorizontal } from "@tamagui/lucide-icons";
 import { useExerciseSubmit } from "@/lib/hooks";
 
-export const RecordTextBox = () => {
+export const RecordTextBox = ({
+  submitText,
+  loading,
+}: {
+  submitText: (text: string) => Promise<any>;
+  loading: boolean;
+}) => {
   const [text, setText] = useState("");
-  const { submitText, loading } = useExerciseSubmit();
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
@@ -30,7 +35,7 @@ export const RecordTextBox = () => {
         r="$2"
         b="$2"
         onPress={handleSubmit}
-        icon={loading ? Spinner : SendHorizontal}
+        icon={SendHorizontal}
         size="$3"
         disabled={loading || !text.trim()}
         circular

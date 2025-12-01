@@ -13,7 +13,7 @@ export function useExerciseSubmit() {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
 
-  const submitAudio = async (audioUri: string, query?: string) => {
+  const submitAudio = async (audioUri: string) => {
     try {
       setLoading(true);
 
@@ -28,7 +28,7 @@ export function useExerciseSubmit() {
           fileName,
           base64: base64Audio,
         },
-        query
+        undefined
       );
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -55,8 +55,7 @@ export function useExerciseSubmit() {
     try {
       setLoading(true);
 
-      // TODO: Implement text-based exercise submission
-      console.log('Submitting text:', text);
+      const data = await invokeOpenAI(undefined, text);
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show('Exercise logged successfully!', {
@@ -64,7 +63,7 @@ export function useExerciseSubmit() {
         customData: { theme: 'green' },
       });
 
-      return {};
+      return { data };
     } catch (error) {
       console.error('Error submitting text:', error);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
