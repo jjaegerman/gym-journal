@@ -32,7 +32,7 @@ export function ProfileSummary() {
         return;
       }
       refetch();
-    }, []) // Empty deps - refetch is now stable
+    }, [refetch]) // Include refetch in deps
   );
 
   const handleRefresh = async () => {

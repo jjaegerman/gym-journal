@@ -84,50 +84,45 @@ If both are specified, repeat the item with the same repetitions for each set.`
 
     const exerciseLogs = JSON.parse(structured.output_text).items ?? [];
 
-    console.log(exerciseLogs);
-    for (const exerciseLog of exerciseLogs) {
-      // Normalize variant name for consistency
+    // Transform logs into format expected by batch function
+    const logsForDb = exerciseLogs.map(exerciseLog => {
       const normalizedVariant = normalizeExerciseVariant(exerciseLog.exerciseVariant);
 
-      var log_input = {
-        p_exercise_variant: normalizedVariant,
-        p_exercise_type: String(exerciseLog.exerciseType),
-      }
-      if (exerciseLog.primaryEquipment) {
-        log_input.p_equipment = String(exerciseLog.primaryEquipment);
-      }
-      if (exerciseLog.weight) {
-        log_input.p_weight = Number(exerciseLog.weight);
-      }
-      if (exerciseLog.weightUnit) {
-        log_input.p_weight_unit = String(exerciseLog.weightUnit);
-      }
-      if (exerciseLog.repetitions) {
-        log_input.p_repetitions = parseInt(exerciseLog.repetitions);
-      }
-      if (exerciseLog.duration) {
-        log_input.p_duration = parseInt(exerciseLog.duration);
-      }
-      if (exerciseLog.effort) {
-        log_input.p_effort = String(exerciseLog.effort);
-      }
-      if (exerciseLog.distance) {
-        log_input.p_distance = Number(exerciseLog.distance);
-      }
-      if (exerciseLog.distanceUnit) {
-        log_input.p_distance_unit = String(exerciseLog.distanceUnit);
-      }
-      if (exerciseLog.resistanceLevel) {
-        log_input.p_resistance_level = parseInt(exerciseLog.resistanceLevel);
-      }
+      return {
+        exercise_variant: normalizedVariant,
+        exercise_type: String(exerciseLog.exerciseType),
+        exercise_equipment: exerciseLog.primaryEquipment ? String(exerciseLog.primaryEquipment) : null,
+        weight: exerciseLog.weight ? Number(exerciseLog.weight) : null,
+        weight_unit: exerciseLog.weightUnit ? String(exerciseLog.weightUnit) : null,
+        repetitions: exerciseLog.repetitions ? parseInt(exerciseLog.repetitions) : null,
+        duration: exerciseLog.duration ? parseInt(exerciseLog.duration) : null,
+        effort: exerciseLog.effort ? String(exerciseLog.effort) : null,
+        distance: exerciseLog.distance ? Number(exerciseLog.distance) : null,
+        distance_unit: exerciseLog.distanceUnit ? String(exerciseLog.distanceUnit) : null,
+        resistance_level: exerciseLog.resistanceLevel ? parseInt(exerciseLog.resistanceLevel) : null,
+      };
+    });
 
-      const { data, error } = await supabase.rpc('add_log', log_input);
-      if (error) {
-        console.error('Error adding log:', error);
-      }
+    // Create submission + all logs in a single transaction
+    const { data: submissionId, error: submissionError } = await supabase.rpc('add_submission_with_logs', {
+      p_raw_text: textLog,
+      p_submission_type: query ? 'text' : 'audio',
+      p_ai_response: structured.output_text,
+      p_logs: logsForDb,
+      p_model_version: 'gpt-4.1',
+      p_prompt_version: 'v1.0',
+      p_audio_duration_seconds: null
+    });
+
+    if (submissionError) {
+      console.error('Error creating submission with logs:', submissionError);
+      return new Response(String(submissionError.message), {
+        status: 500,
+        headers: corsHeaders
+      });
     }
 
-    return new Response(JSON.stringify(exerciseLogs), {
+    return new Response(JSON.stringify({ success: true, submission_id: submissionId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

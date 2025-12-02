@@ -22,6 +22,3 @@ export {
 
 // Exercise utilities
 export { getExerciseIcon, getExerciseIconColor } from "./exerciseIcons";
-
-// Workout utilities
-export { getWorkoutCardColors } from "./workoutColors";

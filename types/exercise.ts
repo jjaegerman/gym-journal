@@ -60,3 +60,18 @@ export const WorkoutDetailsSchema = z.object({
   exercises: z.array(ExerciseSchema),
 });
 export type WorkoutDetails = z.infer<typeof WorkoutDetailsSchema>;
+
+/* --- WorkoutSubmission (source of truth) --- */
+export const WorkoutSubmissionSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  workoutId: z.string().uuid().nullable(),
+  submissionType: z.enum(['audio', 'text']),
+  rawText: z.string(),
+  aiResponse: z.any().nullable(),
+  modelVersion: z.string(),
+  promptVersion: z.string(),
+  audioDurationSeconds: z.number().nullable(),
+  createdAt: z.string(),
+});
+export type WorkoutSubmission = z.infer<typeof WorkoutSubmissionSchema>;

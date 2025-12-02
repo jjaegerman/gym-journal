@@ -1,7 +1,7 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { ListItem, XStack, Paragraph, YStack } from "tamagui";
+import { ListItem } from "tamagui";
 import { Workout } from "@/types/exercise";
-import { formatRelativeDate, formatDuration, getWorkoutCardColors } from "@/lib/utils";
+import { formatRelativeDate, formatDuration } from "@/lib/utils";
 
 interface WorkoutCardProps {
   workout: Workout;
@@ -60,9 +60,6 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
     ? `${firstLine}\n${secondLine}`
     : firstLine;
 
-  // Get colors based on recency
-  const colors = getWorkoutCardColors(workout.datetime);
-
   return (
     <ListItem
       size="$4"
@@ -72,9 +69,6 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
       subTitle={subtitle}
       iconAfter={ChevronRight}
       onPress={onPress}
-      backgroundColor={colors.backgroundColor}
-      borderLeftWidth={4}
-      borderLeftColor={colors.accentColor}
       paddingVertical="$3"
       titleProps={{
         fontWeight: "600",
