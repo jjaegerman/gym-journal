@@ -65,7 +65,7 @@ export function Provider({
       >
         <View bg="$background" flex={1}>
           <TabProvider>
-            {session ? session.user ? children : <Auth /> : <></>}
+            {session ? session.user ? children : <></> : <Auth />}
           </TabProvider>
         </View>
         <CurrentToast />

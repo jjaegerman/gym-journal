@@ -35,7 +35,7 @@ export default function SignInForm({
             gap="$4"
             p="$4"
             width="100%"
-            borderRadius="$5"
+            rounded="$5"
           >
             <H1 self="center" size="$8">
               Sign in to your account
@@ -202,7 +202,7 @@ const ForgotPasswordModal = ({ redirectTo }: { redirectTo: string }) => {
         p="$6"
         width="45%"
         $sm={{ width: "100%" }}
-        borderRadius="$5"
+        rounded="$5"
         items="center"
       >
         <Dialog.Title $sm={{ size: "$8" }}>Forgot your password</Dialog.Title>
