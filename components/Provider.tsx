@@ -46,7 +46,7 @@ export function Provider({
   ...rest
 }: Omit<TamaguiProviderProps, "config">) {
   const colorScheme = useColorScheme();
-  const { session } = useSession();
+  const { session, loading } = useSession();
 
   const url = Linking.useLinkingURL();
   if (url) createSessionFromUrl(url);
@@ -65,7 +65,11 @@ export function Provider({
       >
         <View bg="$background" flex={1}>
           <TabProvider>
-            {session ? session.user ? children : <></> : <Auth />}
+            {loading ? null : session?.user ? ( // Or a loading spinner?
+              children
+            ) : (
+              <Auth />
+            )}
           </TabProvider>
         </View>
         <CurrentToast />

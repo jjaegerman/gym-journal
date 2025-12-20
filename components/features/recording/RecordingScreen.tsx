@@ -10,6 +10,12 @@ import Animated, {
   useAnimatedProps,
   withTiming,
 } from "react-native-reanimated";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -46,71 +52,91 @@ export function RecordingScreen() {
   };
 
   return (
-    <View
-      flex={1}
-      justify="center"
-      items="center"
-      px="$4"
-      background="$background"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
-      {/* Main content container */}
-      <YStack gap="$6" maxW={500} width="100%">
-        {/* Examples */}
-        <YStack gap="$2" items="center">
-          <Paragraph size="$3" opacity={0.5} text="center">
-            "10 reps of bench press at 135 lbs"
-          </Paragraph>
-          <Paragraph size="$3" opacity={0.5} text="center">
-            "3 sets of squats, 8 reps, 185 lbs"
-          </Paragraph>
-          <Paragraph size="$3" opacity={0.5} text="center">
-            "Ran for 30 minutes"
-          </Paragraph>
-        </YStack>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View flex={1} background="$background">
+          {/* Centered content container */}
+          <View flex={1} justify="center" items="center" px="$4">
+            <YStack gap="$6" maxW={500} width="100%">
+              {/* Examples */}
+              <YStack gap="$2" items="center">
+                <Paragraph size="$3" opacity={0.5} text="center">
+                  "10 reps of bench press at 135 lbs"
+                </Paragraph>
+                <Paragraph size="$3" opacity={0.5} text="center">
+                  "3 sets of squats, 8 reps, 185 lbs"
+                </Paragraph>
+                <Paragraph size="$3" opacity={0.5} text="center">
+                  "Ran for 30 minutes"
+                </Paragraph>
+              </YStack>
 
-        {/* Voice Recording Button or Spinner - always visible with z-index */}
-        <View z={100} items="center" justify="center">
-          {loading ? (
-            <View height={176} items="center" justify="center">
-              <Spinner size="large" color="$color" />
-            </View>
-          ) : (
-            <RecordButton
-              startCallback={startRecording}
-              stopCallback={handleStopRecording}
-              cancelCallback={cancelRecording}
-              durationMillis={recorderState.durationMillis}
-            />
-          )}
+              {/* Voice Recording Button or Spinner - always visible with z-index */}
+              <View z={100} items="center" justify="center">
+                {loading ? (
+                  <View height={176} items="center" justify="center">
+                    <Spinner size="large" color="$color" />
+                  </View>
+                ) : (
+                  <RecordButton
+                    startCallback={startRecording}
+                    stopCallback={handleStopRecording}
+                    cancelCallback={cancelRecording}
+                    durationMillis={recorderState.durationMillis}
+                  />
+                )}
+              </View>
+
+              {/* Divider */}
+              <XStack items="center" gap="$3">
+                <Separator flex={1} />
+                <Paragraph size="$2" opacity={0.5}>
+                  or
+                </Paragraph>
+                <Separator flex={1} />
+              </XStack>
+            </YStack>
+          </View>
+
+          {/* Text Input - Fixed at bottom */}
+          <View
+            position="absolute"
+            b={0}
+            l={0}
+            r={0}
+            px="$4"
+            pb="$4"
+            pt="$2"
+            background="$background"
+            maxW={500}
+            width="100%"
+            self="center"
+          >
+            <RecordTextBox submitText={submitText} loading={loading} />
+          </View>
+
+          {/* Blur overlay - intensity animates in/out */}
+          <AnimatedBlurView
+            animatedProps={animatedBlurProps}
+            tint="dark"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 50,
+            }}
+            pointerEvents={
+              recorderState.isRecording || loading ? "auto" : "none"
+            }
+          />
         </View>
-
-        {/* Divider */}
-        <XStack items="center" gap="$3">
-          <Separator flex={1} />
-          <Paragraph size="$2" opacity={0.5}>
-            or
-          </Paragraph>
-          <Separator flex={1} />
-        </XStack>
-
-        {/* Text Input */}
-        <RecordTextBox submitText={submitText} loading={loading} />
-      </YStack>
-
-      {/* Blur overlay - intensity animates in/out */}
-      <AnimatedBlurView
-        animatedProps={animatedBlurProps}
-        tint="dark"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 50,
-        }}
-        pointerEvents={recorderState.isRecording || loading ? "auto" : "none"}
-      />
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
