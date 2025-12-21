@@ -15,6 +15,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
 } from "react-native";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
@@ -53,11 +54,18 @@ export function RecordingScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      keyboardVerticalOffset={
+        Platform.OS === "ios" || Platform.OS === "android" ? 90 : 0
+      }
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="never"
+        scrollEnabled={false}
+      >
         <View flex={1} background="$background">
           {/* Centered content container */}
           <View flex={1} justify="center" items="center" px="$4">
@@ -136,7 +144,7 @@ export function RecordingScreen() {
             }
           />
         </View>
-      </TouchableWithoutFeedback>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
