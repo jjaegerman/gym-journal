@@ -8,3 +8,8 @@ node_modules/
 dist/
 
 # @end expo-cli
+
+.expo/
+
+android
+ios

@@ -280,7 +280,7 @@ email_optional = false
 
 [auth.external.google]
 enabled = true
-client_id = "1012001502522-puld1fcvltg838kshrdqn747v88fno05.apps.googleusercontent.com,1012001502522-tpeg8i3r4d24b1t99ptqrlej15m7i4fq.apps.googleusercontent.com"
+client_id = "1012001502522-puld1fcvltg838kshrdqn747v88fno05.apps.googleusercontent.com,1012001502522-tpeg8i3r4d24b1t99ptqrlej15m7i4fq.apps.googleusercontent.com,1012001502522-7hl693ogpupgqu6und8laetghipm4mbg.apps.googleusercontent.com"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
 skip_nonce_check = false
 

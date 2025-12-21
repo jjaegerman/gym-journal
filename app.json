@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Gym Journal",
-    "slug": "gym-journal",
+    "slug": "expo-router-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -69,6 +69,7 @@
       "eas": {
         "projectId": "94e6f84d-690f-4b39-848a-584fd69e3de8"
       }
-    }
+    },
+    "owner": "jjaegerman"
   }
 }
