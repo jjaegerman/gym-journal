@@ -17,7 +17,7 @@ import {
   YGroup,
 } from "tamagui";
 import { Exercise } from "types/exercise";
-import { capitalizeEachWord } from "@/lib/utils";
+import { capitalizeEachWord, formatExerciseLabel } from "@/lib/utils";
 
 export const ExerciseLogs = ({
   exercise,
@@ -67,29 +67,22 @@ export const ExerciseLogs = ({
             t="$10"
           >
             <View gap="$4" p="$4">
-              <Dialog.Title>{capitalizeEachWord(exercise.variant)}</Dialog.Title>
-              {(exercise.type || exercise.equipment) && (
-                <XStack gap="$2" flexWrap="wrap">
-                  {exercise.type && (
-                    <Paragraph size="$2" opacity={0.7}>
-                      {exercise.type}
-                    </Paragraph>
-                  )}
-                  {exercise.equipment && (
-                    <>
-                      {exercise.type && (
-                        <Paragraph size="$2" opacity={0.5}>
-                          •
-                        </Paragraph>
-                      )}
-                      <Paragraph size="$2" opacity={0.7}>
-                        {exercise.equipment}
-                      </Paragraph>
-                    </>
-                  )}
-                </XStack>
-              )}
-              <YGroup separator={<Separator />} bordered borderRadius="$4" overflow="hidden">
+              <Dialog.Title>
+                {capitalizeEachWord(
+                  formatExerciseLabel({
+                    variants: exercise.variants,
+                    equipment: exercise.equipment,
+                    type: exercise.type,
+                    name: exercise.name,
+                  })
+                )}
+              </Dialog.Title>
+              <YGroup
+                separator={<Separator />}
+                bordered
+                rounded="$4"
+                overflow="hidden"
+              >
                 {exercise?.logs?.map((log) => (
                   <YGroup.Item key={log.id}>
                     <ListItem
@@ -134,7 +127,7 @@ function logDescription(log: any): string {
 
   // Cardio metrics
   if (log.distance) {
-    parts.push(`${log.distance} ${log.distance_unit || 'units'}`);
+    parts.push(`${log.distance} ${log.distance_unit || "units"}`);
   }
   if (log.resistance_level) {
     parts.push(`resistance ${log.resistance_level}`);
@@ -150,4 +143,3 @@ function logDescription(log: any): string {
 
   return parts.join(" ");
 }
-

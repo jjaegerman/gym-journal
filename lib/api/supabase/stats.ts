@@ -18,6 +18,8 @@ export interface ProfileStats {
 
 export interface ExerciseStats {
   exercise_type: string;
+  exercise_variants: string[] | null;
+  exercise_equipment: string | null;
   total_workouts: number;
   total_sets: number;
   max_weight: number | null;

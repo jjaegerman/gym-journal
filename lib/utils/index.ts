@@ -22,3 +22,8 @@ export {
 
 // Exercise utilities
 export { getExerciseIcon, getExerciseIconColor } from "./exerciseIcons";
+export {
+  formatExerciseGrouping,
+  formatExerciseLabel,
+  getExerciseGroupingKey,
+} from "./exerciseDisplay";

@@ -1,6 +1,6 @@
 import { Card, H5, Paragraph, XStack, YStack, Separator } from "tamagui";
 import type { ExerciseStats } from "@/lib/api/supabase/stats";
-import { capitalizeEachWord } from "@/lib/utils/string";
+import { capitalizeEachWord, formatExerciseGrouping } from "@/lib/utils";
 
 interface ExerciseStatsCardProps {
   exercise: ExerciseStats;
@@ -18,10 +18,19 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
     });
   };
 
+  // Format exercise title using grouping: {variants} {equipment} {type}
+  const exerciseTitle = capitalizeEachWord(
+    formatExerciseGrouping({
+      variants: exercise.exercise_variants,
+      equipment: exercise.exercise_equipment,
+      type: exercise.exercise_type,
+    })
+  );
+
   return (
     <Card elevate size="$4" bordered p="$4">
       <YStack gap="$3">
-        <H5 fontWeight="bold">{exercise.exercise_type}</H5>
+        <H5 fontWeight="bold">{exerciseTitle}</H5>
 
         <XStack gap="$4" flexWrap="wrap">
           <YStack flex={1} minW={120}>

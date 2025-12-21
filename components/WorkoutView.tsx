@@ -5,6 +5,7 @@ import {
   capitalizeEachWord,
   getExerciseIcon,
   getExerciseIconColor,
+  formatExerciseGrouping,
 } from "@/lib/utils";
 import {
   View,
@@ -103,15 +104,14 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
           const summary = SummarizeExerciseLogs(exercise.logs);
           const description = descriptionFromSummary(summary);
 
-          // Build title with type if available
-          const title = exercise.type
-            ? `${exercise.type} - ${capitalizeEachWord(exercise.variant)}`
-            : capitalizeEachWord(exercise.variant);
-
-          // Add equipment to description if available
-          const fullDescription = exercise.equipment
-            ? `${exercise.equipment} • ${description}`
-            : description;
+          // Format title using grouping: {variants} {equipment} {type}
+          const title = capitalizeEachWord(
+            formatExerciseGrouping({
+              variants: exercise.variants,
+              equipment: exercise.equipment,
+              type: exercise.type,
+            })
+          );
 
           const ExerciseIcon: any = () => getExerciseIcon(exercise.type, 24);
           const iconColor = getExerciseIconColor(exercise.type);
@@ -120,7 +120,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
             <YGroup.Item key={exercise.id}>
               <ListItem
                 title={title}
-                subTitle={fullDescription}
+                subTitle={description}
                 size="$4"
                 hoverTheme
                 pressTheme

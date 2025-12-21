@@ -65,13 +65,19 @@ Deno.serve(async (req) => {
             `Extract structured workout data from user's transcribed audio.
 
 FORMATTING RULES:
-- exerciseVariant: The specific variation WITHOUT equipment. Use Title Case.
-  Examples: "Back Squat", "Incline Bench Press", "Running", "Bicep Curl"
-  DO NOT include equipment in the variant name (equipment goes in primaryEquipment field)
+- variants: Array of variant modifiers (e.g., ["Incline", "Close Grip"]). Use Title Case.
+  Examples: ["Back"], ["Incline"], ["Sumo", "Deficit"], []
+  DO NOT include equipment or exercise type in variants
 
-- exerciseType: Select the best matching category from the schema
+- exerciseType: Select the best matching category from the schema (e.g., "Bench Press", "Squat", "Running")
+
 - primaryEquipment: Main equipment used (use full names: "Barbell" not "BB", "Dumbbell" not "DB")
   Omit for bodyweight exercises, outdoor cardio, or yoga
+
+- exerciseName: ONLY populate when exerciseType ends with "Other" (e.g., "Cardio Other", "Legs Other")
+  Use the full exercise name (e.g., "Burpees", "Farmers Walk")
+  Leave null for standard exercise types
+
 - resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting
 
 LOGIC:
@@ -92,13 +98,17 @@ If both are specified, repeat the item with the same repetitions for each set.`,
 
     // Transform logs into format expected by batch function
     const logsForDb = exerciseLogs.map((exerciseLog: any) => {
-      const normalizedVariant = normalizeExerciseVariant(
-        exerciseLog.exerciseVariant,
-      );
+      // Normalize variants array (convert to Title Case)
+      const normalizedVariants = exerciseLog.variants
+        ? exerciseLog.variants.map((v: string) => normalizeVariant(v))
+        : [];
 
       return {
-        exercise_variant: normalizedVariant,
+        exercise_variants: JSON.stringify(normalizedVariants),
         exercise_type: String(exerciseLog.exerciseType),
+        exercise_name: exerciseLog.exerciseName
+          ? String(exerciseLog.exerciseName)
+          : null,
         exercise_equipment: exerciseLog.primaryEquipment
           ? String(exerciseLog.primaryEquipment)
           : null,
@@ -166,12 +176,11 @@ function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 }
 
 /**
- * Normalize exercise variant names for consistency
+ * Normalize a single variant modifier for consistency
  * - Converts to Title Case
  * - Trims and removes extra whitespace
- * - Strips equipment prefixes (equipment should be in separate field)
  */
-function normalizeExerciseVariant(variant: string): string {
+function normalizeVariant(variant: string): string {
   if (!variant) return variant;
 
   // Trim and collapse multiple spaces
@@ -183,33 +192,6 @@ function normalizeExerciseVariant(variant: string): string {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-
-  // Strip common equipment prefixes (these should be in primaryEquipment field)
-  const equipmentPrefixes = [
-    "Barbell ",
-    "Bb ",
-    "Dumbbell ",
-    "Db ",
-    "Kettlebell ",
-    "Kb ",
-    "Ez Bar ",
-    "Ez ",
-    "Cable ",
-    "Machine ",
-    "Smith Machine ",
-    "Treadmill ",
-    "Rowing Machine ",
-    "Stationary Bike ",
-    "Resistance Band ",
-    "Bodyweight ",
-  ];
-
-  for (const prefix of equipmentPrefixes) {
-    if (normalized.startsWith(prefix)) {
-      normalized = normalized.substring(prefix.length);
-      break; // Only remove first match
-    }
-  }
 
   return normalized.trim();
 }
