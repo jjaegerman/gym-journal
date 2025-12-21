@@ -36,7 +36,7 @@ export const RecordButton = ({
   const theme = useTheme();
 
   const recordBorderColor = theme.color.val;
-  const recordIndicatorColor = theme.red10.val;
+  const recordIndicatorColor = theme.accent9.val;
   const scale = useSharedValue(1);
 
   const recordIndicatorAnimation = useAnimatedStyle(() => ({
@@ -75,7 +75,9 @@ export const RecordButton = ({
   return (
     <View style={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
       {/* Timer positioned above button - always takes up space */}
-      <View style={{ height: 32, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{ height: 32, alignItems: "center", justifyContent: "center" }}
+      >
         {isRecording && (
           <Text
             fontSize="$8"
@@ -112,7 +114,9 @@ export const RecordButton = ({
       </View>
 
       {/* Cancel button - always takes up space */}
-      <View style={{ height: 36, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{ height: 36, alignItems: "center", justifyContent: "center" }}
+      >
         {isRecording && cancelCallback && (
           <Button
             icon={X}

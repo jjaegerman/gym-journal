@@ -82,20 +82,6 @@ function RootLayoutNav() {
             },
           }}
         />
-
-        <Stack.Screen
-          name="reset-password"
-          options={{
-            title: "Update Password",
-            presentation: "modal",
-            animation: "slide_from_right",
-            gestureEnabled: true,
-            gestureDirection: "horizontal",
-            contentStyle: {
-              backgroundColor: "theme.background.val",
-            },
-          }}
-        />
       </Stack>
     </ThemeProvider>
   );
