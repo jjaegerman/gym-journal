@@ -19,7 +19,14 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dacky.gymjournal",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.1012001502522-tpeg8i3r4d24b1t99ptqrlej15m7i4fq"
+            ]
+          }
+        ]
       }
     },
     "android": {

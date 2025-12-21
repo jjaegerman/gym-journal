@@ -17,10 +17,10 @@ export default function Auth() {
           width="100%"
           rounded="$5"
         >
-          <H1 self="center" size="$8">
-            Welcome to Gym Journal
+          <H1 self="center" size="$8" textAlign="center">
+            Gym Journal
           </H1>
-          <View width="80%">
+          <View width="80%" items="center">
             <GoogleButton />
           </View>
         </View>

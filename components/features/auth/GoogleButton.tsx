@@ -4,6 +4,7 @@ import { supabase } from "@/lib/api/supabase/client";
 import { useToastController } from "@tamagui/toast";
 import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
+import * as Crypto from "expo-crypto";
 import Constants from "expo-constants";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -26,16 +27,17 @@ if (Platform.OS !== "web") {
   }
 }
 
-// Check if we're in a dev build (not Expo Go)
-const isStandaloneApp = Constants.executionEnvironment === "standalone" ||
-                        Constants.executionEnvironment === "storeClient";
-const canUseNativeGoogleSignIn = Platform.OS !== "web" && GoogleSignin && isStandaloneApp;
+// Check if native Google Sign-In is available
+// If GoogleSignin loaded successfully, we're in a dev build (not Expo Go)
+const canUseNativeGoogleSignIn = Platform.OS !== "web" && GoogleSignin !== null;
 
 // Configure native Google Sign-In if available
 if (canUseNativeGoogleSignIn && GoogleSignin) {
   GoogleSignin.configure({
     webClientId:
       "1012001502522-puld1fcvltg838kshrdqn747v88fno05.apps.googleusercontent.com",
+    iosClientId:
+      "1012001502522-tpeg8i3r4d24b1t99ptqrlej15m7i4fq.apps.googleusercontent.com",
   });
 }
 
@@ -47,15 +49,17 @@ export default function GoogleButton() {
     setLoading(true);
 
     try {
+      console.log("Can use native Google Sign-In:", canUseNativeGoogleSignIn);
+
       if (canUseNativeGoogleSignIn) {
         // Native Google Sign-In SDK (dev build only)
         await GoogleSignin.hasPlayServices();
         const response = await GoogleSignin.signIn();
 
         if (isSuccessResponse(response)) {
-          const { error } = await supabase.auth.signInWithIdToken({
+          const { error, data } = await supabase.auth.signInWithIdToken({
             provider: "google",
-            token: response.data.idToken!,
+            token: response.data.idToken,
           });
 
           if (error) {
@@ -155,51 +159,63 @@ export default function GoogleButton() {
         setLoading(false);
       }
     } catch (error: any) {
+      console.error("Sign-in error caught:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      console.error("Full error:", JSON.stringify(error, null, 2));
+
       let errorMessage = "An error occurred during sign in";
 
       // Handle native SDK errors if applicable
       if (canUseNativeGoogleSignIn && statusCodes) {
+        console.log("Checking status codes...", statusCodes);
         if (error.code === statusCodes.IN_PROGRESS) {
           errorMessage = "Sign in already in progress";
         } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
           errorMessage = "Google Play Services not available";
         } else if (error.code === statusCodes.SIGN_IN_CANCELLED) {
           // User cancelled, don't show error
+          console.log("User cancelled sign-in");
           setLoading(false);
           return;
+        } else {
+          errorMessage = `Sign in failed: ${
+            error.message || error.code || "Unknown error"
+          }`;
         }
+      } else {
+        errorMessage = error.message || errorMessage;
       }
 
+      console.error("Showing error toast:", errorMessage);
+
       toast.show(errorMessage, {
-        duration: 3000,
+        duration: 5000,
         customData: { theme: "red" },
       });
       setLoading(false);
     }
   };
 
-  // Render native button for dev builds, image button for web/Expo Go
-  if (canUseNativeGoogleSignIn && GoogleSigninButton) {
-    return (
-      <GoogleSigninButton
-        size={GoogleSigninButton.Size.Wide}
-        color={GoogleSigninButton.Color.Dark}
-        onPress={handleGoogleSignIn}
-        disabled={loading}
-      />
-    );
-  }
-
-  // Web + Expo Go: Use Google's official button image
+  // Use the same image button for all platforms
+  // Native SDK handles the auth flow, but we control the button UI
   return (
-    <TouchableOpacity onPress={handleGoogleSignIn} disabled={loading}>
+    <TouchableOpacity
+      onPress={handleGoogleSignIn}
+      disabled={loading}
+      style={{
+        borderRadius: 8,
+        overflow: "hidden",
+        width: "100%",
+      }}
+    >
       <Image
         source={require("@/assets/images/google-signin-button.png")}
         style={{
           width: "100%",
           height: 44,
-          resizeMode: "contain",
         }}
+        resizeMode="contain"
       />
     </TouchableOpacity>
   );
