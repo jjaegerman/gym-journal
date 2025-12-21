@@ -6,28 +6,59 @@ import { supabase } from './client';
  */
 
 export interface ProfileStats {
+  // All-time
   total_workouts: number;
   total_hours: number;
-  workouts_last_30_days: number;
-  workouts_last_7_days: number;
   current_streak_days: number;
   longest_streak_days: number;
-  avg_workouts_per_week: number;
-  most_common_day: string;
+
+  // Recent (last 4 weeks)
+  recent_workouts_per_week: number;
+  recent_hours_per_week: number;
+  recent_avg_duration_minutes: number;
+  recent_total_volume: number;
+  recent_total_distance: number;
+
+  // Previous 4 weeks (for trends)
+  prev_workouts_per_week: number;
+  prev_hours_per_week: number;
+  prev_avg_duration_minutes: number;
+  prev_total_volume: number;
+  prev_total_distance: number;
 }
 
 export interface ExerciseStats {
   exercise_type: string;
   exercise_variants: string[] | null;
   exercise_equipment: string | null;
+
+  // All-time stats
   total_workouts: number;
-  total_sets: number;
-  max_weight: number | null;
-  max_reps: number;
-  max_volume: number;
-  avg_weight: number | null;
-  workouts_per_week: number;
-  first_logged: string;
+  total_volume: number;
+  total_distance: number;
+  alltime_max_weight: number | null;
+  alltime_max_distance: number | null;
+  alltime_avg_pace: number | null;
+  alltime_max_reps: number | null;
+
+  // Recent 4 weeks
+  recent_workouts_per_week: number;
+  recent_volume_per_week: number;
+  recent_distance_per_week: number;
+  recent_max_weight: number | null;
+  recent_max_distance: number | null;
+  recent_avg_pace: number | null;
+  recent_max_reps: number | null;
+
+  // Previous 4 weeks (for trends)
+  prev_workouts_per_week: number;
+  prev_volume_per_week: number;
+  prev_distance_per_week: number;
+  prev_max_weight: number | null;
+  prev_max_distance: number | null;
+  prev_avg_pace: number | null;
+  prev_max_reps: number | null;
+
   last_logged: string;
 }
 
@@ -35,16 +66,8 @@ export interface ExerciseStats {
  * Get comprehensive user profile statistics
  * Automatically uses the authenticated user's ID (auth.uid())
  */
-export async function getUserProfileStats(
-  daysBack: number = 90
-): Promise<ProfileStats> {
-  // Get user's timezone (e.g., "America/New_York")
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  const { data, error } = await supabase.rpc('get_user_profile_stats', {
-    p_days_back: daysBack,
-    p_timezone: timezone,
-  });
+export async function getUserProfileStats(): Promise<ProfileStats> {
+  const { data, error } = await supabase.rpc('get_user_profile_stats');
 
   if (error) throw error;
   return data as ProfileStats;
@@ -53,13 +76,10 @@ export async function getUserProfileStats(
 /**
  * Get per-exercise statistics
  * Automatically uses the authenticated user's ID (auth.uid())
+ * Returns both all-time and recent (4 weeks) data
  */
-export async function getExerciseStats(
-  daysBack: number = 90
-): Promise<ExerciseStats[]> {
-  const { data, error } = await supabase.rpc('get_exercise_stats', {
-    p_days_back: daysBack,
-  });
+export async function getExerciseStats(): Promise<ExerciseStats[]> {
+  const { data, error } = await supabase.rpc('get_exercise_stats');
 
   if (error) throw error;
   return data as ExerciseStats[];

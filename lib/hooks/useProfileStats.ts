@@ -11,7 +11,7 @@ import { useSession } from './useSession';
  * Custom hook to fetch and manage user profile statistics
  * Includes caching and refresh capabilities
  */
-export function useProfileStats(daysBack: number = 90) {
+export function useProfileStats() {
   const { user } = useSession();
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [exerciseStats, setExerciseStats] = useState<ExerciseStats[]>([]);
@@ -29,8 +29,8 @@ export function useProfileStats(daysBack: number = 90) {
       setError(null);
 
       const [profileData, exerciseData] = await Promise.all([
-        getUserProfileStats(daysBack),
-        getExerciseStats(daysBack),
+        getUserProfileStats(),
+        getExerciseStats(),
       ]);
 
       setStats(profileData);
@@ -41,7 +41,7 @@ export function useProfileStats(daysBack: number = 90) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, daysBack]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchStats();

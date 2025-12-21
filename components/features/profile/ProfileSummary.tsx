@@ -1,14 +1,24 @@
-import { ScrollView, YStack, H3, XStack, Paragraph, Separator, Text } from "tamagui";
+import {
+  ScrollView,
+  YStack,
+  H3,
+  XStack,
+  Paragraph,
+  Separator,
+  Text,
+} from "tamagui";
 import { useProfileStats } from "@/lib/hooks";
 import { LoadingState, ErrorState } from "@/components/ui/feedback";
 import { StatCard } from "./StatCard";
 import { ExerciseStatsCard } from "./ExerciseStatsCard";
+import { TrendIndicator } from "./TrendIndicator";
 import {
   Activity,
-  Calendar,
   Clock,
   Flame,
   TrendingUp,
+  Dumbbell,
+  Timer,
 } from "@tamagui/lucide-icons";
 import { RefreshControl } from "react-native";
 import { useState, useCallback, useRef } from "react";
@@ -20,7 +30,7 @@ import { useFocusEffect } from "expo-router";
  * Refreshes data when tab comes into focus
  */
 export function ProfileSummary() {
-  const { stats, exerciseStats, loading, error, refetch } = useProfileStats(90);
+  const { stats, exerciseStats, loading, error, refetch } = useProfileStats();
   const [refreshing, setRefreshing] = useState(false);
   const isFirstFocus = useRef(true);
 
@@ -68,13 +78,11 @@ export function ProfileSummary() {
       }
     >
       <YStack p="$4" gap="$4" maxW={800} width="100%" self="center">
-        {/* Overview Section */}
+        {/* Section 1: All-Time */}
         <YStack gap="$3">
-          <H3>Your Progress</H3>
-          <Paragraph opacity={0.7}>Last 90 days</Paragraph>
+          <H3>All-Time</H3>
         </YStack>
 
-        {/* Core Stats Grid */}
         <XStack gap="$3" flexWrap="wrap">
           <StatCard
             title="Total Workouts"
@@ -82,8 +90,8 @@ export function ProfileSummary() {
             icon={<Activity size={24} />}
           />
           <StatCard
-            title="Training Hours"
-            value={stats.total_hours}
+            title="Total Hours"
+            value={`${stats.total_hours}h`}
             icon={<Clock size={24} />}
           />
         </XStack>
@@ -92,7 +100,7 @@ export function ProfileSummary() {
           <StatCard
             title="Current Streak"
             value={`${stats.current_streak_days} days`}
-            icon={<Flame size={24} color="$orange10" />}
+            icon={<Flame size={24} />}
           />
           <StatCard
             title="Best Streak"
@@ -101,48 +109,90 @@ export function ProfileSummary() {
           />
         </XStack>
 
-        {/* Recent Activity */}
-        <YStack gap="$3" mt="$2">
-          <H3 size="$6">Recent Activity</H3>
-          <XStack gap="$3" flexWrap="wrap">
-            <StatCard
-              title="Last 7 Days"
-              value={stats.workouts_last_7_days}
-              subtitle="workouts"
-            />
-            <StatCard
-              title="Last 30 Days"
-              value={stats.workouts_last_30_days}
-              subtitle="workouts"
-            />
-            <StatCard
-              title="Weekly Average"
-              value={stats.avg_workouts_per_week}
-              subtitle="last 12 weeks"
-            />
-          </XStack>
+        <Separator my="$4" />
+
+        {/* Section 2: Recent (Last 4 Weeks) */}
+        <YStack gap="$3">
+          <H3>Recent</H3>
+          <Paragraph opacity={0.7} size="$2">
+            Last 4 weeks vs previous 4 weeks
+          </Paragraph>
         </YStack>
 
-        {/* Consistency */}
-        {stats.most_common_day && (
-          <YStack gap="$3" mt="$2">
-            <XStack items="center" gap="$2">
-              <Calendar size={20} />
-              <Paragraph>
-                You most often train on{" "}
-                <Text fontWeight="bold">{stats.most_common_day}</Text>
-              </Paragraph>
-            </XStack>
-          </YStack>
-        )}
+        <XStack gap="$3" flexWrap="wrap">
+          <StatCard
+            title="Workouts/Week"
+            value={stats.recent_workouts_per_week}
+            icon={<Activity size={20} />}
+            trend={
+              <TrendIndicator
+                current={stats.recent_workouts_per_week}
+                previous={stats.prev_workouts_per_week}
+              />
+            }
+          />
+          <StatCard
+            title="Hours/Week"
+            value={`${stats.recent_hours_per_week}h`}
+            icon={<Clock size={20} />}
+            trend={
+              <TrendIndicator
+                current={stats.recent_hours_per_week}
+                previous={stats.prev_hours_per_week}
+                format={(v) => `${v.toFixed(1)}h`}
+              />
+            }
+          />
+        </XStack>
+
+        <XStack gap="$3" flexWrap="wrap">
+          <StatCard
+            title="Avg Duration"
+            value={`${Math.round(stats.recent_avg_duration_minutes)} min`}
+            icon={<Timer size={20} />}
+            trend={
+              <TrendIndicator
+                current={stats.recent_avg_duration_minutes}
+                previous={stats.prev_avg_duration_minutes}
+                format={(v) => `${Math.round(v)} min`}
+              />
+            }
+          />
+          <StatCard
+            title="Volume/Week"
+            value={
+              stats.recent_total_volume > 0
+                ? `${(stats.recent_total_volume / 1000).toFixed(1)}k lbs`
+                : stats.recent_total_distance > 0
+                ? `${stats.recent_total_distance.toFixed(1)} mi`
+                : "—"
+            }
+            icon={<Dumbbell size={20} />}
+            trend={
+              stats.recent_total_volume > 0 ? (
+                <TrendIndicator
+                  current={stats.recent_total_volume}
+                  previous={stats.prev_total_volume}
+                  format={(v) => `${(v / 1000).toFixed(1)}k lbs`}
+                />
+              ) : stats.recent_total_distance > 0 ? (
+                <TrendIndicator
+                  current={stats.recent_total_distance}
+                  previous={stats.prev_total_distance}
+                  format={(v) => `${v.toFixed(1)} mi`}
+                />
+              ) : null
+            }
+          />
+        </XStack>
 
         <Separator my="$4" />
 
-        {/* Exercise Breakdown */}
+        {/* Section 3: Exercise Breakdown */}
         <YStack gap="$3">
-          <H3>Exercise Breakdown</H3>
-          <Paragraph opacity={0.7}>
-            Your most performed exercises and their stats
+          <H3>Exercise Stats</H3>
+          <Paragraph opacity={0.7} size="$2">
+            All-time totals and recent 4-week trends
           </Paragraph>
         </YStack>
 
@@ -150,7 +200,9 @@ export function ProfileSummary() {
           <YStack gap="$3">
             {exerciseStats.map((exercise) => (
               <ExerciseStatsCard
-                key={exercise.exercise_type}
+                key={`${exercise.exercise_type}-${JSON.stringify(
+                  exercise.exercise_variants
+                )}-${exercise.exercise_equipment}`}
                 exercise={exercise}
               />
             ))}

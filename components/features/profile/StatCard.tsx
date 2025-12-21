@@ -6,12 +6,13 @@ interface StatCardProps {
   value: string | number;
   subtitle?: string;
   icon?: ReactNode;
+  trend?: ReactNode;
 }
 
 /**
  * Card component for displaying a single statistic
  */
-export function StatCard({ title, value, subtitle, icon }: StatCardProps) {
+export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps) {
   return (
     <Card elevate size="$4" bordered p="$4" flex={1} minWidth={150}>
       <YStack gap="$2">
@@ -22,6 +23,7 @@ export function StatCard({ title, value, subtitle, icon }: StatCardProps) {
         <H4 size="$8" fontWeight="bold">
           {value}
         </H4>
+        {trend && <YStack>{trend}</YStack>}
         {subtitle && (
           <Paragraph size="$1" opacity={0.5}>
             {subtitle}
