@@ -5476,14 +5476,13 @@ __metadata:
 
 "audio-session-manager@file:./modules/audio-session-manager::locator=gym-journal%40workspace%3A.":
   version: 1.0.0
-  resolution: "audio-session-manager@file:./modules/audio-session-manager#./modules/audio-session-manager::hash=a4900b&locator=gym-journal%40workspace%3A."
+  resolution: "audio-session-manager@file:./modules/audio-session-manager#./modules/audio-session-manager::hash=a7ce0d&locator=gym-journal%40workspace%3A."
   dependencies:
     expo-modules-core: "npm:*"
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/934d8b14a077a2b9ad0597f30145483bebdc50e1ceef237857696c7bb4d2cedd93863f43ee98b0d6a31f27991fb2ef47a0a9cd5da4f7e7155fdca52df72d3ca3
   languageName: node
   linkType: hard
 
