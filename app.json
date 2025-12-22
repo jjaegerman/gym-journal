@@ -66,6 +66,7 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
         }
       ],
+      "./plugins/withAudioSessionManager.js",
       "expo-asset"
     ],
     "experiments": {
