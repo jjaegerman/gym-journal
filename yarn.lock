@@ -5474,6 +5474,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"audio-session-manager@file:./modules/audio-session-manager::locator=gym-journal%40workspace%3A.":
+  version: 1.0.0
+  resolution: "audio-session-manager@file:./modules/audio-session-manager#./modules/audio-session-manager::hash=a7ce0d&locator=gym-journal%40workspace%3A."
+  dependencies:
+    expo-modules-core: "npm:*"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/934d8b14a077a2b9ad0597f30145483bebdc50e1ceef237857696c7bb4d2cedd93863f43ee98b0d6a31f27991fb2ef47a0a9cd5da4f7e7155fdca52df72d3ca3
+  languageName: node
+  linkType: hard
+
 "babel-jest@npm:^29.7.0":
   version: 29.7.0
   resolution: "babel-jest@npm:29.7.0"
@@ -7206,6 +7219,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-modules-core@npm:*":
+  version: 3.0.29
+  resolution: "expo-modules-core@npm:3.0.29"
+  dependencies:
+    invariant: "npm:^2.2.4"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/e32a87b06aa772f523afa5a995523848c61c06370085ae9e724ad24432cac38925ff69976f58b2c562828c2cefba6df00cfef2dbb206111413890ce1c2baee19
+  languageName: node
+  linkType: hard
+
 "expo-modules-core@npm:3.0.25":
   version: 3.0.25
   resolution: "expo-modules-core@npm:3.0.25"
@@ -7948,6 +7973,7 @@ __metadata:
     "@types/react": "npm:~19.1.10"
     "@types/react-native": "npm:^0.73.0"
     "@types/react-refresh": "npm:^0"
+    audio-session-manager: "file:./modules/audio-session-manager"
     babel-preset-expo: "npm:~54.0.0"
     burnt: "npm:^0.12.2"
     expo: "npm:^54.0.23"
