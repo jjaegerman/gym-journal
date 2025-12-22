@@ -3,11 +3,23 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "@/lib/api/supabase/client";
 import { useToastController } from "@tamagui/toast";
 
+// Conditionally import Google Sign-In only on native
+let GoogleSignin: any = null;
+
+if (Platform.OS !== "web") {
+  try {
+    const googleSignIn = require("@react-native-google-signin/google-signin");
+    GoogleSignin = googleSignIn.GoogleSignin;
+  } catch (e) {
+    // Module not available (Expo Go)
+  }
+}
+
 export default function AppleButton() {
   const toast = useToastController();
 
   // Only render on iOS
-  if (Platform.OS !== "ios") {
+  if (Platform.OS !== "ios" || GoogleSignin === null) {
     return null;
   }
 
@@ -22,7 +34,10 @@ export default function AppleButton() {
 
       // Sign in via Supabase Auth
       if (credential.identityToken) {
-        const { error, data: { user } } = await supabase.auth.signInWithIdToken({
+        const {
+          error,
+          data: { user },
+        } = await supabase.auth.signInWithIdToken({
           provider: "apple",
           token: credential.identityToken,
         });
@@ -33,30 +48,6 @@ export default function AppleButton() {
             customData: { theme: "red" },
           });
           return;
-        }
-
-        if (!error && user) {
-          // Apple only provides the user's full name on the first sign-in
-          // Save it to user metadata if available
-          if (credential.fullName) {
-            const nameParts = [];
-            if (credential.fullName.givenName)
-              nameParts.push(credential.fullName.givenName);
-            if (credential.fullName.middleName)
-              nameParts.push(credential.fullName.middleName);
-            if (credential.fullName.familyName)
-              nameParts.push(credential.fullName.familyName);
-
-            const fullName = nameParts.join(" ");
-
-            await supabase.auth.updateUser({
-              data: {
-                full_name: fullName,
-                given_name: credential.fullName.givenName,
-                family_name: credential.fullName.familyName,
-              },
-            });
-          }
         }
       } else {
         throw new Error("No identityToken.");

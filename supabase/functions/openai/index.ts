@@ -104,7 +104,7 @@ If both are specified, repeat the item with the same repetitions for each set.`,
         : [];
 
       return {
-        exercise_variants: JSON.stringify(normalizedVariants),
+        exercise_variants: normalizedVariants,
         exercise_type: String(exerciseLog.exerciseType),
         exercise_name: exerciseLog.exerciseName
           ? String(exerciseLog.exerciseName)

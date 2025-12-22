@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import {
-  useAudioRecorder,
   AudioModule,
   RecordingPresets,
   setAudioModeAsync,
+  useAudioRecorder,
   useAudioRecorderState,
-} from 'expo-audio';
-import { Alert } from 'react-native';
+} from "expo-audio";
+import { Alert } from "react-native";
 
 /**
  * Custom hook for audio recording functionality
@@ -21,12 +21,13 @@ export function useAudioRecording() {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
-        Alert.alert('Permission to access microphone was denied');
+        Alert.alert("Permission to access microphone was denied");
       }
 
-      setAudioModeAsync({
+      await setAudioModeAsync({
         playsInSilentMode: true,
         allowsRecording: true,
+        interruptionMode: "mixWithOthers",
       });
     })();
   }, []);

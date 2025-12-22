@@ -63,7 +63,7 @@ export function RecordingScreen() {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="never"
+        keyboardShouldPersistTaps="handled"
         scrollEnabled={false}
       >
         <View flex={1} bg="$background">
