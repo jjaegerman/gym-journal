@@ -66,7 +66,7 @@ export function RecordingScreen() {
         keyboardShouldPersistTaps="never"
         scrollEnabled={false}
       >
-        <View flex={1} background="$background">
+        <View flex={1} bg="$background">
           {/* Centered content container */}
           <View flex={1} justify="center" items="center" px="$4">
             <YStack gap="$6" maxW={500} width="100%">

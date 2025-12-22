@@ -11,17 +11,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.accent5.val,
+        tabBarActiveTintColor: theme.accent9.val,
         tabBarInactiveTintColor: tabsDisabled
           ? theme.color10.val
           : theme.color11.val,
         tabBarStyle: {
-          backgroundColor: theme.color1.val,
-          borderTopColor: theme.color6.val,
+          backgroundColor: theme.color2.val,
+          borderTopColor: theme.color8.val,
         },
         headerStyle: {
-          backgroundColor: theme.color1.val,
-          borderBottomColor: theme.color6.val,
+          backgroundColor: theme.color2.val,
+          borderBottomColor: theme.color8.val,
         },
         headerShown: true,
       }}

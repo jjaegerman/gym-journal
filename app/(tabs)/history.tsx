@@ -41,7 +41,7 @@ export default function TabThreeScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <YStack flex={1} items="center" gap="$1" background="$background">
+      <YStack flex={1} items="center" gap="$1" bg="$background">
         <Spacer />
         <WorkoutHistoryList
           workouts={workouts}
