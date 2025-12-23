@@ -34,11 +34,12 @@ public class AudioSessionManagerModule: Module {
         // This is how Camera app allows recording without stopping Spotify
         try audioSession.setCategory(
           .playAndRecord,
-          mode: .default,
-          options: [.mixWithOthers, .defaultToSpeaker, .allowBluetooth]
+          mode: .videoRecording,
+          options: [.mixWithOthers, .defaultToSpeaker, .allowBluetoothA2DP]
         )
 
-        try audioSession.setActive(true, options: [])
+        // Activate with notifyOthersOnDeactivation so Spotify resumes when we stop
+        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
         return true
       } catch {
@@ -51,7 +52,8 @@ public class AudioSessionManagerModule: Module {
     Function("resetAudioSession") {
       do {
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setActive(false, options: [])
+        // Deactivate with notifyOthersOnDeactivation so other apps (Spotify) resume
+        try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
         return true
       } catch {
         print("Failed to reset audio session: \\(error)")
@@ -87,6 +89,39 @@ public class AudioSessionManagerModule: Module {
       console.log("✅ Added AudioSessionManagerModule.swift to Xcode project");
     } else {
       console.warn("⚠️ Could not find app group, Swift file created but not added to Xcode project");
+    }
+
+    // Register the module in ExpoModulesProvider.swift
+    const expoModulesProviderPath = path.join(
+      projectRoot,
+      "Pods/Target Support Files",
+      `Pods-${projectName}`,
+      "ExpoModulesProvider.swift"
+    );
+
+    if (fs.existsSync(expoModulesProviderPath)) {
+      let providerContent = fs.readFileSync(expoModulesProviderPath, "utf-8");
+
+      // Add import if not already present
+      if (!providerContent.includes("import AudioSessionManager")) {
+        providerContent = providerContent.replace(
+          /(import ExpoModulesCore)/,
+          "$1\nimport gymjournal"
+        );
+      }
+
+      // Add module to the array if not already present
+      if (!providerContent.includes("AudioSessionManagerModule.self")) {
+        providerContent = providerContent.replace(
+          /(return \[[\s\S]*?)(BurntModule\.self,)/,
+          "$1$2\n      AudioSessionManagerModule.self,"
+        );
+      }
+
+      fs.writeFileSync(expoModulesProviderPath, providerContent);
+      console.log("✅ Registered AudioSessionManagerModule in ExpoModulesProvider");
+    } else {
+      console.warn("⚠️ Could not find ExpoModulesProvider.swift");
     }
 
     return config;
