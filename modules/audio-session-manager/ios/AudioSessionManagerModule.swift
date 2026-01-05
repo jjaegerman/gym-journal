@@ -12,26 +12,42 @@ import ExpoModulesCore
 public final class AudioSessionManagerModule: Module {
   private var audioRecorder: AVAudioRecorder?
   private var recordingURL: URL?
-  private var isSessionConfigured = false
+
+  // Store audio session reference and configure once at initialization
+  private let audioSession = AVAudioSession.sharedInstance()
+
+  // Pre-computed values to avoid recreation on every recording
+  private lazy var documentsPath: URL = {
+    FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+  }()
+
+  private let recordingSettings: [String: Any] = [
+    AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+    AVSampleRateKey: 44_100,
+    AVNumberOfChannelsKey: 1,
+    AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+  ]
 
   public func definition() -> ModuleDefinition {
     Name("AudioSessionManager")
 
-    // Configure category ONCE (no activation)
-    Function("configure") {
+    // Configure audio session category once at module initialization
+    OnCreate {
       do {
-        try self.configureAudioSessionIfNeeded()
-        return true
+        try self.audioSession.setCategory(
+          .record,
+          mode: .default,
+          options: [.mixWithOthers, .allowBluetoothHFP]
+        )
+        print("✅ Audio session configured")
       } catch {
-        print("Audio session configure failed: \(error)")
-        return false
+        print("❌ Failed to configure audio session: \(error)")
       }
     }
 
     // Start recording (activates session)
     AsyncFunction("startRecording") { () -> String? in
       do {
-        try self.configureAudioSessionIfNeeded()
         try self.startRecordingInternal()
         return self.recordingURL?.absoluteString
       } catch {
@@ -60,46 +76,18 @@ public final class AudioSessionManagerModule: Module {
 
 private extension AudioSessionManagerModule {
 
-  func configureAudioSessionIfNeeded() throws {
-    guard !isSessionConfigured else { return }
-
-    let session = AVAudioSession.sharedInstance()
-
-    try session.setCategory(
-      .record,
-      mode: .default,
-      options: [
-        .mixWithOthers,
-        .allowBluetoothHFP
-      ]
-    )
-
-    isSessionConfigured = true
-  }
-
-
   func startRecordingInternal() throws {
     guard audioRecorder == nil else { return }
 
-    let session = AVAudioSession.sharedInstance()
-    try session.setActive(true)
+    // Just activate the pre-configured session
+    try audioSession.setActive(true)
 
-    let documentsPath =
-      FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-
+    // Use pre-computed documentsPath and recordingSettings
     let timestamp = Int(Date().timeIntervalSince1970 * 1000)
-    recordingURL =
-      documentsPath.appendingPathComponent("recording_\(timestamp).m4a")
+    recordingURL = documentsPath.appendingPathComponent("recording_\(timestamp).m4a")
 
-    let settings: [String: Any] = [
-      AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-      AVSampleRateKey: 44_100,
-      AVNumberOfChannelsKey: 1,
-      AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-    ]
-
-    audioRecorder = try AVAudioRecorder(url: recordingURL!, settings: settings)
-    audioRecorder?.prepareToRecord()
+    // Create recorder and start immediately (record() calls prepareToRecord automatically)
+    audioRecorder = try AVAudioRecorder(url: recordingURL!, settings: recordingSettings)
     audioRecorder?.record()
   }
 
@@ -108,8 +96,7 @@ private extension AudioSessionManagerModule {
     audioRecorder = nil
 
     do {
-      try AVAudioSession.sharedInstance()
-        .setActive(false, options: .notifyOthersOnDeactivation)
+      try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
     } catch {
       print("Failed to deactivate audio session: \(error)")
     }

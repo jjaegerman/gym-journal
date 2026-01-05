@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Alert, Pressable, StyleSheet } from "react-native";
 import { selectionAsync } from "expo-haptics";
 import { Text, View, useTheme, Button } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
@@ -52,24 +52,38 @@ export const RecordButton = ({
   const handlePress = async () => {
     selectionAsync();
     if (isRecording) {
-      await stopCallback();
+      // Optimistic UI update - animate immediately
       scale.value = withSpring(1, SPRING_SHORT_CONFIG);
       setIsRecording(false);
+      // Stop recording in background (non-blocking)
+      stopCallback();
     } else {
-      await startCallback();
-
+      // Optimistic UI update - animate immediately
       scale.value = withSpring(RECORDING_INDICATOR_SCALE, SPRING_SHORT_CONFIG);
       setIsRecording(true);
+
+      // Start recording in background with error handling
+      try {
+        await startCallback();
+      } catch (error) {
+        // Revert optimistic update if recording fails
+        scale.value = withSpring(1, SPRING_SHORT_CONFIG);
+        setIsRecording(false);
+        Alert.alert("Recording Error", "Failed to start recording. Please try again.");
+        console.error("Failed to start recording:", error);
+      }
     }
   };
 
   const handleCancel = async () => {
     selectionAsync();
-    if (cancelCallback) {
-      await cancelCallback();
-    }
+    // Optimistic UI update - animate immediately
     scale.value = withSpring(1, SPRING_SHORT_CONFIG);
     setIsRecording(false);
+    // Cancel recording in background (non-blocking)
+    if (cancelCallback) {
+      cancelCallback();
+    }
   };
 
   return (
