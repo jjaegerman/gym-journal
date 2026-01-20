@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
       const transcription = await openai.audio.transcriptions.create({
         file: audioFile,
-        model: "gpt-4o-mini-transcribe",
+        model: "gpt-4o-transcribe",
       });
 
       textLog = transcription.text;
