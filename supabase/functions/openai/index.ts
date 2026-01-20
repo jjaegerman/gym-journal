@@ -94,7 +94,7 @@ If both are specified, repeat the item with the same repetitions for each set.`,
       },
     });
 
-    const exerciseLogs = JSON.parse(structured.output_text).items ?? [];
+    const exerciseLogs = structured.output_parsed?.items ?? [];
 
     // Transform logs into format expected by batch function
     const logsForDb = exerciseLogs.map((exerciseLog: any) => {
