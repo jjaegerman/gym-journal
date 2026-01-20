@@ -5,7 +5,6 @@ export const ExerciseCategory = z.enum([
   "Squat",
   "Deadlift",
   "Lunge",
-  "Split",
 
   // Compound Upper Body
   "Bench Press",
