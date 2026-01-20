@@ -47,7 +47,7 @@ export const ExerciseCategory = z.enum([
   "Cardio Other",
 
   // Other
-  "Other"
+  "Other",
 ]);
 
 export const Equipment = z.enum([
@@ -71,8 +71,6 @@ export const Equipment = z.enum([
   "Stair Climber",
 
   // Bodyweight & Functional
-  "Pull-up Bar",
-  "Dip Bar",
   "Resistance Band",
 
   // Specialized
@@ -85,31 +83,31 @@ export const Equipment = z.enum([
   "Ab Wheel",
 
   // Other
-  "Other"
+  "Other",
 ]);
 
 export const OpenAILogDetails = z.object({
-    // Exercise identification
-    exerciseType: ExerciseCategory,
-    variants: z.array(z.string()).nullable().optional(),
-    primaryEquipment: Equipment.nullable().optional(),
-    exerciseName: z.string().nullable().optional(),
+  // Exercise identification
+  exerciseType: ExerciseCategory,
+  variants: z.array(z.string()).nullable().optional(),
+  primaryEquipment: Equipment.nullable().optional(),
+  exerciseName: z.string().nullable().optional(),
 
-    // Strength training metrics
-    weight: z.number().nullable().optional(),
-    weightUnit: z.enum(["kg", "lbs"]).nullable().optional(),
-    repetitions: z.number().nullable().optional(),
+  // Strength training metrics
+  weight: z.number().nullable().optional(),
+  weightUnit: z.enum(["kg", "lbs"]).nullable().optional(),
+  repetitions: z.number().nullable().optional(),
 
-    // Cardio metrics
-    distance: z.number().nullable().optional(),
-    distanceUnit: z.enum(["miles", "km", "meters"]).nullable().optional(),
-    duration: z.iso.duration().nullable().optional(),
-    resistanceLevel: z.number().nullable().optional(),
+  // Cardio metrics
+  distance: z.number().nullable().optional(),
+  distanceUnit: z.enum(["miles", "km", "meters"]).nullable().optional(),
+  duration: z.iso.duration().nullable().optional(),
+  resistanceLevel: z.number().nullable().optional(),
 
-    // General effort
-    effort: z.enum(["low", "medium", "high"]).nullable().optional(),
-})
+  // General effort
+  effort: z.enum(["low", "medium", "high"]).nullable().optional(),
+});
 
 export const OpenAILogDetailsArray = z.object({
-    items: z.array(OpenAILogDetails).nullable().optional(),
+  items: z.array(OpenAILogDetails).nullable().optional(),
 });
