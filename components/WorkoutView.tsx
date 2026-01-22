@@ -1,5 +1,6 @@
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
+import { Temporal } from "@js-temporal/polyfill";
 import { useEffect, useState } from "react";
 import {
   capitalizeEachWord,
@@ -23,6 +24,7 @@ import {
 } from "tamagui";
 import {
   Exercise,
+  Log,
   Workout,
   WorkoutDetails,
   WorkoutDetailsSchema,
@@ -110,7 +112,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
               variants: exercise.variants,
               equipment: exercise.equipment,
               type: exercise.type,
-            })
+            }),
           );
 
           const ExerciseIcon: any = () => getExerciseIcon(exercise.type, 24);
@@ -166,7 +168,7 @@ interface ExerciseLogSummary {
   minEffort: string | undefined;
   maxEffort: string | undefined;
 }
-function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
+function SummarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
   let minReps = Infinity;
   let maxReps = -Infinity;
   let minWeight = Infinity;
@@ -177,8 +179,8 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
   let distanceUnit = "";
   let minResistanceLevel = Infinity;
   let maxResistanceLevel = -Infinity;
-  let minDuration = Infinity;
-  let maxDuration = -Infinity;
+  let minDuration: Temporal.Duration | undefined = undefined;
+  let maxDuration: Temporal.Duration | undefined = undefined;
   let minEffort = Infinity;
   let maxEffort = -Infinity;
 
@@ -190,20 +192,31 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
     if (log.weight) {
       minWeight = Math.min(minWeight, log.weight);
       maxWeight = Math.max(maxWeight, log.weight);
-      weightUnit = log.weightUnit;
+      weightUnit = log.weightUnit ?? "";
     }
     if (log.distance) {
       minDistance = Math.min(minDistance, log.distance);
       maxDistance = Math.max(maxDistance, log.distance);
-      distanceUnit = log.distance_unit;
+      distanceUnit = log.distance_unit ?? "";
     }
     if (log.resistance_level) {
       minResistanceLevel = Math.min(minResistanceLevel, log.resistance_level);
       maxResistanceLevel = Math.max(maxResistanceLevel, log.resistance_level);
     }
     if (log.duration) {
-      minDuration = Math.min(minDuration, log.duration);
-      maxDuration = Math.max(maxDuration, log.duration);
+      const durationSeconds = Temporal.Duration.from(log.duration);
+      if (
+        minDuration === undefined ||
+        Temporal.Duration.compare(durationSeconds, minDuration) < 0
+      ) {
+        minDuration = durationSeconds;
+      }
+      if (
+        maxDuration === undefined ||
+        Temporal.Duration.compare(durationSeconds, maxDuration) > 0
+      ) {
+        maxDuration = durationSeconds;
+      }
     }
     if (log.effort) {
       const effortValue = parseInt(log.effort);
@@ -228,8 +241,8 @@ function SummarizeExerciseLogs(logs: any[]): ExerciseLogSummary {
       minResistanceLevel === Infinity ? undefined : minResistanceLevel,
     maxResistanceLevel:
       maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
-    minDuration: minDuration === Infinity ? undefined : minDuration.toString(),
-    maxDuration: maxDuration === -Infinity ? undefined : maxDuration.toString(),
+    minDuration: minDuration,
+    maxDuration: maxDuration,
     minEffort: minEffort === Infinity ? undefined : minEffort.toString(),
     maxEffort: maxEffort === -Infinity ? undefined : maxEffort.toString(),
   };
@@ -252,15 +265,15 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
     parts.push(
       `${asRangeIfDifferent(summary.minReps, summary.maxReps)} ${addSIfPlural(
         summary.maxReps!,
-        "rep"
-      )}`
+        "rep",
+      )}`,
     );
   }
   if (summary.minWeight !== undefined && summary.maxWeight !== undefined) {
     parts.push(
       `${asRangeIfDifferent(summary.minWeight, summary.maxWeight)} ${
         summary.weightUnit || "lbs"
-      }`
+      }`,
     );
   }
 
@@ -269,7 +282,7 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
     parts.push(
       `${asRangeIfDifferent(summary.minDistance, summary.maxDistance)} ${
         summary.distanceUnit || "mi"
-      }`
+      }`,
     );
   }
   if (
@@ -279,20 +292,20 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
     parts.push(
       `lvl ${asRangeIfDifferent(
         summary.minResistanceLevel,
-        summary.maxResistanceLevel
-      )}`
+        summary.maxResistanceLevel,
+      )}`,
     );
   }
 
   // General
   if (summary.minDuration !== undefined && summary.maxDuration !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minDuration, summary.maxDuration)}`
+      `${asRangeIfDifferent(summary.minDuration.toLocaleString(), summary.maxDuration.toLocaleString())}`,
     );
   }
   if (summary.minEffort !== undefined && summary.maxEffort !== undefined) {
     parts.push(
-      `effort: ${asRangeIfDifferent(summary.minEffort, summary.maxEffort)}`
+      `effort: ${asRangeIfDifferent(summary.minEffort, summary.maxEffort)}`,
     );
   }
 
