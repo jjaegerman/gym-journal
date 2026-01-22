@@ -74,7 +74,7 @@ export const ExerciseLogs = ({
                     equipment: exercise.equipment,
                     type: exercise.type,
                     name: exercise.name,
-                  })
+                  }),
                 )}
               </Dialog.Title>
               <YGroup
@@ -135,7 +135,7 @@ function logDescription(log: any): string {
 
   // General
   if (log.duration) {
-    parts.push(`for ${log.duration}`);
+    parts.push(`for ${log.duration.toLocaleString()}`);
   }
   if (log.effort) {
     parts.push(`(${log.effort} effort)`);
