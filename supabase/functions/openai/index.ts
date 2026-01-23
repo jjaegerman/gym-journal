@@ -32,13 +32,43 @@ Deno.serve(async (req) => {
       apiKey: apiKey,
     });
 
-    var textLog = "";
+    let textLog = "";
     if (query != undefined && query != null && query.trim() !== "") {
+      if (query.length > 1024) {
+        return new Response(
+          JSON.stringify({ error: "Text too long." }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       textLog = query;
     } else {
       if (!audio?.base64) {
         return new Response(
           JSON.stringify({ error: "Missing audio.base64 field" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const supportedFormats = [
+        "mp3",
+        "mp4",
+        "mpeg",
+        "mpga",
+        "m4a",
+        "wav",
+        "webm",
+      ];
+      if (!supportedFormats.includes(audio.fileExtension?.toLowerCase())) {
+        return new Response(
+          JSON.stringify({ error: "Unsupported audio format" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      if (audio.base64.length > 10 * 1024 * 1024) {
+        return new Response(
+          JSON.stringify({ error: "Audio recording too long" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -54,6 +84,13 @@ Deno.serve(async (req) => {
       });
 
       textLog = transcription.text;
+    }
+
+    if (!textLog || textLog.trim() === "") {
+      return new Response(
+        JSON.stringify({ error: "No exercise logs extracted from input" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
     }
 
     const structured = await openai.responses.parse({
@@ -132,6 +169,13 @@ If both are specified, repeat the item with the same repetitions for each set.`,
           : null,
       };
     });
+
+    if (logsForDb.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No exercise logs extracted from input" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     // Create submission + all logs in a single transaction
     const { data: submissionId, error: submissionError } = await supabase.rpc(
