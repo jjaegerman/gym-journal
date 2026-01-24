@@ -13,3 +13,5 @@ dist/
 
 /android
 /ios
+
+tsconfig.tsbuildinfo

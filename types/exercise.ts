@@ -10,10 +10,10 @@ export type WeightUnit = z.infer<typeof WeightUnitSchema>;
 /* --- Log (single set) --- */
 export const LogSchema = z.object({
   id: z.string(),
-  datetime: z.coerce.date(),          // converts ISO string → Date
+  datetime: z.coerce.date(),
 
   // Strength metrics
-  weight: z.coerce.number().nullable().optional(), // converts "135" → 135
+  weight: z.coerce.number().nullable().optional(),
   weightUnit: WeightUnitSchema.nullable().optional(),
   repetitions: z.coerce.number().int().nullable().optional(),
 
@@ -67,7 +67,7 @@ export const WorkoutSubmissionSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
   workoutId: z.string().uuid().nullable(),
-  submissionType: z.enum(['audio', 'text']),
+  submissionType: z.enum(["audio", "text"]),
   rawText: z.string(),
   aiResponse: z.any().nullable(),
   modelVersion: z.string(),

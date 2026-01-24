@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         file: audioFile,
         model: "gpt-4o-transcribe",
         prompt:
-          "The following audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
+          "The followidng audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
       });
 
       textLog = transcription.text;
@@ -103,27 +103,23 @@ Deno.serve(async (req) => {
           content:
             `Extract structured workout data from user's transcribed audio.
 
-FORMATTING RULES:
-- variants: Array of variant modifiers (e.g., ["Incline", "Close Grip"]). Use Title Case.
-  Examples: ["Back"], ["Incline"], ["Sumo", "Deficit"], []
-  DO NOT include equipment or exercise type in variants
-
-- exerciseType: Select the best matching category from the schema (e.g., "Bench Press", "Squat", "Running")
-
-- primaryEquipment: Main equipment used (use full names: "Barbell" not "BB", "Dumbbell" not "DB")
-  Omit for bodyweight exercises, outdoor cardio, or yoga
-
-- exerciseName: ONLY populate when exerciseType ends with "Other" (e.g., "Cardio Other", "Legs Other")
-  Use the full exercise name (e.g., "Burpees", "Farmers Walk")
-  Leave null for standard exercise types
-
-- resistanceLevel: For treadmill incline (%), bike resistance, or rower damper setting
-
-- duration: ISO 8601
+FIELD RULES:
+- exerciseType: Best matching category from schema enum
+- modifiers: Array of applicable modifiers from schema enum. Examples:
+  - "back squat" → ["Back"]
+  - "pause front squat" → ["Front", "Pause"]
+  - "incline close grip bench" → ["Incline", "Close Grip"]
+  - "sumo deadlift" → ["Sumo"]
+  - "hammer curls" → ["Hammer"]
+  DO NOT include equipment or exercise type in modifiers
+- primaryEquipment: Main equipment (use schema enum values)
+- exerciseName: ONLY for "Other" or "Cardio Other" types (e.g., "Burpees")
+- resistanceLevel: For treadmill incline (%), bike resistance, or rower damper
+- duration: ISO 8601 format
 
 LOGIC:
-If repetitions are not specified but sets are, assume repetitions equal sets and sets equals 1.
-If both are specified, repeat the item with the same repetitions for each set.`,
+If repetitions not specified but sets are, assume repetitions equal sets and sets equals 1.
+If both specified, repeat item with same repetitions for each set.`,
         },
         {
           role: "user",
@@ -139,13 +135,8 @@ If both are specified, repeat the item with the same repetitions for each set.`,
 
     // Transform logs into format expected by batch function
     const logsForDb = exerciseLogs.map((exerciseLog: any) => {
-      // Normalize variants array (convert to Title Case)
-      const normalizedVariants = exerciseLog.variants
-        ? exerciseLog.variants.map((v: string) => normalizeVariant(v))
-        : [];
-
       return {
-        exercise_variants: normalizedVariants,
+        exercise_variants: exerciseLog.modifiers ?? [],
         exercise_type: String(exerciseLog.exerciseType),
         exercise_name: exerciseLog.exerciseName
           ? String(exerciseLog.exerciseName)
@@ -188,7 +179,7 @@ If both are specified, repeat the item with the same repetitions for each set.`,
         p_ai_response: structured.output_text,
         p_logs: logsForDb,
         p_model_version: "gpt-4.1",
-        p_prompt_version: "v1.0",
+        p_prompt_version: "v2.0",
         p_audio_duration_seconds: null,
       },
     );
@@ -221,25 +212,4 @@ function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
-}
-
-/**
- * Normalize a single variant modifier for consistency
- * - Converts to Title Case
- * - Trims and removes extra whitespace
- */
-function normalizeVariant(variant: string): string {
-  if (!variant) return variant;
-
-  // Trim and collapse multiple spaces
-  let normalized = variant.trim().replace(/\s+/g, " ");
-
-  // Convert to Title Case (capitalize first letter of each word)
-  normalized = normalized
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
-  return normalized.trim();
 }

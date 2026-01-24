@@ -1,52 +1,177 @@
 import { z } from "npm:zod";
 
 export const ExerciseCategory = z.enum([
-  // Compound Lower Body
+  // Compound Lower - Knee Dominant
   "Squat",
-  "Deadlift",
   "Lunge",
 
-  // Compound Upper Body
-  "Bench Press",
-  "Overhead Press",
-  "Row",
-  "Pulldown",
+  // Compound Lower - Hip Dominant
+  "Deadlift",
+  "Hip Hinge",
 
-  // Olympic & Power
+  // Compound Upper - Horizontal Push
+  "Bench Press",
+  "Push-up",
+
+  // Compound Upper - Vertical Push
+  "Overhead Press",
+  "Dip",
+
+  // Compound Upper - Horizontal Pull
+  "Row",
+
+  // Compound Upper - Vertical Pull
+  "Pull-up",
+  "Lat Pulldown",
+
+  // Olympic
+  "Clean",
   "Snatch",
-  "Clean and Jerk",
+  "Jerk",
 
   // Isolation - Lower
-  "Quad Isolation",
-  "Glute Isolation",
-  "Hip Isolation",
-  "Calf Isolation",
-  "Legs Other",
+  "Leg Extension",
+  "Leg Curl",
+  "Calf Raise",
+  "Hip Adduction",
+  "Hip Abduction",
 
   // Isolation - Upper
-  "Chest Isolation",
-  "Shoulder Isolation",
-  "Tricep Isolation",
+  "Chest Fly",
+  "Lateral Raise",
+  "Rear Delt",
+  "Tricep Extension",
   "Bicep Curl",
-  "Forearm Isolation",
-  "Arms Other",
+  "Shrug",
+  "Forearm",
 
-  // Calisthenics
-  "Pull-up",
-  "Push-up",
-  "Dip",
-  "Calisthenics Other",
-
-  // Core & Cardio
+  // Core
   "Core",
+
+  // Functional
+  "Carry",
+  "Plyometric",
+
+  // Cardio
   "Running",
   "Cycling",
+  "Rowing Machine",
   "Swimming",
-  "Rowing",
+  "Elliptical",
+  "Stair Climber",
+  "Jump Rope",
   "Cardio Other",
 
-  // Other
+  // Catch-all
   "Other",
+]);
+
+export const Modifier = z.enum([
+  // Body/Bench Angle
+  "Incline",
+  "Decline",
+  "Seated",
+  "Standing",
+  "Lying",
+  "Prone",
+  "Kneeling",
+
+  // Load Position
+  "Front",
+  "Back",
+  "Overhead",
+  "Zercher",
+  "Goblet",
+  "Behind Neck",
+
+  // Stance
+  "Sumo",
+  "Conventional",
+  "Split",
+  "Single Leg",
+  "Single Arm",
+  "Staggered",
+  "Wide Stance",
+  "Narrow Stance",
+
+  // Grip
+  "Close Grip",
+  "Wide Grip",
+  "Neutral Grip",
+  "Underhand",
+  "Overhand",
+  "Mixed Grip",
+  "Snatch Grip",
+
+  // Tempo & Technique
+  "Pause",
+  "Tempo",
+  "Explosive",
+  "Eccentric",
+  "Isometric",
+  "Banded",
+  "Weighted",
+
+  // Range of Motion
+  "Deficit",
+  "Elevated",
+  "Block",
+  "Floor",
+  "Pin",
+  "Partial",
+
+  // Named Squat Variations
+  "Box",
+  "Hack",
+  "Sissy",
+  "Pistol",
+  "Bulgarian",
+  "Cossack",
+
+  // Named Deadlift/Hinge Variations
+  "Romanian",
+  "Stiff Leg",
+  "Kickstand",
+
+  // Named Press Variations
+  "Spoto",
+  "Larsen",
+  "JM",
+  "Z",
+  "Arnold",
+  "Push Press",
+
+  // Named Row Variations
+  "Pendlay",
+  "Meadows",
+  "Kroc",
+  "Seal",
+  "Batwing",
+  "T-Bar",
+
+  // Named Curl Variations
+  "Preacher",
+  "Spider",
+  "Concentration",
+  "Hammer",
+  "Drag",
+  "Reverse",
+  "Zottman",
+  "21s",
+
+  // Named Tricep Variations
+  "Skull Crusher",
+  "Kickback",
+  "Pushdown",
+  "French",
+
+  // Named Other
+  "Face Pull",
+  "Pullover",
+  "Cable Crossover",
+  "Farmer",
+  "Suitcase",
+  "Rack",
 ]);
 
 export const Equipment = z.enum([
@@ -88,7 +213,7 @@ export const Equipment = z.enum([
 export const OpenAILogDetails = z.object({
   // Exercise identification
   exerciseType: ExerciseCategory,
-  variants: z.array(z.string()).nullable().optional(),
+  modifiers: z.array(Modifier).nullable().optional(),
   primaryEquipment: Equipment.nullable().optional(),
   exerciseName: z.string().nullable().optional(),
 
