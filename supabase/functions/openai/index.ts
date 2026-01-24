@@ -81,6 +81,8 @@ Deno.serve(async (req) => {
       const transcription = await openai.audio.transcriptions.create({
         file: audioFile,
         model: "gpt-4o-transcribe",
+        prompt:
+          "The following audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
       });
 
       textLog = transcription.text;
