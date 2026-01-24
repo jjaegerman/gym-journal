@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         file: audioFile,
         model: "gpt-4o-transcribe",
         prompt:
-          "The followidng audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
+          "The following audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
       });
 
       textLog = transcription.text;
@@ -104,16 +104,17 @@ Deno.serve(async (req) => {
             `Extract structured workout data from user's transcribed audio.
 
 FIELD RULES:
-- exerciseType: Best matching category from schema enum
+- input: The exercise exactly as spoken (source of truth). Examples:
+  - "back squat"
+  - "incline dumbbell press"
+  - "Romanian deadlift"
+- category: Best matching category from schema enum
 - modifiers: Array of applicable modifiers from schema enum. Examples:
   - "back squat" → ["Back"]
   - "pause front squat" → ["Front", "Pause"]
   - "incline close grip bench" → ["Incline", "Close Grip"]
-  - "sumo deadlift" → ["Sumo"]
-  - "hammer curls" → ["Hammer"]
-  DO NOT include equipment or exercise type in modifiers
-- primaryEquipment: Main equipment (use schema enum values)
-- exerciseName: ONLY for "Other" or "Cardio Other" types (e.g., "Burpees")
+  DO NOT include equipment in modifiers
+- equipment: Main equipment used (use schema enum values)
 - resistanceLevel: For treadmill incline (%), bike resistance, or rower damper
 - duration: ISO 8601 format
 
@@ -134,31 +135,21 @@ If both specified, repeat item with same repetitions for each set.`,
     const exerciseLogs = structured.output_parsed?.items ?? [];
 
     // Transform logs into format expected by batch function
-    const logsForDb = exerciseLogs.map((exerciseLog: any) => {
+    const logsForDb = exerciseLogs.map((log: any) => {
       return {
-        exercise_variants: exerciseLog.modifiers ?? [],
-        exercise_type: String(exerciseLog.exerciseType),
-        exercise_name: exerciseLog.exerciseName
-          ? String(exerciseLog.exerciseName)
-          : null,
-        exercise_equipment: exerciseLog.primaryEquipment
-          ? String(exerciseLog.primaryEquipment)
-          : null,
-        weight: exerciseLog.weight ? Number(exerciseLog.weight) : null,
-        weight_unit: exerciseLog.weightUnit
-          ? String(exerciseLog.weightUnit)
-          : null,
-        repetitions: exerciseLog.repetitions
-          ? parseInt(exerciseLog.repetitions)
-          : null,
-        duration: exerciseLog.duration ? String(exerciseLog.duration) : null,
-        effort: exerciseLog.effort ? String(exerciseLog.effort) : null,
-        distance: exerciseLog.distance ? Number(exerciseLog.distance) : null,
-        distance_unit: exerciseLog.distanceUnit
-          ? String(exerciseLog.distanceUnit)
-          : null,
-        resistance_level: exerciseLog.resistanceLevel
-          ? parseInt(exerciseLog.resistanceLevel)
+        input: log.input ? String(log.input) : null,
+        category: String(log.category),
+        modifiers: log.modifiers ?? [],
+        equipment: log.equipment ? String(log.equipment) : null,
+        weight: log.weight ? Number(log.weight) : null,
+        weight_unit: log.weightUnit ? String(log.weightUnit) : null,
+        repetitions: log.repetitions ? parseInt(log.repetitions) : null,
+        duration: log.duration ? String(log.duration) : null,
+        effort: log.effort ? String(log.effort) : null,
+        distance: log.distance ? Number(log.distance) : null,
+        distance_unit: log.distanceUnit ? String(log.distanceUnit) : null,
+        resistance_level: log.resistanceLevel
+          ? parseInt(log.resistanceLevel)
           : null,
       };
     });

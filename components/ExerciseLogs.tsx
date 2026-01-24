@@ -70,10 +70,10 @@ export const ExerciseLogs = ({
               <Dialog.Title>
                 {capitalizeEachWord(
                   formatExerciseLabel({
-                    variants: exercise.variants,
+                    modifiers: exercise.modifiers,
                     equipment: exercise.equipment,
-                    type: exercise.type,
-                    name: exercise.name,
+                    category: exercise.category,
+                    input: exercise.input,
                   }),
                 )}
               </Dialog.Title>

@@ -106,17 +106,17 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
           const summary = SummarizeExerciseLogs(exercise.logs);
           const description = descriptionFromSummary(summary);
 
-          // Format title using grouping: {variants} {equipment} {type}
+          // Format title using grouping: {modifiers} {category} ({equipment})
           const title = capitalizeEachWord(
             formatExerciseGrouping({
-              variants: exercise.variants,
+              modifiers: exercise.modifiers,
               equipment: exercise.equipment,
-              type: exercise.type,
+              category: exercise.category,
             }),
           );
 
-          const ExerciseIcon: any = () => getExerciseIcon(exercise.type, 24);
-          const iconColor = getExerciseIconColor(exercise.type);
+          const ExerciseIcon: any = () => getExerciseIcon(exercise.category, 24);
+          const iconColor = getExerciseIconColor(exercise.category);
 
           return (
             <YGroup.Item key={exercise.id}>
