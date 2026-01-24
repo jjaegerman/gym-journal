@@ -19,12 +19,12 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
     });
   };
 
-  // Format exercise title using grouping: {variants} {equipment} {type}
+  // Format exercise title using grouping: {modifiers} {category} ({equipment})
   const exerciseTitle = capitalizeEachWord(
     formatExerciseGrouping({
-      variants: exercise.exercise_variants,
-      equipment: exercise.exercise_equipment,
-      type: exercise.exercise_type,
+      modifiers: exercise.modifiers,
+      equipment: exercise.equipment,
+      category: exercise.category,
     })
   );
 

@@ -200,9 +200,9 @@ export function ProfileSummary() {
           <YStack gap="$3">
             {exerciseStats.map((exercise) => (
               <ExerciseStatsCard
-                key={`${exercise.exercise_type}-${JSON.stringify(
-                  exercise.exercise_variants
-                )}-${exercise.exercise_equipment}`}
+                key={`${exercise.category}-${JSON.stringify(
+                  exercise.modifiers
+                )}-${exercise.equipment}`}
                 exercise={exercise}
               />
             ))}

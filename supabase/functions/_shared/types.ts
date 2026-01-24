@@ -212,10 +212,10 @@ export const Equipment = z.enum([
 
 export const OpenAILogDetails = z.object({
   // Exercise identification
-  exerciseType: ExerciseCategory,
+  input: z.string(), // Raw exercise input as spoken (source of truth)
+  category: ExerciseCategory,
   modifiers: z.array(Modifier).nullable().optional(),
-  primaryEquipment: Equipment.nullable().optional(),
-  exerciseName: z.string().nullable().optional(),
+  equipment: Equipment.nullable().optional(),
 
   // Strength training metrics
   weight: z.number().nullable().optional(),

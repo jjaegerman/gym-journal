@@ -1,72 +1,62 @@
 /**
  * Exercise display formatting utilities
- * Handles composition of exercise names from variants, equipment, type, and name
+ *
+ * Fields:
+ * - input: Raw exercise input as spoken (source of truth)
+ * - category: Structured category (from enum)
+ * - modifiers: Array of variant modifiers
+ * - equipment: Equipment used
  */
 
 /**
- * Format exercise for display in workout/exercise views
- * Groups by: {variants} {equipment} {type}
+ * Format exercise for display using structured fields
+ * Format: {modifiers} {category} ({equipment})
  *
- * @param exercise - Exercise data with variants, equipment, type, name
+ * Use this for groupings, stats, and consistent display.
+ *
+ * Examples:
+ * - Back Squat (Barbell)
+ * - Close Grip Incline Bench Press (Dumbbell)
+ * - Sumo Deadlift (Barbell)
+ * - Running (Treadmill)
+ *
+ * @param exercise - Exercise data with modifiers, equipment, category
  * @returns Formatted exercise display string
  */
 export function formatExerciseGrouping(exercise: {
-  variants?: string[] | null;
+  modifiers?: string[] | null;
   equipment?: string | null;
-  type?: string | null;
+  category?: string | null;
 }): string {
-  const parts = [
-    ...(exercise.variants?.sort() || []),
-    exercise.equipment,
-    exercise.type,
+  const mainParts = [
+    ...(exercise.modifiers?.sort() || []),
+    exercise.category,
   ].filter(Boolean);
 
-  return parts.join(" ");
-}
+  const main = mainParts.join(" ");
 
-/**
- * Format exercise for individual log display
- * Displays as: {variants} {equipment} {name} when name exists
- * Otherwise falls back to: {variants} {equipment} {type}
- *
- * @param exercise - Exercise data with variants, equipment, type, name
- * @returns Formatted exercise label string
- */
-export function formatExerciseLabel(exercise: {
-  variants?: string[] | null;
-  equipment?: string | null;
-  type?: string | null;
-  name?: string | null;
-}): string {
-  // If exerciseName exists (for "Other" categories), use it
-  if (exercise.name) {
-    const parts = [
-      ...(exercise.variants?.sort() || []),
-      exercise.equipment,
-      exercise.name,
-    ].filter(Boolean);
-    return parts.join(" ");
+  if (exercise.equipment) {
+    return `${main} (${exercise.equipment})`;
   }
 
-  // Otherwise use type
-  return formatExerciseGrouping(exercise);
+  return main;
 }
 
 /**
  * Get grouping key for exercises (used for stats aggregation)
- * Key format: {sorted_variants}|{equipment}|{type}
+ * Key format: {sorted_modifiers}|{equipment}|{category}
  *
- * @param exercise - Exercise data with variants, equipment, type
+ * @param exercise - Exercise data with modifiers, equipment, category
  * @returns Grouping key string
  */
 export function getExerciseGroupingKey(exercise: {
-  variants?: string[] | null;
+  modifiers?: string[] | null;
   equipment?: string | null;
-  type?: string | null;
+  category?: string | null;
 }): string {
-  const variantKey = exercise.variants?.sort().join(",") || "";
+  const modifierKey = exercise.modifiers?.sort().join(",") || "";
   const equipmentKey = exercise.equipment || "";
-  const typeKey = exercise.type || "";
+  const categoryKey = exercise.category || "";
 
-  return `${variantKey}|${equipmentKey}|${typeKey}`;
+  return `${modifierKey}|${equipmentKey}|${categoryKey}`;
 }
