@@ -17,7 +17,11 @@ import {
   YGroup,
 } from "tamagui";
 import { Exercise } from "types/exercise";
-import { capitalizeEachWord, formatExerciseGrouping } from "@/lib/utils";
+import {
+  capitalizeEachWord,
+  formatExerciseGrouping,
+  formatIsoDuration,
+} from "@/lib/utils";
 
 export const ExerciseLogs = ({
   exercise,
@@ -134,7 +138,7 @@ function logDescription(log: any): string {
 
   // General
   if (log.duration) {
-    parts.push(`for ${log.duration.toLocaleString()}`);
+    parts.push(`for ${formatIsoDuration(log.duration)}`);
   }
   if (log.effort) {
     parts.push(`(${log.effort} effort)`);

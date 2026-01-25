@@ -1,12 +1,13 @@
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
-import { Temporal } from "@js-temporal/polyfill";
 import { useEffect, useState } from "react";
 import {
   capitalizeEachWord,
   getExerciseIcon,
   getExerciseIconColor,
   formatExerciseGrouping,
+  formatIsoDuration,
+  parseIsoDuration,
 } from "@/lib/utils";
 import {
   View,
@@ -179,8 +180,10 @@ function SummarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
   let distanceUnit = "";
   let minResistanceLevel = Infinity;
   let maxResistanceLevel = -Infinity;
-  let minDuration: Temporal.Duration | undefined = undefined;
-  let maxDuration: Temporal.Duration | undefined = undefined;
+  let minDuration: string | undefined = undefined;
+  let minDurationMinutes = Infinity;
+  let maxDuration: string | undefined = undefined;
+  let maxDurationMinutes = -Infinity;
   let minEffort = Infinity;
   let maxEffort = -Infinity;
 
@@ -204,18 +207,14 @@ function SummarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
       maxResistanceLevel = Math.max(maxResistanceLevel, log.resistance_level);
     }
     if (log.duration) {
-      const durationSeconds = Temporal.Duration.from(log.duration);
-      if (
-        minDuration === undefined ||
-        Temporal.Duration.compare(durationSeconds, minDuration) < 0
-      ) {
-        minDuration = durationSeconds;
+      const durationMinutes = parseIsoDuration(log.duration);
+      if (durationMinutes < minDurationMinutes) {
+        minDurationMinutes = durationMinutes;
+        minDuration = log.duration;
       }
-      if (
-        maxDuration === undefined ||
-        Temporal.Duration.compare(durationSeconds, maxDuration) > 0
-      ) {
-        maxDuration = durationSeconds;
+      if (durationMinutes > maxDurationMinutes) {
+        maxDurationMinutes = durationMinutes;
+        maxDuration = log.duration;
       }
     }
     if (log.effort) {
@@ -241,8 +240,8 @@ function SummarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
       minResistanceLevel === Infinity ? undefined : minResistanceLevel,
     maxResistanceLevel:
       maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
-    minDuration: minDuration,
-    maxDuration: maxDuration,
+    minDuration,
+    maxDuration,
     minEffort: minEffort === Infinity ? undefined : minEffort.toString(),
     maxEffort: maxEffort === -Infinity ? undefined : maxEffort.toString(),
   };
@@ -300,7 +299,7 @@ function descriptionFromSummary(summary: ExerciseLogSummary): string {
   // General
   if (summary.minDuration !== undefined && summary.maxDuration !== undefined) {
     parts.push(
-      `${asRangeIfDifferent(summary.minDuration.toLocaleString(), summary.maxDuration.toLocaleString())}`,
+      `${asRangeIfDifferent(formatIsoDuration(summary.minDuration), formatIsoDuration(summary.maxDuration))}`,
     );
   }
   if (summary.minEffort !== undefined && summary.maxEffort !== undefined) {
