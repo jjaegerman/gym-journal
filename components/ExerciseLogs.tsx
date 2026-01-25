@@ -17,7 +17,7 @@ import {
   YGroup,
 } from "tamagui";
 import { Exercise } from "types/exercise";
-import { capitalizeEachWord, formatExerciseLabel } from "@/lib/utils";
+import { capitalizeEachWord, formatExerciseGrouping } from "@/lib/utils";
 
 export const ExerciseLogs = ({
   exercise,
@@ -69,11 +69,10 @@ export const ExerciseLogs = ({
             <View gap="$4" p="$4">
               <Dialog.Title>
                 {capitalizeEachWord(
-                  formatExerciseLabel({
-                    variants: exercise.variants,
+                  formatExerciseGrouping({
+                    modifiers: exercise.modifiers,
                     equipment: exercise.equipment,
-                    type: exercise.type,
-                    name: exercise.name,
+                    category: exercise.category,
                   }),
                 )}
               </Dialog.Title>

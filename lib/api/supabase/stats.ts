@@ -28,9 +28,9 @@ export interface ProfileStats {
 }
 
 export interface ExerciseStats {
-  exercise_type: string;
-  exercise_variants: string[] | null;
-  exercise_equipment: string | null;
+  category: string;
+  modifiers: string[] | null;
+  equipment: string | null;
 
   // All-time stats
   total_workouts: number;

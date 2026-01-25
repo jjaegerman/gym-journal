@@ -31,10 +31,10 @@ export type Log = z.infer<typeof LogSchema>;
 /* --- Exercise (groups logs) --- */
 export const ExerciseSchema = z.object({
   id: z.string(),
-  variants: z.array(z.string()).nullable().optional(),
-  type: z.string().nullable().optional(),
+  input: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  modifiers: z.array(z.string()).nullable().optional(),
   equipment: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
   logs: z.array(LogSchema),
 });
 export type Exercise = z.infer<typeof ExerciseSchema>;
