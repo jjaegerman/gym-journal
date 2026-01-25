@@ -79,7 +79,7 @@ export function RecordingScreen() {
       >
         <View flex={1} bg="$background">
           {/* Toggle button at top right */}
-          <View position="absolute" t="$4" r="$4" z={100}>
+          <View position="absolute" t="$4" r="$4" z={10}>
             <InputModeToggle
               mode={inputMode}
               onModeChange={handleModeChange}
