@@ -1,22 +1,22 @@
 import { RecordButton } from "./RecordButton";
 import { RecordTextBox } from "./RecordTextBox";
-import { Paragraph, View, YStack, XStack, Separator, Spinner } from "tamagui";
+import { InputModeToggle } from "./InputModeToggle";
+import { Paragraph, View, YStack, Spinner } from "tamagui";
 import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
 import { useTabContext } from "@/lib/context/TabContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
 } from "react-native-reanimated";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  ScrollView,
-} from "react-native";
+  type InputMode,
+  getInputMode,
+  setInputMode,
+} from "@/lib/storage/inputMode";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -30,6 +30,12 @@ export function RecordingScreen() {
   const { submitAudio, submitText, loading } = useExerciseSubmit();
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
+  const [inputMode, setInputModeState] = useState<InputMode>("voice");
+
+  // Load persisted input mode on mount
+  useEffect(() => {
+    getInputMode().then(setInputModeState);
+  }, []);
 
   // Disable tabs while recording or loading
   useEffect(() => {
@@ -52,6 +58,11 @@ export function RecordingScreen() {
     }
   };
 
+  const handleModeChange = (mode: InputMode) => {
+    setInputModeState(mode);
+    setInputMode(mode);
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -67,6 +78,15 @@ export function RecordingScreen() {
         scrollEnabled={false}
       >
         <View flex={1} bg="$background">
+          {/* Toggle button at top right */}
+          <View position="absolute" t="$4" r="$4" z={100}>
+            <InputModeToggle
+              mode={inputMode}
+              onModeChange={handleModeChange}
+              disabled={recorderState.isRecording || loading}
+            />
+          </View>
+
           {/* Centered content container */}
           <View flex={1} justify="center" items="center" px="$4">
             <YStack gap="$6" maxW={500} width="100%">
@@ -83,48 +103,26 @@ export function RecordingScreen() {
                 </Paragraph>
               </YStack>
 
-              {/* Voice Recording Button or Spinner - always visible with z-index */}
+              {/* Input method based on mode */}
               <View z={100} items="center" justify="center">
                 {loading ? (
                   <View height={176} items="center" justify="center">
                     <Spinner size="large" color="$color" />
                   </View>
-                ) : (
+                ) : inputMode === "voice" ? (
                   <RecordButton
                     startCallback={startRecording}
                     stopCallback={handleStopRecording}
                     cancelCallback={cancelRecording}
                     durationMillis={recorderState.durationMillis}
                   />
+                ) : (
+                  <View width="100%">
+                    <RecordTextBox submitText={submitText} loading={loading} />
+                  </View>
                 )}
               </View>
-
-              {/* Divider */}
-              <XStack items="center" gap="$3">
-                <Separator flex={1} />
-                <Paragraph size="$2" opacity={0.5}>
-                  or
-                </Paragraph>
-                <Separator flex={1} />
-              </XStack>
             </YStack>
-          </View>
-
-          {/* Text Input - Fixed at bottom */}
-          <View
-            position="absolute"
-            b={0}
-            l={0}
-            r={0}
-            px="$4"
-            pb="$4"
-            pt="$2"
-            background="$background"
-            maxW={500}
-            width="100%"
-            self="center"
-          >
-            <RecordTextBox submitText={submitText} loading={loading} />
           </View>
 
           {/* Blur overlay - intensity animates in/out */}
