@@ -22,14 +22,14 @@ export function formatRelativeDate(date: Date): string {
   });
 
   // Today
-  if (diffDays === 0 && date.getDate() === now.getDate()) {
+  if (date.toDateString() === now.toDateString()) {
     return `Today, ${timeStr}`;
   }
 
   // Yesterday
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (diffDays === 1 || date.getDate() === yesterday.getDate()) {
+  if (date.toDateString() === yesterday.toDateString()) {
     return `Yesterday, ${timeStr}`;
   }
 
@@ -69,18 +69,19 @@ export function formatRelativeDate(date: Date): string {
  */
 export function getTimePeriodLabel(date: Date): string {
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-  if (diffDays === 0 && date.getDate() === now.getDate()) {
+  if (date.toDateString() === now.toDateString()) {
     return "Today";
   }
 
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (diffDays === 1 || date.getDate() === yesterday.getDate()) {
+  if (date.toDateString() === yesterday.toDateString()) {
     return "Yesterday";
   }
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays < 7) {
     return "This Week";
