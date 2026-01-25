@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Alert, Pressable, StyleSheet } from "react-native";
 import { selectionAsync } from "expo-haptics";
-import { Text, View, useTheme, Button } from "tamagui";
+import { View, useTheme, Button, Text } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
 import Animated, {
   Extrapolation,
@@ -26,64 +26,62 @@ export const RecordButton = ({
   stopCallback,
   cancelCallback,
   durationMillis = 0,
+  isRecording = false,
+  disabled = false,
 }: {
   startCallback: () => Promise<void>;
   stopCallback: () => Promise<void>;
   cancelCallback?: () => Promise<void>;
   durationMillis?: number;
+  isRecording?: boolean;
+  disabled?: boolean;
 }) => {
-  const [isRecording, setIsRecording] = useState(false);
   const theme = useTheme();
 
   const recordBorderColor = theme.color.val;
   const recordIndicatorColor = theme.accent9.val;
-  const scale = useSharedValue(1);
+  const scale = useSharedValue(isRecording ? RECORDING_INDICATOR_SCALE : 1);
+
+  // Animate scale when isRecording changes
+  useEffect(() => {
+    scale.value = withSpring(
+      isRecording ? RECORDING_INDICATOR_SCALE : 1,
+      SPRING_SHORT_CONFIG,
+    );
+  }, [isRecording, scale]);
 
   const recordIndicatorAnimation = useAnimatedStyle(() => ({
     borderRadius: interpolate(
       scale.value,
       [1, RECORDING_INDICATOR_SCALE],
       [RECORD_BUTTON_SIZE / 2, 8],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     ),
     transform: [{ scale: scale.value }],
   }));
 
   const handlePress = async () => {
+    if (disabled) return;
     selectionAsync();
     if (isRecording) {
-      // Optimistic UI update - animate immediately
-      scale.value = withSpring(1, SPRING_SHORT_CONFIG);
-      setIsRecording(false);
-      // Stop recording in background (non-blocking)
       stopCallback();
     } else {
-      // Optimistic UI update - animate immediately
-      scale.value = withSpring(RECORDING_INDICATOR_SCALE, SPRING_SHORT_CONFIG);
-      setIsRecording(true);
-
-      // Start recording in background with error handling
       try {
         await startCallback();
       } catch (error) {
-        // Revert optimistic update if recording fails
-        scale.value = withSpring(1, SPRING_SHORT_CONFIG);
-        setIsRecording(false);
-        Alert.alert("Recording Error", "Failed to start recording. Please try again.");
+        Alert.alert(
+          "Recording Error",
+          "Failed to start recording. Please try again.",
+        );
         console.error("Failed to start recording:", error);
       }
     }
   };
 
   const handleCancel = async () => {
+    if (disabled) return;
     selectionAsync();
-    // Optimistic UI update - animate immediately
-    scale.value = withSpring(1, SPRING_SHORT_CONFIG);
-    setIsRecording(false);
-    // Cancel recording in background (non-blocking)
-    if (cancelCallback) {
-      cancelCallback();
-    }
+    cancelCallback?.();
   };
 
   return (

@@ -115,6 +115,8 @@ export function RecordingScreen() {
                     stopCallback={handleStopRecording}
                     cancelCallback={cancelRecording}
                     durationMillis={recorderState.durationMillis}
+                    isRecording={recorderState.isRecording}
+                    disabled={recorderState.isPending}
                   />
                 ) : (
                   <View width="100%">

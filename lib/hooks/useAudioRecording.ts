@@ -9,30 +9,30 @@ import {
 import { Alert, Platform } from "react-native";
 import { AudioSessionManager } from "audio-session-manager";
 
+type RecordingState =
+  | "idle"
+  | "starting"
+  | "recording"
+  | "stopping"
+  | "cancelling";
+
 /**
  * Custom hook for audio recording functionality
  * Handles permissions, recording state, and audio configuration
  */
 export function useAudioRecording() {
-  // For iOS with native module, use our own state
-  const [isRecording, setIsRecording] = useState(false);
+  const [state, setState] = useState<RecordingState>("idle");
   const [durationMillis, setDurationMillis] = useState(0);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
 
   // For fallback (Android/web), use expo-audio
   const recordingOptions = RecordingPresets.HIGH_QUALITY;
   const audioRecorder = useAudioRecorder(recordingOptions);
-  const recorderState = useAudioRecorderState(audioRecorder);
+  const expoRecorderState = useAudioRecorderState(audioRecorder);
 
   // Use native recording on iOS, expo-audio elsewhere
-  const useNativeRecording = Platform.OS === "ios" &&
-    AudioSessionManager?.startRecording;
-
-  console.log("Using native recording:", useNativeRecording);
-  console.log(AudioSessionManager ?? "AudioSessionManager not available");
-  console.log(
-    AudioSessionManager?.startRecording ?? "startRecording not available",
-  );
+  const useNativeRecording =
+    Platform.OS === "ios" && AudioSessionManager?.startRecording;
 
   useEffect(() => {
     (async () => {
@@ -52,72 +52,108 @@ export function useAudioRecording() {
     })();
   }, [useNativeRecording]);
 
-  // Update duration for native recording
+  // Update duration while recording
   useEffect(() => {
-    if (!useNativeRecording || !isRecording) return;
+    if (state !== "recording") return;
 
     const interval = setInterval(() => {
-      if (AudioSessionManager?.getRecordingDuration) {
+      if (useNativeRecording && AudioSessionManager?.getRecordingDuration) {
         const duration = AudioSessionManager.getRecordingDuration();
-        setDurationMillis(duration * 1000); // Convert to milliseconds
+        setDurationMillis(duration * 1000);
+      } else {
+        setDurationMillis(expoRecorderState.durationMillis);
       }
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isRecording, useNativeRecording]);
+  }, [state, useNativeRecording, expoRecorderState.durationMillis]);
 
   const startRecording = async () => {
-    if (useNativeRecording && AudioSessionManager) {
-      console.log("🎙️ Starting native recording...");
-      const uri = await AudioSessionManager.startRecording();
-      if (uri) {
-        setIsRecording(true);
-        setRecordingUri(uri);
-        setDurationMillis(0);
-        console.log("✅ Native recording started");
+    if (state !== "idle") return;
+
+    setState("starting");
+    setDurationMillis(0);
+
+    try {
+      if (useNativeRecording && AudioSessionManager) {
+        const uri = await AudioSessionManager.startRecording();
+        if (uri) {
+          setRecordingUri(uri);
+          setState("recording");
+        } else {
+          setState("idle");
+          console.error("Failed to start native recording");
+        }
       } else {
-        console.error("❌ Failed to start native recording");
+        await audioRecorder.prepareToRecordAsync();
+        audioRecorder.record();
+        setState("recording");
       }
-    } else {
-      console.log("📱 Preparing expo-audio recording...");
-      await audioRecorder.prepareToRecordAsync();
-      console.log("🎙️ Starting expo-audio recording...");
-      audioRecorder.record();
+    } catch (error) {
+      setState("idle");
+      console.error("Failed to start recording:", error);
+      throw error;
     }
   };
 
   const stopRecording = async () => {
-    if (useNativeRecording && AudioSessionManager) {
-      console.log("⏹️ Stopping native recording...");
-      const uri = await AudioSessionManager.stopRecording();
-      setIsRecording(false);
+    if (state !== "recording") return;
+
+    setState("stopping");
+
+    try {
+      if (useNativeRecording && AudioSessionManager) {
+        const uri = await AudioSessionManager.stopRecording();
+        setState("idle");
+        setDurationMillis(0);
+        return uri;
+      } else {
+        await audioRecorder.stop();
+        setState("idle");
+        setDurationMillis(0);
+        return audioRecorder.uri;
+      }
+    } catch (error) {
+      setState("idle");
       setDurationMillis(0);
-      console.log("✅ Native recording stopped:", uri);
-      return uri;
-    } else {
-      await audioRecorder.stop();
-      console.log("⏹️ Stopped expo-audio recording");
-      return audioRecorder.uri;
+      console.error("Failed to stop recording:", error);
     }
   };
 
   const cancelRecording = async () => {
-    if (useNativeRecording && AudioSessionManager) {
-      await AudioSessionManager.stopRecording();
-      setIsRecording(false);
+    if (state !== "recording") return;
+
+    setState("cancelling");
+
+    try {
+      if (useNativeRecording && AudioSessionManager) {
+        await AudioSessionManager.stopRecording();
+      } else {
+        await audioRecorder.stop();
+      }
+    } catch (error) {
+      console.error("Failed to cancel recording:", error);
+    } finally {
+      setState("idle");
       setDurationMillis(0);
-      console.log("❌ Cancelled native recording");
-    } else {
-      await audioRecorder.stop();
-      console.log("❌ Cancelled expo-audio recording");
     }
   };
 
+  // Derive booleans from state for consumers
+  const isRecording =
+    state === "starting" || state === "recording" || state === "stopping";
+  const isPending =
+    state === "starting" || state === "stopping" || state === "cancelling";
+
+  console.log("[useAudioRecording] state:", state, "isRecording:", isRecording);
+
   return {
     audioRecorder,
-    recorderState: useNativeRecording
-      ? { isRecording, durationMillis }
-      : recorderState,
+    recorderState: {
+      isRecording,
+      durationMillis,
+      isPending,
+    },
     startRecording,
     stopRecording,
     cancelRecording,
