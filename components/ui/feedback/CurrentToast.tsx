@@ -1,4 +1,5 @@
 import { Toast, useToastController, useToastState } from "@tamagui/toast";
+import { Check } from "@tamagui/lucide-icons";
 import { Button, H4, XStack, YStack, isWeb } from "tamagui";
 
 export function CurrentToast() {
@@ -6,6 +7,8 @@ export function CurrentToast() {
   const toast = useToastController();
 
   if (!currentToast || currentToast.isHandledNatively) return null;
+
+  const showCheckIcon = currentToast.customData?.icon === "check";
 
   return (
     <Toast
@@ -20,12 +23,15 @@ export function CurrentToast() {
       animation="quick"
       onPress={() => toast.hide()}
     >
-      <YStack items="center" p="$2" gap="$2">
-        <Toast.Title fontWeight="bold">{currentToast.title}</Toast.Title>
-        {!!currentToast.message && (
-          <Toast.Description>{currentToast.message}</Toast.Description>
-        )}
-      </YStack>
+      <XStack items="center" p="$2" gap="$2">
+        {showCheckIcon && <Check size={18} color="$color" />}
+        <YStack items="center" gap="$2">
+          <Toast.Title fontWeight="bold">{currentToast.title}</Toast.Title>
+          {!!currentToast.message && (
+            <Toast.Description>{currentToast.message}</Toast.Description>
+          )}
+        </YStack>
+      </XStack>
     </Toast>
   );
 }
