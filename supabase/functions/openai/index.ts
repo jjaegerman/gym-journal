@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         file: audioFile,
         model: "gpt-4o-transcribe",
         prompt:
-          "The following audio is a spoken log of workout activities. Transcribe it clearly, correcting obvious speech errors while preserving meaning. Use standard exercise names and units.",
+          "Transcribe workout exercise logs. If the audio contains no clear speech, return nothing. Correct speech errors while preserving meaning. Use standard exercise names and units.",
       });
 
       textLog = transcription.text;

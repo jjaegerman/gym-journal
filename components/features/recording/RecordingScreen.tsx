@@ -4,8 +4,9 @@ import { InputModeToggle } from "./InputModeToggle";
 import { Paragraph, View, YStack, Spinner } from "tamagui";
 import { useAudioRecording, useExerciseSubmit } from "@/lib/hooks";
 import { useTabContext } from "@/lib/context/TabContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { BlurView } from "expo-blur";
+import { getRandomPrompts } from "@/lib/data/examplePrompts";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -31,6 +32,7 @@ export function RecordingScreen() {
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
   const [inputMode, setInputModeState] = useState<InputMode>("voice");
+  const examplePrompts = useMemo(() => getRandomPrompts(3), []);
 
   // Load persisted input mode on mount
   useEffect(() => {
@@ -92,15 +94,11 @@ export function RecordingScreen() {
             <YStack gap="$6" maxW={500} width="100%">
               {/* Examples */}
               <YStack gap="$2" items="center">
-                <Paragraph size="$3" opacity={0.5} text="center">
-                  "10 reps of bench press at 135 lbs"
-                </Paragraph>
-                <Paragraph size="$3" opacity={0.5} text="center">
-                  "3 sets of squats, 8 reps, 185 lbs"
-                </Paragraph>
-                <Paragraph size="$3" opacity={0.5} text="center">
-                  "Ran for 30 minutes"
-                </Paragraph>
+                {examplePrompts.map((prompt) => (
+                  <Paragraph key={prompt} size="$3" opacity={0.5} text="center">
+                    "{prompt}"
+                  </Paragraph>
+                ))}
               </YStack>
 
               {/* Input method based on mode */}
