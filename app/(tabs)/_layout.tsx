@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Button, useTheme } from "tamagui";
-import { List, Plus, User } from "@tamagui/lucide-icons";
+import { BarChart3, List, Plus, User } from "@tamagui/lucide-icons";
 import { signOut } from "@/lib/api/supabase/auth";
 import { useTabContext } from "@/lib/context/TabContext";
 
@@ -29,7 +29,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Record Activity",
+          title: "Record",
           tabBarIcon: ({ color }) => <Plus color={color as any} />,
         }}
         listeners={{
@@ -43,8 +43,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: "Workout History",
+          title: "Workouts",
           tabBarIcon: ({ color }) => <List color={color as any} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            if (tabsDisabled) {
+              e.preventDefault();
+            }
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: "Stats",
+          tabBarIcon: ({ color }) => <BarChart3 color={color as any} />,
         }}
         listeners={{
           tabPress: (e) => {

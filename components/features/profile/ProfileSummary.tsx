@@ -5,12 +5,10 @@ import {
   XStack,
   Paragraph,
   Separator,
-  Text,
 } from "tamagui";
 import { useProfileStats } from "@/lib/hooks";
 import { LoadingState, ErrorState } from "@/components/ui/feedback";
 import { StatCard } from "./StatCard";
-import { ExerciseStatsCard } from "./ExerciseStatsCard";
 import { TrendIndicator } from "./TrendIndicator";
 import {
   Activity,
@@ -26,11 +24,11 @@ import { useFocusEffect } from "expo-router";
 
 /**
  * Profile Summary Screen
- * Displays user workout statistics and per-exercise breakdown
- * Refreshes data when tab comes into focus
+ * Displays user workout statistics (all-time and recent)
+ * Exercise breakdown is now in the Stats tab
  */
 export function ProfileSummary() {
-  const { stats, exerciseStats, loading, error, refetch } = useProfileStats();
+  const { stats, loading, error, refetch } = useProfileStats();
   const [refreshing, setRefreshing] = useState(false);
   const isFirstFocus = useRef(true);
 
@@ -185,33 +183,6 @@ export function ProfileSummary() {
             }
           />
         </XStack>
-
-        <Separator my="$4" />
-
-        {/* Section 3: Exercise Breakdown */}
-        <YStack gap="$3">
-          <H3>Exercise Stats</H3>
-          <Paragraph opacity={0.7} size="$2">
-            All-time totals and recent 4-week trends
-          </Paragraph>
-        </YStack>
-
-        {exerciseStats.length > 0 ? (
-          <YStack gap="$3">
-            {exerciseStats.map((exercise) => (
-              <ExerciseStatsCard
-                key={`${exercise.category}-${JSON.stringify(
-                  exercise.modifiers
-                )}-${exercise.equipment}`}
-                exercise={exercise}
-              />
-            ))}
-          </YStack>
-        ) : (
-          <Paragraph opacity={0.5} text="center" py="$6">
-            No exercise data available yet
-          </Paragraph>
-        )}
       </YStack>
     </ScrollView>
   );

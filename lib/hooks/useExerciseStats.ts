@@ -1,17 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  getUserProfileStats,
-  type ProfileStats,
+  getExerciseStats,
+  type ExerciseStats,
 } from '@/lib/api/supabase/stats';
 import { useSession } from './useSession';
 
 /**
- * Custom hook to fetch and manage user profile statistics
- * Exercise stats are now in a separate hook (useExerciseStats)
+ * Custom hook to fetch and manage exercise statistics
+ * Separated from profile stats for the dedicated Stats tab
  */
-export function useProfileStats() {
+export function useExerciseStats() {
   const { user } = useSession();
-  const [stats, setStats] = useState<ProfileStats | null>(null);
+  const [exerciseStats, setExerciseStats] = useState<ExerciseStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -25,11 +25,11 @@ export function useProfileStats() {
       setLoading(true);
       setError(null);
 
-      const profileData = await getUserProfileStats();
-      setStats(profileData);
+      const data = await getExerciseStats();
+      setExerciseStats(data);
     } catch (err) {
-      console.error('Error fetching profile stats:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch stats'));
+      console.error('Error fetching exercise stats:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch exercise stats'));
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,7 @@ export function useProfileStats() {
   }, [fetchStats]);
 
   return {
-    stats,
+    exerciseStats,
     loading,
     error,
     refetch: fetchStats,
