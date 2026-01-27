@@ -82,7 +82,9 @@ export function useAudioRecording() {
           setState("recording");
         } else {
           setState("idle");
-          console.error("Failed to start native recording");
+          throw new Error(
+            "Could not access microphone. It may be in use by another app."
+          );
         }
       } else {
         await audioRecorder.prepareToRecordAsync();

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { Alert, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { selectionAsync } from "expo-haptics";
+import { useToastController } from "@tamagui/toast";
 import { View, useTheme, Button, Text } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
 import Animated, {
@@ -37,6 +38,7 @@ export const RecordButton = ({
   disabled?: boolean;
 }) => {
   const theme = useTheme();
+  const toast = useToastController();
 
   const recordBorderColor = theme.color.val;
   const recordIndicatorColor = theme.accent9.val;
@@ -69,11 +71,11 @@ export const RecordButton = ({
       try {
         await startCallback();
       } catch (error) {
-        Alert.alert(
-          "Recording Error",
-          "Failed to start recording. Please try again.",
-        );
-        console.error("Failed to start recording:", error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to start recording. Please try again.";
+        toast.show(message, { type: "error" });
       }
     }
   };
