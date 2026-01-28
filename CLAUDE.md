@@ -9,8 +9,8 @@ React Native fitness tracking app using Expo Router and Supabase backend. Record
 **Tech Stack:**
 - **Frontend**: React Native 0.81, Expo 54, Expo Router (file-based routing), Tamagui (UI framework)
 - **Backend**: Supabase (PostgreSQL + Edge Functions)
-- **AI**: OpenAI Structured Outputs API for transcription-to-data extraction
-- **Package Manager**: Yarn 4.5.0
+- **AI**: OpenAI `gpt-4o-transcribe` for audio, `gpt-4.1` for structured extraction
+- **Package Manager**: Yarn 4.12.0
 - **Schema Validation**: Zod for TypeScript and OpenAI schemas
 
 ## Development Commands
@@ -85,31 +85,57 @@ yarn check:tamagui             # Validate Tamagui config
 
 ## Key Architectural Patterns
 
-### Exercise Data Model
-Exercises use a **hierarchical categorization system** to group variants:
+### Database Schema
 
-1. **Exercise Type** (18 categories): Broad movement patterns (e.g., "Squat", "Deadlift", "Cardio")
-2. **Exercise Variant**: Full descriptive name with ALL modifiers (e.g., "Barbell Back Squat", "Treadmill Running")
-3. **Primary Equipment**: Optional enum for main equipment used
+#### Core Tables
 
-**Database Schema:**
-- `exercises` table: `id`, `variant` (text), `type` (text), `equipment` (text), `workout_id`
-- `logs` table: Individual sets with `weight`, `repetitions`, `distance`, `distance_unit`, `resistance_level`, `duration`, `effort`
+**workouts** - Workout sessions (auto-created via 1-hour gap detection)
+- `id`, `user_id`, `datetime`, `started_at`, `ended_at`
 
-**Stats Aggregation**: Groups by `type` only (not variant/equipment) to show combined statistics across all variants of the same exercise type.
+**logs** - Individual exercise entries (event sourcing model)
+- `id`, `workout_id`, `submission_id` (audit trail)
+- `input` (TEXT, NOT NULL) - Raw spoken/typed exercise (source of truth)
+- `category` (TEXT, NOT NULL) - Structured category enum (18 types)
+- `modifiers` (JSONB, default `[]`) - Variant descriptors (e.g., `["Incline", "Close Grip"]`)
+- `equipment` (TEXT) - Equipment used
+- Strength: `weight`, `weight_unit`, `repetitions`
+- Cardio: `distance`, `distance_unit`, `duration` (ISO 8601), `resistance_level`
+- `effort`, `datetime`
+
+**workout_submissions** - Immutable audit trail for raw input
+- `id`, `user_id`, `workout_id`, `submission_type` (audio/text)
+- `raw_text` - Original transcription (immutable)
+- `ai_response` (JSONB) - Full OpenAI structured output
+- `model_version`, `prompt_version`, `audio_duration_seconds`, `created_at`
+
+**profiles** - User profile data
+- `id` (FK to auth.users), `username`, `full_name`, `avatar_url`
+
+#### Views
+
+**workout_exercises** - Aggregates logs by `{input, category, modifiers, equipment}` within a workout
+- Returns: `total_sets`, `max_weight`, `max_reps`, `avg_weight`, `total_volume`, `total_distance`
+
+#### Key Design Patterns
+
+- **Event Sourcing**: Raw input stored in `workout_submissions` (immutable), logs derived with extracted metadata
+- **Workout Grouping**: 1-hour gap between logs = new workout (implemented in RPC functions)
+- **Stats Aggregation**: Groups by `{category, modifiers, equipment}` for trend analysis
+- **RLS**: Direct table access revoked; all reads via SECURITY DEFINER functions using `auth.uid()`
 
 ### OpenAI Integration Flow
-1. User records audio via Expo Audio
+1. User records audio via Expo Audio (native iOS module fallback for better control)
 2. Audio sent to `supabase/functions/openai/index.ts`
-3. OpenAI transcribes and extracts structured data via `responses.parse()` with Zod schema
-4. Edge function calls `add_log()` RPC function to insert into PostgreSQL
-5. Frontend refetches workout data via React Query
+3. OpenAI transcribes with `gpt-4o-transcribe`, then extracts structured data via `responses.parse()` with Zod schema using `gpt-4.1`
+4. Edge function calls `add_submission_with_logs()` RPC to insert submission + logs transactionally
+5. Frontend refetches workout data
 
 **Schema Definition**: `supabase/functions/_shared/types.ts` defines `OpenAILogDetails` schema with:
-- `exerciseType`: Enum (ExerciseCategory) - 18 broad categories
-- `exerciseVariant`: String - full name with modifiers
-- `primaryEquipment`: Optional enum (Equipment) - ~30 equipment types
-- Strength metrics: weight, weightUnit, repetitions, sets
+- `input`: Exercise exactly as spoken (source of truth)
+- `category`: Enum (ExerciseCategory) - 18 broad categories
+- `modifiers`: Array of applicable modifiers (Back, Incline, Pause, etc.)
+- `equipment`: Optional enum (Equipment) - ~30 equipment types
+- Strength metrics: weight, weightUnit, repetitions
 - Cardio metrics: distance, distanceUnit, duration, resistanceLevel
 - General: effort level
 
@@ -125,6 +151,52 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 2. **Function Overloading**: Multiple functions with same name but different parameter counts can conflict - drop old signatures explicitly
 3. **RPC Naming**: Functions called via `supabase.rpc('function_name', params)` from frontend
 4. **Return Types**: Use `RETURNS TABLE(...)` for result sets, `RETURNS void` for mutations
+
+### RPC Functions Reference
+
+#### Data Mutation
+
+**add_submission_with_logs(p_raw_text, p_submission_type, p_ai_response, p_logs, p_model_version, p_prompt_version, p_audio_duration_seconds)** → UUID
+- Primary function called by OpenAI edge function
+- Creates submission + all logs atomically in one transaction
+- Auto-groups into existing workout (if last log < 1 hour) or creates new workout
+- Skips logs missing required `input` or `category` fields
+
+**add_submission(...)** → UUID
+- Creates submission record only (used before add_log for separate operations)
+
+**add_log(p_submission_id, p_input, p_category, p_modifiers, p_equipment, p_weight, p_weight_unit, p_repetitions, p_duration, p_effort, p_distance, p_distance_unit, p_resistance_level)** → UUID
+- Creates individual log entry linked to submission
+- Validates submission belongs to current user
+
+#### Data Retrieval
+
+**get_user_workouts()** → TABLE
+- Returns all workouts for authenticated user
+- Columns: `id`, `datetime`, `exerciseCount`, `logCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3), `totalVolume`, `totalDistance`, `distanceUnit`
+- Ordered by datetime DESC
+
+**get_workout_details(p_workout_id)** → JSONB
+- Returns full workout with exercises and nested logs
+- Groups logs by `{input, category, modifiers, equipment}`
+- Structure: `{ id, datetime, exercises: [{ id, input, category, modifiers, equipment, logs: [...] }] }`
+
+**get_exercise_stats()** → TABLE
+- Returns exercise statistics grouped by `{category, modifiers, equipment}`
+- All-time: `total_workouts`, `total_volume`, `alltime_max_weight`, `alltime_max_reps`, `alltime_avg_pace`
+- Recent 4 weeks: `recent_*` columns (per-week averages)
+- Previous 4 weeks: `prev_*` columns (for trend comparison)
+
+**get_user_profile_stats()** → JSONB
+- Returns profile dashboard statistics
+- Keys: `total_workouts`, `total_hours`, `current_streak_days`, `longest_streak_days`
+- Recent/prev 4-week comparisons for trends
+
+#### Helper Functions
+
+**calculate_current_streak()** → INTEGER - Consecutive workout days (1-day grace period)
+**calculate_longest_streak()** → INTEGER - Longest consecutive streak in history
+**parse_iso8601_duration_to_seconds(duration_str)** → NUMERIC - Converts "PT30M" to seconds
 
 ### Supabase Migration Workflow
 - Migrations are **timestamp-ordered** (YYYYMMDDHHmmss_description.sql)
@@ -158,3 +230,22 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
    - File-based routing - create files in `app/` to add routes
    - Use `router.push()` from `expo-router` for navigation
    - Typed routes enabled in `app.json` - use autocomplete for route names
+
+6. **Audio Recording Dual Strategy**:
+   - iOS: Custom native module (`audio-session-manager`) for better control
+   - Android/Web: Falls back to Expo Audio API
+   - Check `Platform.OS === "ios" && AudioSessionManager?.startRecording` for native path
+
+7. **TypeScript Path Aliases**:
+   - All imports use `@/*` prefix (configured in `tsconfig.base.json`)
+   - Example: `import { supabase } from "@/lib/api/supabase/client"`
+
+8. **Required Log Fields**:
+   - `input` and `category` are NOT NULL in database
+   - `add_submission_with_logs` silently skips logs missing these fields
+   - `add_log` raises exception if these are NULL or empty
+
+9. **Duration Storage**:
+   - Stored as TEXT in ISO 8601 format (e.g., "PT30M", "PT1H15M30S")
+   - OpenAI returns ISO 8601 directly; stored without conversion
+   - Use `parse_iso8601_duration_to_seconds()` for calculations
