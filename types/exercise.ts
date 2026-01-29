@@ -28,10 +28,9 @@ export const LogSchema = z.object({
 });
 export type Log = z.infer<typeof LogSchema>;
 
-/* --- Exercise (groups logs) --- */
+/* --- Exercise (groups logs by category, modifiers, equipment) --- */
 export const ExerciseSchema = z.object({
   id: z.string(),
-  input: z.string(),
   category: z.string(),
   modifiers: z.array(z.string()).nullable().optional(),
   equipment: z.string().nullable().optional(),
