@@ -130,6 +130,8 @@ export const ExerciseLogs = ({
                     <YGroup.Item key={log.id}>
                       <ListItem
                         title={logDescription(log)}
+                        subTitle={log.input ? `"${log.input}"` : undefined}
+                        subTitleProps={{ fontStyle: "italic", color: "$color9" }}
                         iconAfter={
                           <Button
                             size="$1.5"

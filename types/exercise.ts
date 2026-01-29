@@ -10,6 +10,7 @@ export type WeightUnit = z.infer<typeof WeightUnitSchema>;
 /* --- Log (single set) --- */
 export const LogSchema = z.object({
   id: z.string(),
+  input: z.string().nullable().optional(),
   datetime: z.coerce.date(),
 
   // Strength metrics
