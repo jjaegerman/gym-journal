@@ -40,7 +40,20 @@ export async function getWorkoutDetails(workoutId: string) {
   return data as WorkoutDetails;
 }
 
-// Future functions can be added here:
-// export async function createWorkout(workoutData: CreateWorkoutInput) { }
-// export async function updateWorkout(workoutId: string, updates: Partial<Workout>) { }
-// export async function deleteWorkout(workoutId: string) { }
+/**
+ * Delete a specific log entry
+ * @param logId - The log ID to delete
+ * @returns true if deleted, false if not found (RLS may silently filter unauthorized)
+ */
+export async function deleteLog(logId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("delete_log", {
+    p_log_id: logId,
+  });
+
+  if (error) {
+    console.error("Error deleting log:", error);
+    throw error;
+  }
+
+  return data as boolean;
+}

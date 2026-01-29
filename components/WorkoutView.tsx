@@ -147,6 +147,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
         exercise={workout?.exercises[focusedExerciseIdx] || ({} as Exercise)}
         open={dialogOpen}
         setOpen={setDialogOpen}
+        onLogDeleted={getWorkout}
       />
     </YStack>
   );
