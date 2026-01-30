@@ -1,5 +1,5 @@
-import { Spacer, YStack, ScrollView } from "tamagui";
-import { WorkoutHistoryList } from "@/components/features/workout";
+import { Spacer, YStack, ScrollView, Paragraph } from "tamagui";
+import { WorkoutHistoryList, WorkoutFilters } from "@/components/features/workout";
 import { useWorkoutHistory } from "@/lib/hooks/useWorkoutHistory";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
@@ -7,15 +7,24 @@ import { RefreshControl } from "react-native";
 
 /**
  * Workout History Screen (Tab 3)
- * Displays a list of all user workouts
+ * Displays a list of all user workouts with filtering
  * Refreshes data when tab comes into focus
  */
 export default function TabThreeScreen() {
-  const { workouts, loading, error, refetch } = useWorkoutHistory();
+  const {
+    workouts,
+    loading,
+    error,
+    refetch,
+    filters,
+    setFilters,
+    filterOptions,
+    clearFilters,
+    hasActiveFilters,
+  } = useWorkoutHistory();
   const isFirstFocus = useRef(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Refetch workout data when this tab comes into focus (but skip the first mount)
   useFocusEffect(
     useCallback(() => {
       if (isFirstFocus.current) {
@@ -23,15 +32,16 @@ export default function TabThreeScreen() {
         return;
       }
       refetch();
-    }, []) // Empty deps - refetch is now stable
+    }, [])
   );
 
-  // Handle pull-to-refresh
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   }, [refetch]);
+
+  const showEmptyFilterResult = hasActiveFilters && workouts?.length === 0 && !loading;
 
   return (
     <ScrollView
@@ -42,13 +52,30 @@ export default function TabThreeScreen() {
       }
     >
       <YStack flex={1} items="center" gap="$1" bg="$background">
-        <Spacer />
-        <WorkoutHistoryList
-          workouts={workouts}
-          loading={loading}
-          error={error}
+        <WorkoutFilters
+          filters={filters}
+          filterOptions={filterOptions}
+          onFiltersChange={setFilters}
+          onClear={clearFilters}
+          hasActiveFilters={hasActiveFilters}
         />
-        <Spacer />
+        {showEmptyFilterResult ? (
+          <YStack flex={1} justify="center" items="center" px="$4">
+            <Paragraph opacity={0.6} text="center">
+              No workouts match your filters
+            </Paragraph>
+          </YStack>
+        ) : (
+          <>
+            <Spacer />
+            <WorkoutHistoryList
+              workouts={workouts}
+              loading={loading}
+              error={error}
+            />
+            <Spacer />
+          </>
+        )}
       </YStack>
     </ScrollView>
   );

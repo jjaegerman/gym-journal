@@ -21,6 +21,7 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@js-temporal/polyfill": "^0.5.1",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "^8.6.0",
     "@react-native-google-signin/google-signin": "^16.0.0",
     "@react-navigation/native": "^7.1.6",
     "@rneui/base": "^4.0.0-rc.8",

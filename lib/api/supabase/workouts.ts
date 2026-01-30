@@ -6,6 +6,18 @@ import { Workout, WorkoutDetails } from '@/types/exercise';
  * All workout-related database operations
  */
 
+export interface WorkoutFilterOptions {
+  categories: string[];
+  equipment: string[];
+}
+
+export interface WorkoutFilters {
+  categories?: string[];
+  equipment?: string[];
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
 /**
  * Get all workouts for the authenticated user
  * Automatically uses the authenticated user's ID (auth.uid())
@@ -56,4 +68,41 @@ export async function deleteLog(logId: string): Promise<boolean> {
   }
 
   return data as boolean;
+}
+
+/**
+ * Get available filter options based on user's workout data
+ */
+export async function getWorkoutFilterOptions(): Promise<WorkoutFilterOptions> {
+  const { data, error } = await supabase.rpc("get_workout_filter_options");
+
+  if (error) {
+    console.error("Error fetching workout filter options:", error);
+    throw error;
+  }
+
+  const row = data?.[0] ?? { categories: [], equipment: [] };
+  return {
+    categories: row.categories ?? [],
+    equipment: row.equipment ?? [],
+  };
+}
+
+/**
+ * Get filtered workouts for the authenticated user
+ */
+export async function filterUserWorkouts(filters: WorkoutFilters): Promise<Workout[]> {
+  const { data, error } = await supabase.rpc("filter_user_workouts", {
+    p_categories: filters.categories?.length ? filters.categories : null,
+    p_equipment: filters.equipment?.length ? filters.equipment : null,
+    p_date_from: filters.dateFrom?.toISOString() ?? null,
+    p_date_to: filters.dateTo?.toISOString() ?? null,
+  });
+
+  if (error) {
+    console.error("Error filtering workouts:", error);
+    throw error;
+  }
+
+  return data as Workout[];
 }
