@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
-  getExerciseFilterOptions,
-  getCascadedFilterOptions,
+  getFilterRelationships,
   getFilteredExerciseStats,
   ExerciseFilterOptions,
   ExerciseFilters,
   FilteredExerciseStats,
   AppliedFilters,
+  FilterRelationship,
 } from '@/lib/api/supabase/stats';
+import { computeCascadedOptions } from '@/lib/utils/filterCascade';
 import { useSession } from './useSession';
 
 export type { ExerciseFilterOptions, ExerciseFilters, FilteredExerciseStats, AppliedFilters };
@@ -21,6 +22,7 @@ export function useFilteredExerciseStats() {
     timeRange: 'all_time',
   });
   const [filterOptions, setFilterOptions] = useState<ExerciseFilterOptions | null>(null);
+  const [relationships, setRelationships] = useState<FilterRelationship[]>([]);
   const [stats, setStats] = useState<FilteredExerciseStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -69,50 +71,51 @@ export function useFilteredExerciseStats() {
     }
   }, [session?.user.id, filters, hasActiveFilters]);
 
-  const fetchFilterOptions = useCallback(async () => {
+  // Fetch relationships once on mount
+  const fetchRelationships = useCallback(async () => {
     if (!session?.user.id) return;
 
     try {
-      const options = await getExerciseFilterOptions();
-      setFilterOptions(options);
+      const data = await getFilterRelationships();
+      setRelationships(data);
+
+      // Compute initial options from relationships
+      const options = computeCascadedOptions(data);
+      setFilterOptions({
+        categories: options.categories,
+        modifiers: options.modifiers,
+        equipment: options.equipment,
+      });
     } catch (err) {
-      console.error("Error fetching exercise filter options:", err);
+      console.error("Error fetching filter relationships:", err);
     }
   }, [session?.user.id]);
 
-  // Fetch cascaded filter options when category changes
-  const fetchCascadedOptions = useCallback(async () => {
-    if (!session?.user.id) return;
-
-    try {
-      const options = await getCascadedFilterOptions({
-        categories: filters.categories,
-        equipment: filters.equipment,
-      });
-      setFilterOptions(options);
-    } catch (err) {
-      console.error("Error fetching cascaded filter options:", err);
-    }
-  }, [session?.user.id, filters.categories, filters.equipment]);
-
   fetchStatsRef.current = fetchStats;
 
-  // Initial load: get all filter options
+  // Fetch relationships once on mount
   useEffect(() => {
     if (session) {
-      fetchFilterOptions();
+      fetchRelationships();
     }
-  }, [session, fetchFilterOptions]);
+  }, [session, fetchRelationships]);
 
-  // When categories change: get cascaded options
+  // Compute cascaded options when filters change (no API call)
   useEffect(() => {
-    if (session && filters.categories?.length) {
-      fetchCascadedOptions();
-    } else if (session && !filters.categories?.length) {
-      // Reset to all options when no category selected
-      fetchFilterOptions();
-    }
-  }, [session, filters.categories, fetchCascadedOptions, fetchFilterOptions]);
+    if (relationships.length === 0) return;
+
+    const options = computeCascadedOptions(
+      relationships,
+      filters.categories,
+      filters.equipment,
+      filters.modifiers
+    );
+    setFilterOptions({
+      categories: options.categories,
+      modifiers: options.modifiers,
+      equipment: options.equipment,
+    });
+  }, [relationships, filters.categories, filters.equipment, filters.modifiers]);
 
   useEffect(() => {
     if (session) {

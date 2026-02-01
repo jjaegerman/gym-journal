@@ -2,14 +2,42 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Workout, WorkoutsArraySchema } from '@/types/exercise';
 import {
   getUserWorkouts,
-  getWorkoutFilterOptions,
+  getWorkoutFilterRelationships,
   filterUserWorkouts,
   WorkoutFilterOptions,
   WorkoutFilters,
+  WorkoutFilterRelationship,
 } from '@/lib/api/supabase/workouts';
 import { useSession } from './useSession';
 
 export type { WorkoutFilterOptions, WorkoutFilters };
+
+/**
+ * Compute cascaded filter options for workouts (category + equipment only)
+ */
+function computeWorkoutCascadedOptions(
+  relationships: WorkoutFilterRelationship[],
+  selectedCategories?: string[],
+  selectedEquipment?: string[]
+): WorkoutFilterOptions {
+  // Categories: if equipment selected, show only categories that use that equipment
+  const categories = [...new Set(
+    (selectedEquipment?.length
+      ? relationships.filter(r => r.equipment !== null && selectedEquipment.includes(r.equipment))
+      : relationships
+    ).map(r => r.category)
+  )].sort();
+
+  // Equipment: if categories selected, show only equipment used by those categories
+  const equipment = [...new Set(
+    (selectedCategories?.length
+      ? relationships.filter(r => selectedCategories.includes(r.category))
+      : relationships
+    ).filter(r => r.equipment !== null).map(r => r.equipment!)
+  )].sort();
+
+  return { categories, equipment };
+}
 
 /**
  * Custom hook to fetch and manage workout history with filtering
@@ -22,6 +50,7 @@ export function useWorkoutHistory() {
 
   const [filters, setFilters] = useState<WorkoutFilters>({});
   const [filterOptions, setFilterOptions] = useState<WorkoutFilterOptions | null>(null);
+  const [relationships, setRelationships] = useState<WorkoutFilterRelationship[]>([]);
 
   const fetchWorkoutsRef = useRef<() => Promise<void> | undefined>(undefined);
 
@@ -58,24 +87,42 @@ export function useWorkoutHistory() {
     }
   }, [session?.user.id, filters, hasActiveFilters]);
 
-  const fetchFilterOptions = useCallback(async () => {
+  // Fetch relationships once on mount
+  const fetchRelationships = useCallback(async () => {
     if (!session?.user.id) return;
 
     try {
-      const options = await getWorkoutFilterOptions();
+      const data = await getWorkoutFilterRelationships();
+      setRelationships(data);
+
+      // Compute initial options from relationships
+      const options = computeWorkoutCascadedOptions(data);
       setFilterOptions(options);
     } catch (err) {
-      console.error("Error fetching filter options:", err);
+      console.error("Error fetching filter relationships:", err);
     }
   }, [session?.user.id]);
 
   fetchWorkoutsRef.current = fetchWorkouts;
 
+  // Fetch relationships once on mount
   useEffect(() => {
     if (session) {
-      fetchFilterOptions();
+      fetchRelationships();
     }
-  }, [session, fetchFilterOptions]);
+  }, [session, fetchRelationships]);
+
+  // Compute cascaded options when filters change (no API call)
+  useEffect(() => {
+    if (relationships.length === 0) return;
+
+    const options = computeWorkoutCascadedOptions(
+      relationships,
+      filters.categories,
+      filters.equipment
+    );
+    setFilterOptions(options);
+  }, [relationships, filters.categories, filters.equipment]);
 
   useEffect(() => {
     if (session) {

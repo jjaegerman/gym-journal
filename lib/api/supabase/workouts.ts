@@ -11,6 +11,11 @@ export interface WorkoutFilterOptions {
   equipment: string[];
 }
 
+export interface WorkoutFilterRelationship {
+  category: string;
+  equipment: string | null;
+}
+
 export interface WorkoutFilters {
   categories?: string[];
   equipment?: string[];
@@ -71,21 +76,16 @@ export async function deleteLog(logId: string): Promise<boolean> {
 }
 
 /**
- * Get available filter options based on user's workout data
+ * Get all filter relationships for client-side cascading (workouts)
+ * Returns all (category, equipment) combinations in user's logs
  */
-export async function getWorkoutFilterOptions(): Promise<WorkoutFilterOptions> {
-  const { data, error } = await supabase.rpc("get_workout_filter_options");
-
-  if (error) {
-    console.error("Error fetching workout filter options:", error);
-    throw error;
-  }
-
-  const row = data?.[0] ?? { categories: [], equipment: [] };
-  return {
-    categories: row.categories ?? [],
-    equipment: row.equipment ?? [],
-  };
+export async function getWorkoutFilterRelationships(): Promise<WorkoutFilterRelationship[]> {
+  const { data, error } = await supabase.rpc("get_filter_relationships");
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    category: row.category,
+    equipment: row.equipment,
+  }));
 }
 
 /**

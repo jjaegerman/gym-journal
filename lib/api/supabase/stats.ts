@@ -113,6 +113,12 @@ export interface ExerciseFilterOptions {
   equipment: string[];
 }
 
+export interface FilterRelationship {
+  category: string;
+  equipment: string | null;
+  modifiers: string[];
+}
+
 export interface ExerciseFilters {
   categories?: string[];
   modifiers?: string[];
@@ -146,47 +152,17 @@ export interface FilteredExerciseStats {
 }
 
 /**
- * Get available filter options for exercise stats
+ * Get all filter relationships for client-side cascading
+ * Returns all (category, equipment, modifiers) combinations in user's logs
  */
-export async function getExerciseFilterOptions(): Promise<ExerciseFilterOptions> {
-  const { data, error } = await supabase.rpc("get_exercise_filter_options");
-
-  if (error) {
-    console.error("Error fetching exercise filter options:", error);
-    throw error;
-  }
-
-  const row = data?.[0] ?? { categories: [], modifiers: [], equipment: [] };
-  return {
-    categories: row.categories ?? [],
-    modifiers: row.modifiers ?? [],
-    equipment: row.equipment ?? [],
-  };
-}
-
-/**
- * Get cascaded filter options based on current selections
- * Equipment and modifiers are filtered based on selected categories
- */
-export async function getCascadedFilterOptions(
-  filters?: { categories?: string[]; equipment?: string[] }
-): Promise<ExerciseFilterOptions> {
-  const { data, error } = await supabase.rpc("get_cascaded_filter_options", {
-    p_categories: filters?.categories?.length ? filters.categories : null,
-    p_equipment: filters?.equipment?.length ? filters.equipment : null,
-  });
-
-  if (error) {
-    console.error("Error fetching cascaded filter options:", error);
-    throw error;
-  }
-
-  const row = data?.[0] ?? { categories: [], modifiers: [], equipment: [] };
-  return {
-    categories: row.categories ?? [],
+export async function getFilterRelationships(): Promise<FilterRelationship[]> {
+  const { data, error } = await supabase.rpc("get_filter_relationships");
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    category: row.category,
+    equipment: row.equipment,
     modifiers: Array.isArray(row.modifiers) ? row.modifiers : [],
-    equipment: row.equipment ?? [],
-  };
+  }));
 }
 
 /**
