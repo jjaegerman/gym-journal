@@ -136,8 +136,8 @@ export interface FilteredExerciseStats {
   totalDistance: number;
   maxWeight: number | null;
   maxReps: number | null;
-  weightPr: { value: number; date: string; exercise: string } | null;
-  repsPr: { value: number; date: string; exercise: string } | null;
+  weightPr: { value: number; date: string; exercise: string; workoutId?: string } | null;
+  repsPr: { value: number; date: string; exercise: string; workoutId?: string } | null;
   progressData: { week: string; volume: number; maxWeight: number }[];
   recentSessions: { workoutId: string; date: string; summary: string }[];
   firstLogged: string | null;
@@ -160,6 +160,31 @@ export async function getExerciseFilterOptions(): Promise<ExerciseFilterOptions>
   return {
     categories: row.categories ?? [],
     modifiers: row.modifiers ?? [],
+    equipment: row.equipment ?? [],
+  };
+}
+
+/**
+ * Get cascaded filter options based on current selections
+ * Equipment and modifiers are filtered based on selected categories
+ */
+export async function getCascadedFilterOptions(
+  filters?: { categories?: string[]; equipment?: string[] }
+): Promise<ExerciseFilterOptions> {
+  const { data, error } = await supabase.rpc("get_cascaded_filter_options", {
+    p_categories: filters?.categories?.length ? filters.categories : null,
+    p_equipment: filters?.equipment?.length ? filters.equipment : null,
+  });
+
+  if (error) {
+    console.error("Error fetching cascaded filter options:", error);
+    throw error;
+  }
+
+  const row = data?.[0] ?? { categories: [], modifiers: [], equipment: [] };
+  return {
+    categories: row.categories ?? [],
+    modifiers: Array.isArray(row.modifiers) ? row.modifiers : [],
     equipment: row.equipment ?? [],
   };
 }

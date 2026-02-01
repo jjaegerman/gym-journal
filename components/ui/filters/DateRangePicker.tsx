@@ -57,24 +57,18 @@ export function DateRangePicker({
   };
 
   const handleStartDateChange = (event: DateTimePickerEvent, date?: Date) => {
-    if (Platform.OS === "android") {
-      setShowStartPicker(false);
-    }
     if (event.type === "set" && date) {
       onChange({ preset: "custom", from: date, to: value.to ?? new Date() });
     }
-    if (Platform.OS === "ios") {
-      // iOS keeps picker open, update in real-time
-    }
+    // Close picker after interaction on both platforms
+    setShowStartPicker(false);
   };
 
   const handleEndDateChange = (event: DateTimePickerEvent, date?: Date) => {
-    if (Platform.OS === "android") {
-      setShowEndPicker(false);
-    }
     if (event.type === "set" && date) {
       onChange({ preset: "custom", from: value.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), to: date });
     }
+    setShowEndPicker(false);
   };
 
   const handleDone = () => {
@@ -99,7 +93,7 @@ export function DateRangePicker({
       modal
       snapPoints={isCustom ? [65] : [45]}
     >
-      <Sheet.Overlay animation="lazy" opacity={0.5} />
+      <Sheet.Overlay opacity={0.5} />
       <Sheet.Handle />
       <Sheet.Frame>
         <YStack flex={1} p="$4" gap="$4">
@@ -184,13 +178,26 @@ export function DateRangePicker({
                   </YStack>
                 </XStack>
 
-                {(showStartPicker || showEndPicker) && Platform.OS === "ios" && (
+                {showStartPicker && Platform.OS === "ios" && (
                   <YStack bg="$gray3" borderRadius="$3" p="$2">
                     <DateTimePicker
-                      value={showStartPicker ? (value.from ?? new Date()) : (value.to ?? new Date())}
+                      value={value.from ?? new Date()}
                       mode="date"
                       display="spinner"
-                      onChange={showStartPicker ? handleStartDateChange : handleEndDateChange}
+                      onChange={handleStartDateChange}
+                      maximumDate={value.to ?? new Date()}
+                    />
+                  </YStack>
+                )}
+
+                {showEndPicker && Platform.OS === "ios" && (
+                  <YStack bg="$gray3" borderRadius="$3" p="$2">
+                    <DateTimePicker
+                      value={value.to ?? new Date()}
+                      mode="date"
+                      display="spinner"
+                      onChange={handleEndDateChange}
+                      minimumDate={value.from}
                       maximumDate={new Date()}
                     />
                   </YStack>

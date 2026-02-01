@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   getExerciseFilterOptions,
+  getCascadedFilterOptions,
   getFilteredExerciseStats,
   ExerciseFilterOptions,
   ExerciseFilters,
@@ -79,13 +80,39 @@ export function useFilteredExerciseStats() {
     }
   }, [session?.user.id]);
 
+  // Fetch cascaded filter options when category changes
+  const fetchCascadedOptions = useCallback(async () => {
+    if (!session?.user.id) return;
+
+    try {
+      const options = await getCascadedFilterOptions({
+        categories: filters.categories,
+        equipment: filters.equipment,
+      });
+      setFilterOptions(options);
+    } catch (err) {
+      console.error("Error fetching cascaded filter options:", err);
+    }
+  }, [session?.user.id, filters.categories, filters.equipment]);
+
   fetchStatsRef.current = fetchStats;
 
+  // Initial load: get all filter options
   useEffect(() => {
     if (session) {
       fetchFilterOptions();
     }
   }, [session, fetchFilterOptions]);
+
+  // When categories change: get cascaded options
+  useEffect(() => {
+    if (session && filters.categories?.length) {
+      fetchCascadedOptions();
+    } else if (session && !filters.categories?.length) {
+      // Reset to all options when no category selected
+      fetchFilterOptions();
+    }
+  }, [session, filters.categories, fetchCascadedOptions, fetchFilterOptions]);
 
   useEffect(() => {
     if (session) {

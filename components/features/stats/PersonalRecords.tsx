@@ -5,20 +5,23 @@ interface PRData {
   value: number;
   date: string;
   exercise: string;
+  workoutId?: string;
 }
 
 interface PersonalRecordsProps {
   weightPr: PRData | null;
   repsPr: PRData | null;
+  onPRPress?: (workoutId: string) => void;
 }
 
 interface PRCardProps {
   title: string;
   pr: PRData | null;
   unit: string;
+  onPress?: () => void;
 }
 
-function PRCard({ title, pr, unit }: PRCardProps) {
+function PRCard({ title, pr, unit, onPress }: PRCardProps) {
   if (!pr) return null;
 
   const formattedDate = new Date(pr.date).toLocaleDateString("en-US", {
@@ -28,7 +31,15 @@ function PRCard({ title, pr, unit }: PRCardProps) {
   });
 
   return (
-    <Card flex={1} p="$3" bg="$red3" borderRadius="$4">
+    <Card
+      flex={1}
+      p="$3"
+      bg="$red3"
+      borderRadius="$4"
+      onPress={onPress}
+      pressStyle={onPress ? { opacity: 0.8 } : undefined}
+      cursor={onPress ? "pointer" : undefined}
+    >
       <YStack gap="$2">
         <XStack items="center" gap="$2">
           <Trophy size={16} color="$red10" />
@@ -52,7 +63,7 @@ function PRCard({ title, pr, unit }: PRCardProps) {
   );
 }
 
-export function PersonalRecords({ weightPr, repsPr }: PersonalRecordsProps) {
+export function PersonalRecords({ weightPr, repsPr, onPRPress }: PersonalRecordsProps) {
   if (!weightPr && !repsPr) {
     return null;
   }
@@ -63,8 +74,18 @@ export function PersonalRecords({ weightPr, repsPr }: PersonalRecordsProps) {
         Personal Records
       </Text>
       <XStack gap="$3">
-        <PRCard title="Weight PR" pr={weightPr} unit="lbs" />
-        <PRCard title="Reps PR" pr={repsPr} unit="reps" />
+        <PRCard
+          title="Weight PR"
+          pr={weightPr}
+          unit="lbs"
+          onPress={weightPr?.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
+        />
+        <PRCard
+          title="Reps PR"
+          pr={repsPr}
+          unit="reps"
+          onPress={repsPr?.workoutId ? () => onPRPress?.(repsPr.workoutId!) : undefined}
+        />
       </XStack>
     </YStack>
   );

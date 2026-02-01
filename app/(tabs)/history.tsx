@@ -1,4 +1,4 @@
-import { Spacer, YStack, ScrollView, Paragraph } from "tamagui";
+import { YStack, ScrollView, Paragraph } from "tamagui";
 import { WorkoutHistoryList, WorkoutFilters } from "@/components/features/workout";
 import { useWorkoutHistory } from "@/lib/hooks/useWorkoutHistory";
 import { useFocusEffect } from "expo-router";
@@ -46,12 +46,12 @@ export default function TabThreeScreen() {
   return (
     <ScrollView
       flex={1}
-      contentContainerStyle={{ grow: 1 }}
+      bg="$background"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <YStack flex={1} items="center" gap="$1" bg="$background">
+      <YStack gap="$1" pb="$4">
         <WorkoutFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -60,21 +60,17 @@ export default function TabThreeScreen() {
           hasActiveFilters={hasActiveFilters}
         />
         {showEmptyFilterResult ? (
-          <YStack flex={1} justify="center" items="center" px="$4">
+          <YStack py="$8" items="center" px="$4">
             <Paragraph opacity={0.6} text="center">
               No workouts match your filters
             </Paragraph>
           </YStack>
         ) : (
-          <>
-            <Spacer />
-            <WorkoutHistoryList
-              workouts={workouts}
-              loading={loading}
-              error={error}
-            />
-            <Spacer />
-          </>
+          <WorkoutHistoryList
+            workouts={workouts}
+            loading={loading}
+            error={error}
+          />
         )}
       </YStack>
     </ScrollView>

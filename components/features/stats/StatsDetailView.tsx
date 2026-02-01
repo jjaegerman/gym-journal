@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Separator, Button } from "tamagui";
+import { YStack, Text, Separator } from "tamagui";
 import { Dumbbell } from "@tamagui/lucide-icons";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
 import { StatsSummary } from "./StatsSummary";
@@ -70,6 +70,7 @@ export function StatsDetailView({
               <PersonalRecords
                 weightPr={stats.weightPr}
                 repsPr={stats.repsPr}
+                onPRPress={onSessionPress}
               />
             </>
           )}
@@ -89,31 +90,12 @@ export function StatsDetailView({
           <Dumbbell size={48} color="$gray8" />
           <YStack items="center" gap="$2">
             <Text fontSize="$5" fontWeight="600" color="$gray11">
-              Select an exercise
+              No exercises found
             </Text>
-            <Text fontSize="$3" color="$gray10" text="center">
-              Choose a category above to view detailed stats
+            <Text fontSize="$3" color="$gray10" textAlign="center">
+              Use the Category filter above to select an exercise
             </Text>
           </YStack>
-          {availableCategories && availableCategories.length > 0 && onCategorySelect && (
-            <XStack gap="$2" flexWrap="wrap" justify="center" px="$4" pt="$2">
-              {availableCategories.slice(0, 6).map((category) => (
-                <Button
-                  key={category}
-                  size="$3"
-                  bg="$gray4"
-                  pressStyle={{ opacity: 0.8 }}
-                  onPress={() => onCategorySelect(category)}
-                  borderRadius="$10"
-                  px="$3"
-                >
-                  <Text fontSize="$3" color="$gray11">
-                    {category}
-                  </Text>
-                </Button>
-              ))}
-            </XStack>
-          )}
         </YStack>
       ) : (
         <YStack items="center" justify="center" py="$8">

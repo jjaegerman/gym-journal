@@ -66,7 +66,6 @@ export function StatsFilters({
       ...filters,
       timeRange: value ?? 'all_time',
     });
-    setTimeRangeSheetOpen(false);
   };
 
   if (!filterOptions) return null;
@@ -126,12 +125,13 @@ export function StatsFilters({
       </ScrollView>
 
       <FilterSheet
-        title="Select Categories"
+        title="Select Category"
         options={filterOptions.categories}
         selected={filters.categories ?? []}
         onSelectionChange={handleCategoryChange}
         open={categorySheetOpen}
         onOpenChange={setCategorySheetOpen}
+        singleSelect
       />
 
       <FilterSheet
@@ -164,6 +164,7 @@ export function StatsFilters({
         }}
         open={timeRangeSheetOpen}
         onOpenChange={setTimeRangeSheetOpen}
+        singleSelect
       />
     </>
   );

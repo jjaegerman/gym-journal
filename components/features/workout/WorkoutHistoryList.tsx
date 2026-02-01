@@ -56,7 +56,7 @@ export function WorkoutHistoryList({
   });
 
   return (
-    <YStack width="90%" maxW={600} gap="$4">
+    <YStack width="90%" maxW={600} gap="$4" mx="auto">
       {periodOrder.map((period) => (
         <YStack key={period} gap="$2">
           <H5 paddingInline="$3" opacity={0.7} fontWeight="600">

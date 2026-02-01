@@ -74,7 +74,7 @@ export function ExerciseStats() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <YStack pb="$4" maxW={600} width="100%" self="center">
+      <YStack pb="$4" maxW={600} width="100%" mx="auto">
         <StatsFilters
           filters={filters}
           filterOptions={filterOptions}
