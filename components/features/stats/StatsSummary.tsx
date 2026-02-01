@@ -13,7 +13,7 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, unit }: MetricCardProps) {
   return (
-    <Card flex={1} p="$3" bg="$gray3" borderRadius="$4">
+    <Card flex={1} p="$3" bg="$gray3" borderRadius="$4" bordered>
       <YStack gap="$1">
         <Text fontSize="$2" color="$gray11" fontWeight="500">
           {label}

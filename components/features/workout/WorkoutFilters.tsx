@@ -80,8 +80,7 @@ export function WorkoutFilters({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        // @ts-expect-error - RN ScrollView supports paddingLeft
-        contentContainerStyle={{ paddingLeft: 12, paddingRight: 12, gap: 6 }}
+        contentContainerStyle={{ gap: 6 }}
       >
         <XStack gap="$1.5" py="$2">
           <FilterChip

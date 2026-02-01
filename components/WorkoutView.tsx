@@ -20,7 +20,6 @@ import {
   H6,
   YGroup,
   YStack,
-  Spacer,
   Separator,
 } from "tamagui";
 import {
@@ -73,9 +72,8 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
     lastLog && workoutStart && lastLog.getTime() !== workoutStart.getTime();
 
   return (
-    <YStack items="center" gap="$1">
-      <Spacer />
-      <Text>
+    <YStack width="90%" maxW={600} gap="$4" mx="auto" pb="$4" pt="$4">
+      <H5 paddingInline="$3" opacity={0.7} fontWeight="600">
         {workout?.datetime.toLocaleString(undefined, {
           month: "long",
           day: "numeric",
@@ -93,12 +91,9 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
             })}
           </>
         )}
-      </Text>
-      <Spacer />
+      </H5>
       <YGroup
-        items="center"
         bordered
-        width="70%"
         separator={<Separator />}
         rounded="$4"
         overflow="hidden"
@@ -125,6 +120,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
                 title={title}
                 subTitle={description}
                 size="$4"
+                paddingBlock="$3"
                 hoverTheme
                 pressTheme
                 key={exercise.id}

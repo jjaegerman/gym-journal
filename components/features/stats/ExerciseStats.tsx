@@ -74,7 +74,7 @@ export function ExerciseStats() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <YStack pb="$4" maxW={600} width="100%" mx="auto">
+      <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
         <StatsFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -83,20 +83,20 @@ export function ExerciseStats() {
           hasActiveFilters={hasActiveFilters}
         />
 
-        {stats ? (
-          <YStack px="$4">
+        <YStack>
+          {stats ? (
             <StatsDetailView
               stats={stats}
               onSessionPress={handleSessionPress}
               onCategorySelect={handleCategorySelect}
               availableCategories={filterOptions?.categories}
             />
-          </YStack>
-        ) : (
-          <YStack flex={1} items="center" justify="center" py="$8">
-            <LoadingState message="No exercise data" />
-          </YStack>
-        )}
+          ) : (
+            <YStack flex={1} items="center" justify="center" py="$8">
+              <LoadingState message="No exercise data" />
+            </YStack>
+          )}
+        </YStack>
       </YStack>
     </ScrollView>
   );

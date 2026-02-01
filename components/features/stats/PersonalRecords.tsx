@@ -1,5 +1,5 @@
-import { XStack, YStack, Text, Card } from "tamagui";
-import { Trophy } from "@tamagui/lucide-icons";
+import { XStack, YStack, Text, Card, H5 } from "tamagui";
+import { Trophy, ChevronRight } from "@tamagui/lucide-icons";
 
 interface PRData {
   value: number;
@@ -36,29 +36,33 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
       p="$3"
       bg="$red3"
       borderRadius="$4"
+      bordered
       onPress={onPress}
       pressStyle={onPress ? { opacity: 0.8 } : undefined}
       cursor={onPress ? "pointer" : undefined}
     >
-      <YStack gap="$2">
-        <XStack items="center" gap="$2">
-          <Trophy size={16} color="$red10" />
-          <Text fontSize="$2" color="$red11" fontWeight="600">
-            {title}
+      <XStack items="center" justify="space-between">
+        <YStack gap="$2" flex={1}>
+          <XStack items="center" gap="$2">
+            <Trophy size={16} color="$red10" />
+            <Text fontSize="$2" color="$red11" fontWeight="600">
+              {title}
+            </Text>
+          </XStack>
+          <XStack items="baseline" gap="$1">
+            <Text fontSize="$7" fontWeight="700" color="$red12">
+              {pr.value}
+            </Text>
+            <Text fontSize="$3" color="$red11">
+              {unit}
+            </Text>
+          </XStack>
+          <Text fontSize="$1" color="$red10" numberOfLines={1}>
+            {formattedDate}
           </Text>
-        </XStack>
-        <XStack items="baseline" gap="$1">
-          <Text fontSize="$7" fontWeight="700" color="$red12">
-            {pr.value}
-          </Text>
-          <Text fontSize="$3" color="$red11">
-            {unit}
-          </Text>
-        </XStack>
-        <Text fontSize="$1" color="$red10" numberOfLines={1}>
-          {formattedDate}
-        </Text>
-      </YStack>
+        </YStack>
+        {onPress && <ChevronRight size={16} color="$red10" />}
+      </XStack>
     </Card>
   );
 }
@@ -70,9 +74,9 @@ export function PersonalRecords({ weightPr, repsPr, onPRPress }: PersonalRecords
 
   return (
     <YStack gap="$2">
-      <Text fontSize="$4" fontWeight="600">
+      <H5 opacity={0.7} fontWeight="600">
         Personal Records
-      </Text>
+      </H5>
       <XStack gap="$3">
         <PRCard
           title="Weight PR"

@@ -1,4 +1,4 @@
-import { YStack, Text, Separator } from "tamagui";
+import { YStack, Text, Separator, H3, H5 } from "tamagui";
 import { Dumbbell } from "@tamagui/lucide-icons";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
 import { StatsSummary } from "./StatsSummary";
@@ -25,25 +25,26 @@ export function StatsDetailView({
   return (
     <YStack gap="$4">
       <YStack gap="$1">
-        <Text fontSize="$7" fontWeight="700">
+        <H3 opacity={0.7} fontWeight="600">
           {stats.displayName}
-        </Text>
+          {stats.firstLogged && stats.lastLogged && (
+            <>
+              {" · "}
+              {new Date(stats.firstLogged).toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              })}
+              {" – "}
+              {new Date(stats.lastLogged).toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              })}
+            </>
+          )}
+        </H3>
         {stats.matchedExercises > 1 && (
-          <Text fontSize="$3" color="$gray11">
+          <Text fontSize="$3" opacity={0.5}>
             Combined stats from {stats.matchedExercises} exercises
-          </Text>
-        )}
-        {stats.firstLogged && stats.lastLogged && (
-          <Text fontSize="$2" color="$gray10">
-            {new Date(stats.firstLogged).toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            })}{" "}
-            –{" "}
-            {new Date(stats.lastLogged).toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            })}
           </Text>
         )}
       </YStack>
@@ -56,9 +57,9 @@ export function StatsDetailView({
             <>
               <Separator />
               <YStack gap="$2">
-                <Text fontSize="$4" fontWeight="600">
+                <H5 opacity={0.7} fontWeight="600">
                   Progress
-                </Text>
+                </H5>
                 <ProgressChart data={stats.progressData} />
               </YStack>
             </>

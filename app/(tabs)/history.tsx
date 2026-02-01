@@ -51,7 +51,7 @@ export default function TabThreeScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <YStack gap="$1" pb="$4">
+      <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
         <WorkoutFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -60,8 +60,8 @@ export default function TabThreeScreen() {
           hasActiveFilters={hasActiveFilters}
         />
         {showEmptyFilterResult ? (
-          <YStack py="$8" items="center" px="$4">
-            <Paragraph opacity={0.6} text="center">
+          <YStack py="$8" items="center">
+            <Paragraph opacity={0.6}>
               No workouts match your filters
             </Paragraph>
           </YStack>
