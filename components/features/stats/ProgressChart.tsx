@@ -43,7 +43,9 @@ export function ProgressChart({ data }: ProgressChartProps) {
   const innerWidth = chartWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
-  const values = data.map((d) => (metric === "volume" ? d.volume : d.maxWeight));
+  const values = data.map((d) =>
+    metric === "volume" ? d.volume : d.maxWeight,
+  );
   const maxValue = Math.max(...values, 1);
   const minValue = Math.min(...values, 0);
   const valueRange = maxValue - minValue || 1;
@@ -62,8 +64,9 @@ export function ProgressChart({ data }: ProgressChartProps) {
     .join(" ");
 
   const gridLines = 4;
-  const yGridValues = Array.from({ length: gridLines + 1 }, (_, i) =>
-    minValue + (valueRange / gridLines) * i
+  const yGridValues = Array.from(
+    { length: gridLines + 1 },
+    (_, i) => minValue + (valueRange / gridLines) * i,
   );
 
   return (
@@ -121,12 +124,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
             ))}
           </G>
 
-          <Path
-            d={pathData}
-            stroke="#3b82f6"
-            strokeWidth={2}
-            fill="none"
-          />
+          <Path d={pathData} stroke="#3b82f6" strokeWidth={2} fill="none" />
 
           {data.map((d, i) => (
             <Circle
@@ -142,13 +140,24 @@ export function ProgressChart({ data }: ProgressChartProps) {
 
       <XStack justify="space-between" px="$2">
         <Text fontSize="$1" color="$gray10">
-          {data[0]?.week ? new Date(data[0].week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+          {data[0]?.week
+            ? new Date(data[0].week).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
+            : ""}
         </Text>
         <Text fontSize="$2" color="$gray11">
-          {formatValue(maxValue, metric)} {metric === "volume" ? "lbs" : "lbs"} max
+          {formatValue(maxValue, metric)} {metric === "volume" ? "lbs" : "lbs"}{" "}
+          max
         </Text>
         <Text fontSize="$1" color="$gray10">
-          {data[data.length - 1]?.week ? new Date(data[data.length - 1].week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+          {data[data.length - 1]?.week
+            ? new Date(data[data.length - 1].week).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
+            : ""}
         </Text>
       </XStack>
     </YStack>

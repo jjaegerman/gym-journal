@@ -14,10 +14,13 @@ export { capitalizeEachWord, capitalize, toTitleCase } from "./string";
 // Date utilities
 export {
   formatRelativeDate,
-  getTimePeriodLabel,
   formatDuration,
   parseIsoDuration,
   formatIsoDuration,
+  getMonthLabel,
+  getWeekRange,
+  getSpecialDayLabel,
+  getWeekKey,
 } from "./date";
 
 // Exercise utilities

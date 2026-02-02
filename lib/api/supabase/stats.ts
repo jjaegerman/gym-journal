@@ -173,7 +173,7 @@ export async function getFilteredExerciseStats(
 ): Promise<FilteredExerciseStats> {
   const { data, error } = await supabase.rpc("get_filtered_exercise_stats", {
     p_categories: filters?.categories?.length ? filters.categories : null,
-    p_modifiers: filters?.modifiers?.length ? JSON.stringify(filters.modifiers) : null,
+    p_modifiers: filters?.modifiers?.length ? filters.modifiers : null,
     p_equipment: filters?.equipment?.length ? filters.equipment : null,
     p_time_range: filters?.timeRange ?? 'all_time',
   });

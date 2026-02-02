@@ -41,24 +41,13 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
     secondLineParts.push(`• ${previewText}`);
   }
 
-  // Build stats (volume/distance)
-  const statsParts: string[] = [];
-  if (workout.totalVolume && workout.totalVolume > 0) {
-    statsParts.push(
-      `${Math.round(workout.totalVolume).toLocaleString()} lbs volume`
-    );
-  }
-
+  // Add distance if present
   if (workout.totalDistance && workout.totalDistance > 0) {
     const unit = workout.distanceUnit || "mi";
-    statsParts.push(`${workout.totalDistance.toFixed(1)} ${unit}`);
+    secondLineParts.push(`${workout.totalDistance.toFixed(1)} ${unit}`);
   }
 
-  // Combine exercise preview and stats with separator
-  const secondLine =
-    statsParts.length > 0
-      ? [...secondLineParts, ...statsParts].join(" • ")
-      : secondLineParts.join(" • ");
+  const secondLine = secondLineParts.join(" • ");
 
   const subtitle =
     secondLine.length > 0 ? `${firstLine}\n${secondLine}` : firstLine;

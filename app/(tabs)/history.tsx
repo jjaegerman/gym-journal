@@ -1,9 +1,8 @@
-import { YStack, ScrollView, Paragraph } from "tamagui";
+import { YStack, Paragraph, View } from "tamagui";
 import { WorkoutHistoryList, WorkoutFilters } from "@/components/features/workout";
 import { useWorkoutHistory } from "@/lib/hooks/useWorkoutHistory";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { RefreshControl } from "react-native";
 
 /**
  * Workout History Screen (Tab 3)
@@ -44,14 +43,8 @@ export default function TabThreeScreen() {
   const showEmptyFilterResult = hasActiveFilters && workouts?.length === 0 && !loading;
 
   return (
-    <ScrollView
-      flex={1}
-      bg="$background"
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
+    <View flex={1} bg="$background">
+      <YStack gap="$1" maxW={600} width="90%" mx="auto">
         <WorkoutFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -59,20 +52,24 @@ export default function TabThreeScreen() {
           onClear={clearFilters}
           hasActiveFilters={hasActiveFilters}
         />
-        {showEmptyFilterResult ? (
-          <YStack py="$8" items="center">
-            <Paragraph opacity={0.6}>
-              No workouts match your filters
-            </Paragraph>
-          </YStack>
-        ) : (
+      </YStack>
+      {showEmptyFilterResult ? (
+        <YStack py="$8" items="center">
+          <Paragraph opacity={0.6}>
+            No workouts match your filters
+          </Paragraph>
+        </YStack>
+      ) : (
+        <YStack flex={1} maxW={600} width="90%" mx="auto">
           <WorkoutHistoryList
             workouts={workouts}
             loading={loading}
             error={error}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           />
-        )}
-      </YStack>
-    </ScrollView>
+        </YStack>
+      )}
+    </View>
   );
 }

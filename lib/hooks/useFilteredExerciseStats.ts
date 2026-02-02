@@ -31,7 +31,6 @@ export function useFilteredExerciseStats() {
 
   const hasActiveFilters = useCallback(() => {
     return !!(
-      (filters.categories && filters.categories.length > 0) ||
       (filters.modifiers && filters.modifiers.length > 0) ||
       (filters.equipment && filters.equipment.length > 0)
     );
@@ -131,7 +130,10 @@ export function useFilteredExerciseStats() {
   }, []);
 
   const clearFilters = useCallback(() => {
-    setFilters({ timeRange: 'all_time' });
+    setFilters((prev) => ({
+      categories: prev.categories,
+      timeRange: 'all_time',
+    }));
   }, []);
 
   return {

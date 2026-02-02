@@ -63,42 +63,6 @@ export function formatRelativeDate(date: Date): string {
 }
 
 /**
- * Get time period label for grouping workouts
- * @param date - Date to categorize
- * @returns Period label
- */
-export function getTimePeriodLabel(date: Date): string {
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (date.toDateString() === now.toDateString()) {
-    return "Today";
-  }
-
-  if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday";
-  }
-
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 7) {
-    return "This Week";
-  }
-
-  if (diffDays < 14) {
-    return "Last Week";
-  }
-
-  if (diffDays < 30) {
-    return "This Month";
-  }
-
-  return "Earlier";
-}
-
-/**
  * Format duration in minutes to friendly string
  * @param minutes - Duration in minutes
  * @returns Formatted duration string
@@ -167,4 +131,71 @@ export function formatStopwatch(millis: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Get month label for section headers
+ * @param date - Date to format
+ * @returns Month and year label (e.g., "January 2026")
+ */
+export function getMonthLabel(date: Date): string {
+  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+
+/**
+ * Get the start of the week (Sunday) for a given date
+ */
+function getWeekStart(date: Date): Date {
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - date.getDay());
+  return weekStart;
+}
+
+/**
+ * Get week range label for grouping workouts
+ * @param date - Any date within the week
+ * @returns Week range string (e.g., "Jan 20–26" or "Jan 27 – Feb 2")
+ */
+export function getWeekRange(date: Date): string {
+  const weekStart = getWeekStart(date);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  const startMonth = weekStart.toLocaleDateString(undefined, { month: "short" });
+  const endMonth = weekEnd.toLocaleDateString(undefined, { month: "short" });
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${weekStart.getDate()}–${weekEnd.getDate()}`;
+  }
+  return `${startMonth} ${weekStart.getDate()} – ${endMonth} ${weekEnd.getDate()}`;
+}
+
+/**
+ * Check if date is today or yesterday
+ * @param date - Date to check
+ * @returns "Today", "Yesterday", or null
+ */
+export function getSpecialDayLabel(date: Date): string | null {
+  const now = new Date();
+  if (date.toDateString() === now.toDateString()) return "Today";
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return null;
+}
+
+/**
+ * Get unique week key for grouping (year + week number)
+ * @param date - Date to get week key for
+ * @returns Week key string (e.g., "2026-W05")
+ */
+export function getWeekKey(date: Date): string {
+  const weekStart = getWeekStart(date);
+  const year = weekStart.getFullYear();
+  const startOfYear = new Date(year, 0, 1);
+  const daysSinceStart = Math.floor(
+    (weekStart.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
+  );
+  const weekNumber = Math.ceil((daysSinceStart + startOfYear.getDay() + 1) / 7);
+  return `${year}-W${weekNumber.toString().padStart(2, "0")}`;
 }

@@ -1,4 +1,4 @@
-import { ScrollView, YStack } from "tamagui";
+import { ScrollView, YStack, View, Paragraph } from "tamagui";
 import { useFilteredExerciseStats } from "@/lib/hooks";
 import { LoadingState, ErrorState } from "@/components/ui/feedback";
 import { StatsFilters } from "./StatsFilters";
@@ -67,14 +67,8 @@ export function ExerciseStats() {
   }
 
   return (
-    <ScrollView
-      flex={1}
-      bg="$background"
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
-    >
-      <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
+    <View flex={1} bg="$background">
+      <YStack maxW={600} width="90%" mx="auto">
         <StatsFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -82,8 +76,14 @@ export function ExerciseStats() {
           onClear={clearFilters}
           hasActiveFilters={hasActiveFilters}
         />
-
-        <YStack>
+      </YStack>
+      <ScrollView
+        flex={1}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
           {stats ? (
             <StatsDetailView
               stats={stats}
@@ -93,11 +93,11 @@ export function ExerciseStats() {
             />
           ) : (
             <YStack flex={1} items="center" justify="center" py="$8">
-              <LoadingState message="No exercise data" />
+              <Paragraph opacity={0.6}>No exercise data yet</Paragraph>
             </YStack>
           )}
         </YStack>
-      </YStack>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
