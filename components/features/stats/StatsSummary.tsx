@@ -13,7 +13,7 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, unit }: MetricCardProps) {
   return (
-    <Card flex={1} p="$3" bg="$gray3" borderRadius="$4" bordered>
+    <Card flex={1} flexBasis={0} p="$3" bg="$gray3" borderRadius="$4" bordered>
       <YStack gap="$1">
         <Text fontSize="$2" color="$gray11" fontWeight="500">
           {label}
@@ -48,7 +48,7 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
   const hasCardioData = stats.totalDistance > 0;
 
   return (
-    <YStack gap="$3">
+    <YStack gap="$3" width="100%">
       <XStack gap="$3">
         <MetricCard label="Workouts" value={stats.totalWorkouts} />
         <MetricCard label="Total Sets" value={stats.totalSets} />
@@ -61,15 +61,16 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
             value={formatVolume(stats.totalVolume)}
             unit="lbs"
           />
-          {stats.maxWeight !== null && (
+          {stats.maxWeight !== null ? (
             <MetricCard
               label="Max Weight"
               value={stats.maxWeight}
               unit="lbs"
             />
-          )}
-          {stats.maxReps !== null && !stats.maxWeight && (
+          ) : stats.maxReps !== null ? (
             <MetricCard label="Max Reps" value={stats.maxReps} />
+          ) : (
+            <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
           )}
         </XStack>
       )}
@@ -77,7 +78,7 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
       {hasStrengthData && stats.maxReps !== null && stats.maxWeight !== null && (
         <XStack gap="$3">
           <MetricCard label="Max Reps" value={stats.maxReps} />
-          <Card flex={1} p="$3" bg="transparent" />
+          <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
         </XStack>
       )}
 
@@ -88,7 +89,7 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
             value={stats.totalDistance.toFixed(1)}
             unit="mi"
           />
-          <Card flex={1} p="$3" bg="transparent" />
+          <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
         </XStack>
       )}
     </YStack>

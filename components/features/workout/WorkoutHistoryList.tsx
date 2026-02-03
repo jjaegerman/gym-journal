@@ -12,6 +12,14 @@ import {
   getWeekKey,
 } from "@/lib/utils";
 
+function ContentWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <YStack maxW={600} width="90%" mx="auto">
+      {children}
+    </YStack>
+  );
+}
+
 interface WeekGroup {
   weekKey: string;
   weekLabel: string;
@@ -148,14 +156,13 @@ export function WorkoutHistoryList({
       stickySectionHeadersEnabled={true}
       keyExtractor={(item) => item.weekKey}
       renderSectionHeader={({ section }) => (
-        <H4
-          bg="$background"
-          py="$2"
-          px="$3"
-          fontWeight="700"
-        >
-          {section.title}
-        </H4>
+        <YStack bg="$background">
+          <ContentWrapper>
+            <H4 py="$2" px="$3" fontWeight="700">
+              {section.title}
+            </H4>
+          </ContentWrapper>
+        </YStack>
       )}
       renderItem={({ item: weekGroup, section }) => {
         // For special sections (Today/Yesterday), don't show week label
@@ -163,28 +170,30 @@ export function WorkoutHistoryList({
           !section.monthKey.startsWith("special-") && weekGroup.weekLabel;
 
         return (
-          <YStack pb="$3">
-            {showWeekLabel && (
-              <H6 px="$3" py="$1" opacity={0.6} fontWeight="500">
-                {weekGroup.weekLabel}
-              </H6>
-            )}
-            <YGroup
-              bordered
-              separator={<Separator />}
-              rounded="$4"
-              overflow="hidden"
-            >
-              {weekGroup.workouts.map((workout) => (
-                <YGroup.Item key={workout.id}>
-                  <WorkoutCard
-                    workout={workout}
-                    onPress={() => handleWorkoutPress(workout.id)}
-                  />
-                </YGroup.Item>
-              ))}
-            </YGroup>
-          </YStack>
+          <ContentWrapper>
+            <YStack pb="$3">
+              {showWeekLabel && (
+                <H6 px="$3" py="$1" opacity={0.6} fontWeight="500">
+                  {weekGroup.weekLabel}
+                </H6>
+              )}
+              <YGroup
+                bordered
+                separator={<Separator />}
+                rounded="$4"
+                overflow="hidden"
+              >
+                {weekGroup.workouts.map((workout) => (
+                  <YGroup.Item key={workout.id}>
+                    <WorkoutCard
+                      workout={workout}
+                      onPress={() => handleWorkoutPress(workout.id)}
+                    />
+                  </YGroup.Item>
+                ))}
+              </YGroup>
+            </YStack>
+          </ContentWrapper>
         );
       }}
       refreshControl={

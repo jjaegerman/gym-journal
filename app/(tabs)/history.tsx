@@ -60,15 +60,13 @@ export default function TabThreeScreen() {
           </Paragraph>
         </YStack>
       ) : (
-        <YStack flex={1} maxW={600} width="90%" mx="auto">
-          <WorkoutHistoryList
-            workouts={workouts}
-            loading={loading}
-            error={error}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        </YStack>
+        <WorkoutHistoryList
+          workouts={workouts}
+          loading={loading}
+          error={error}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
       )}
     </View>
   );
