@@ -1,4 +1,4 @@
-import { YStack, Text, Separator, H3, H5 } from "tamagui";
+import { YStack, Text, Separator, H5 } from "tamagui";
 import { Dumbbell } from "@tamagui/lucide-icons";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
 import { StatsSummary } from "./StatsSummary";
@@ -24,33 +24,11 @@ export function StatsDetailView({
 
   return (
     <YStack gap="$4">
-      <YStack gap="$1">
-        <H3 opacity={0.7} fontWeight="600">
-          {stats.displayName}
-          {stats.firstLogged && stats.lastLogged && (
-            <>
-              {" · "}
-              {new Date(stats.firstLogged).toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
-              })}
-              {" – "}
-              {new Date(stats.lastLogged).toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
-              })}
-            </>
-          )}
-        </H3>
-        {stats.matchedExercises > 1 && (
-          <Text fontSize="$3" opacity={0.5}>
-            Combined stats from {stats.matchedExercises} exercises
-          </Text>
-        )}
-      </YStack>
-
       {hasData ? (
         <>
+          <H5 opacity={0.7} fontWeight="600">
+            Summary
+          </H5>
           <StatsSummary stats={stats} />
 
           {stats.progressData.length > 1 && (

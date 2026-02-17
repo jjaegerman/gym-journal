@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { ScrollView, XStack, Button, Text } from "tamagui";
+import { useState, useMemo } from "react";
+import { XStack, Button } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
-import { FilterChip, FilterSheet } from "@/components/ui/filters";
+import { FilterChip, FilterSheet, MoreFiltersSheet } from "@/components/ui/filters";
 import {
   ExerciseFilters,
   ExerciseFilterOptions,
@@ -32,12 +32,14 @@ export function StatsFilters({
   hasActiveFilters,
 }: StatsFiltersProps) {
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
-  const [modifiersSheetOpen, setModifiersSheetOpen] = useState(false);
-  const [equipmentSheetOpen, setEquipmentSheetOpen] = useState(false);
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [timeRangeSheetOpen, setTimeRangeSheetOpen] = useState(false);
 
   const currentTimeRangeLabel =
     TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ?? "All time";
+
+  const moreFiltersCount =
+    (filters.modifiers?.length ?? 0) + (filters.equipment?.length ?? 0);
 
   const handleCategoryChange = (selected: string[]) => {
     onFiltersChange({
@@ -46,17 +48,19 @@ export function StatsFilters({
     });
   };
 
-  const handleModifiersChange = (selected: string[]) => {
+  const handleMoreFilterChange = (sectionIndex: number, selected: string[]) => {
+    const key = sectionIndex === 0 ? 'modifiers' : 'equipment';
     onFiltersChange({
       ...filters,
-      modifiers: selected.length > 0 ? selected : undefined,
+      [key]: selected.length > 0 ? selected : undefined,
     });
   };
 
-  const handleEquipmentChange = (selected: string[]) => {
+  const handleMoreFiltersClear = () => {
     onFiltersChange({
       ...filters,
-      equipment: selected.length > 0 ? selected : undefined,
+      modifiers: undefined,
+      equipment: undefined,
     });
   };
 
@@ -68,60 +72,53 @@ export function StatsFilters({
     });
   };
 
+  const moreSections = useMemo(
+    () => [
+      {
+        title: "Modifiers",
+        options: filterOptions?.modifiers ?? [],
+        selected: filters.modifiers ?? [],
+      },
+      {
+        title: "Equipment",
+        options: filterOptions?.equipment ?? [],
+        selected: filters.equipment ?? [],
+      },
+    ],
+    [filterOptions?.modifiers, filterOptions?.equipment, filters.modifiers, filters.equipment]
+  );
+
   if (!filterOptions) return null;
 
   return (
     <>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 6 }}
-      >
-        <XStack gap="$1.5" py="$2">
-          <FilterChip
-            label="Category"
-            selectedCount={filters.categories?.length ?? 0}
-            onPress={() => setCategorySheetOpen(true)}
-          />
-          <FilterChip
-            label="Modifiers"
-            selectedCount={filters.modifiers?.length ?? 0}
-            onPress={() => setModifiersSheetOpen(true)}
-          />
-          <FilterChip
-            label="Equipment"
-            selectedCount={filters.equipment?.length ?? 0}
-            onPress={() => setEquipmentSheetOpen(true)}
-          />
+      <XStack gap="$1.5" py="$2" flexWrap="wrap">
+        <FilterChip
+          label={filters.categories?.[0] ?? "Category"}
+          active={!!filters.categories?.length}
+          onPress={() => setCategorySheetOpen(true)}
+        />
+        <FilterChip
+          label="Filter"
+          selectedCount={moreFiltersCount}
+          onPress={() => setMoreFiltersOpen(true)}
+        />
+        <FilterChip
+          label={currentTimeRangeLabel}
+          active={filters.timeRange !== "all_time"}
+          onPress={() => setTimeRangeSheetOpen(true)}
+        />
+        {hasActiveFilters && (
           <Button
             size="$3"
-            chromeless={filters.timeRange === "all_time"}
-            bg={filters.timeRange !== "all_time" ? "$blue4" : "$gray4"}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={() => setTimeRangeSheetOpen(true)}
+            chromeless
+            onPress={onClear}
             borderRadius="$10"
-            px="$2.5"
-          >
-            <Text
-              fontSize="$3"
-              fontWeight={filters.timeRange !== "all_time" ? "600" : "400"}
-              color={filters.timeRange !== "all_time" ? "$blue11" : "$gray11"}
-            >
-              {currentTimeRangeLabel}
-            </Text>
-          </Button>
-          {hasActiveFilters && (
-            <Button
-              size="$3"
-              chromeless
-              onPress={onClear}
-              borderRadius="$10"
-              px="$2"
-              icon={<X size={14} color="$gray11" />}
-            />
-          )}
-        </XStack>
-      </ScrollView>
+            px="$2"
+            icon={<X size={14} color="$gray11" />}
+          />
+        )}
+      </XStack>
 
       <FilterSheet
         title="Select Category"
@@ -133,22 +130,12 @@ export function StatsFilters({
         singleSelect
       />
 
-      <FilterSheet
-        title="Select Modifiers"
-        options={filterOptions.modifiers}
-        selected={filters.modifiers ?? []}
-        onSelectionChange={handleModifiersChange}
-        open={modifiersSheetOpen}
-        onOpenChange={setModifiersSheetOpen}
-      />
-
-      <FilterSheet
-        title="Select Equipment"
-        options={filterOptions.equipment}
-        selected={filters.equipment ?? []}
-        onSelectionChange={handleEquipmentChange}
-        open={equipmentSheetOpen}
-        onOpenChange={setEquipmentSheetOpen}
+      <MoreFiltersSheet
+        sections={moreSections}
+        onChange={handleMoreFilterChange}
+        onClear={handleMoreFiltersClear}
+        open={moreFiltersOpen}
+        onOpenChange={setMoreFiltersOpen}
       />
 
       <FilterSheet

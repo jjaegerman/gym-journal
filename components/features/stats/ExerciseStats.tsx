@@ -83,7 +83,7 @@ export function ExerciseStats() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        <YStack gap="$1" pb="$4" maxW={600} width="90%" mx="auto">
+        <YStack gap="$1" pb="$4" pt="$2" maxW={600} width="90%" mx="auto">
           {stats ? (
             <StatsDetailView
               stats={stats}

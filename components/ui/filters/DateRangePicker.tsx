@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Platform } from "react-native";
-import { Sheet, YStack, XStack, Text, Button, Separator } from "tamagui";
-import { Check, Calendar } from "@tamagui/lucide-icons";
+import { Sheet, YStack, XStack, Text, Button, Separator, RadioGroup } from "tamagui";
+import { Calendar } from "@tamagui/lucide-icons";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -103,35 +103,35 @@ export function DateRangePicker({
 
           <Separator />
 
-          <YStack gap="$1">
-            {DATE_RANGE_OPTIONS.map((option) => {
-              const isSelected = currentPreset === option.value;
-              return (
-                <XStack
-                  key={option.value}
-                  items="center"
-                  justify="space-between"
-                  py="$3"
-                  px="$2"
-                  pressStyle={{ opacity: 0.7 }}
-                  onPress={() => handlePresetSelect(option.value)}
-                  cursor="pointer"
-                  borderRadius="$3"
-                  bg={isSelected ? "$blue3" : undefined}
-                  hoverStyle={{ bg: isSelected ? "$blue3" : "$gray3" }}
-                >
-                  <Text
-                    fontSize="$4"
-                    fontWeight={isSelected ? "600" : "400"}
-                    color={isSelected ? "$blue11" : "$color"}
+          <RadioGroup
+            value={currentPreset}
+            onValueChange={(value) => handlePresetSelect(value as DateRangePreset)}
+          >
+            <YStack gap="$2">
+              {DATE_RANGE_OPTIONS.map((option, index) => {
+                const id = `date-range-${index}`;
+                return (
+                  <XStack
+                    key={option.value}
+                    items="center"
+                    gap="$3"
+                    py="$3"
+                    px="$2"
+                    pressStyle={{ opacity: 0.7 }}
+                    onPress={() => handlePresetSelect(option.value)}
+                    cursor="pointer"
+                    borderRadius="$3"
+                    hoverStyle={{ bg: "$gray3" }}
                   >
-                    {option.label}
-                  </Text>
-                  {isSelected && <Check size={20} color="$blue10" />}
-                </XStack>
-              );
-            })}
-          </YStack>
+                    <RadioGroup.Item value={option.value} id={id} size="$4">
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <Text fontSize="$4">{option.label}</Text>
+                  </XStack>
+                );
+              })}
+            </YStack>
+          </RadioGroup>
 
           {isCustom && (
             <>

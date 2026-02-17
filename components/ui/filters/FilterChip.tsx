@@ -3,13 +3,14 @@ import { ChevronDown } from "@tamagui/lucide-icons";
 
 interface FilterChipProps {
   label: string;
-  selectedCount: number;
+  selectedCount?: number;
+  active?: boolean;
   onPress: () => void;
 }
 
-export function FilterChip({ label, selectedCount, onPress }: FilterChipProps) {
-  const isActive = selectedCount > 0;
-  const displayText = isActive ? `${label} (${selectedCount})` : label;
+export function FilterChip({ label, selectedCount = 0, active, onPress }: FilterChipProps) {
+  const isActive = active ?? selectedCount > 0;
+  const displayText = selectedCount > 0 ? `${label} (${selectedCount})` : label;
 
   return (
     <Button

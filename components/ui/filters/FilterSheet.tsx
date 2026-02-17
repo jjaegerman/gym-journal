@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import {
   Sheet,
   YStack,
@@ -9,7 +9,6 @@ import {
   ScrollView,
   Separator,
   RadioGroup,
-  Label,
 } from "tamagui";
 import { Check } from "@tamagui/lucide-icons";
 
@@ -32,27 +31,15 @@ export function FilterSheet({
   onOpenChange,
   singleSelect = false,
 }: FilterSheetProps) {
-  const [localSelected, setLocalSelected] = useState<string[]>(selected);
-
-  useEffect(() => {
-    setLocalSelected(selected);
-  }, [selected]);
-
-  const toggleOption = (option: string) => {
-    setLocalSelected((prev) =>
-      prev.includes(option)
-        ? prev.filter((o) => o !== option)
-        : [...prev, option]
-    );
+  const handleToggle = (option: string) => {
+    const next = selected.includes(option)
+      ? selected.filter((o) => o !== option)
+      : [...selected, option];
+    onSelectionChange(next);
   };
 
   const handleClear = () => {
-    setLocalSelected([]);
-  };
-
-  const handleApply = () => {
-    onSelectionChange(localSelected);
-    onOpenChange(false);
+    onSelectionChange([]);
   };
 
   return (
@@ -83,29 +70,36 @@ export function FilterSheet({
           <ScrollView flex={1}>
             {singleSelect ? (
               <RadioGroup
-                value={localSelected[0] ?? ""}
-                onValueChange={(value) => setLocalSelected([value])}
+                value={selected[0] ?? ""}
+                onValueChange={(value) => {
+                  onSelectionChange([value]);
+                  onOpenChange(false);
+                }}
               >
                 <YStack gap="$2">
                   {options.map((option, index) => {
                     const id = `radio-${index}`;
                     return (
-                      <Label
+                      <XStack
                         key={option}
-                        htmlFor={id}
-                        flexDirection="row"
                         items="center"
                         gap="$3"
                         py="$3"
                         px="$2"
                         pressStyle={{ opacity: 0.7 }}
+                        onPress={() => {
+                          onSelectionChange([option]);
+                          onOpenChange(false);
+                        }}
                         cursor="pointer"
+                        borderRadius="$3"
+                        hoverStyle={{ bg: "$gray3" }}
                       >
                         <RadioGroup.Item value={option} id={id} size="$4">
                           <RadioGroup.Indicator />
                         </RadioGroup.Item>
                         <Text fontSize="$4">{option}</Text>
-                      </Label>
+                      </XStack>
                     );
                   })}
                 </YStack>
@@ -113,7 +107,7 @@ export function FilterSheet({
             ) : (
               <YStack gap="$2">
                 {options.map((option) => {
-                  const isSelected = localSelected.includes(option);
+                  const isSelected = selected.includes(option);
                   return (
                     <XStack
                       key={option}
@@ -122,14 +116,14 @@ export function FilterSheet({
                       py="$3"
                       px="$2"
                       pressStyle={{ opacity: 0.7 }}
-                      onPress={() => toggleOption(option)}
+                      onPress={() => handleToggle(option)}
                       cursor="pointer"
                       borderRadius="$3"
                       hoverStyle={{ bg: "$gray3" }}
                     >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => toggleOption(option)}
+                        onCheckedChange={() => handleToggle(option)}
                         size="$4"
                       >
                         <Checkbox.Indicator>
@@ -143,10 +137,6 @@ export function FilterSheet({
               </YStack>
             )}
           </ScrollView>
-
-          <Button size="$4" theme="accent" onPress={handleApply}>
-            Apply
-          </Button>
         </YStack>
       </Sheet.Frame>
     </Sheet>
