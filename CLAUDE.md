@@ -51,14 +51,19 @@ yarn check:tamagui             # Validate Tamagui config
 ### File-Based Routing (Expo Router)
 - `app/` - Route screens using file system convention
   - `app/_layout.tsx` - Root layout with auth providers
-  - `app/(tabs)/` - Tab navigation (index = workouts, profile, recording)
+  - `app/(tabs)/` - Tab navigation (index = workouts, history, stats, profile, recording)
+  - `app/(tabs)/history.tsx` - Workout history with filtering
+  - `app/(tabs)/stats.tsx` - Exercise statistics with filtering
   - `app/workout.tsx` - Workout details screen
   - `app/reset-password.tsx` - Password reset flow
 
 ### Component Organization
 - `components/` - Presentational components
-  - `components/features/` - Feature-specific components (auth, recording, profile, workout)
+  - `components/features/` - Feature-specific components (auth, recording, profile, workout, stats)
+  - `components/features/stats/` - ProgressChart, PersonalRecords, RecentSessions, StatsFilters
+  - `components/features/workout/WorkoutFilters.tsx` - Workout history filter controls
   - `components/ui/` - Reusable UI primitives (buttons, dialogs, form inputs)
+  - `components/ui/filters/` - FilterChip, FilterSheet, MoreFiltersSheet, DateRangePicker
   - `components/shared/` - Cross-feature shared components
   - `components/Provider.tsx` - Wraps app with Tamagui, Toast providers
   - `components/WorkoutView.tsx` - Detailed workout display with exercise summaries
@@ -70,7 +75,12 @@ yarn check:tamagui             # Validate Tamagui config
   - `workouts.ts` - Workout CRUD operations
   - `stats.ts` - Exercise statistics aggregation
 - `lib/hooks/` - React hooks for auth, workouts, sessions
+  - `useWorkoutHistory` - Workout list with filtering support
+  - `useFilteredExerciseStats` - Exercise stats with filter parameters
+  - `useCurrentWorkout` - Active/most-recent workout state
+- `lib/storage/` - Local persistence (inputMode, statsCategory) via AsyncStorage
 - `lib/utils/` - Utility functions (date formatting, string manipulation)
+  - `lib/utils/filterCascade.ts` - Cascading filter option computation from relationship data
 
 ### Type Safety
 - `types/` - Zod schemas and TypeScript types
@@ -122,6 +132,7 @@ yarn check:tamagui             # Validate Tamagui config
 - **Workout Grouping**: 1-hour gap between logs = new workout (implemented in RPC functions)
 - **Stats Aggregation**: Groups by `{category, modifiers, equipment}` for trend analysis
 - **RLS**: Direct table access revoked; all reads via SECURITY DEFINER functions using `auth.uid()`
+- **Empty Workout Cleanup**: `delete_log` auto-deletes workouts with 0 remaining logs; `get_user_workouts` uses INNER JOIN as defense-in-depth
 
 ### OpenAI Integration Flow
 1. User records audio via Expo Audio (native iOS module fallback for better control)
@@ -169,17 +180,21 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 - Creates individual log entry linked to submission
 - Validates submission belongs to current user
 
+**delete_log(p_log_id)** → BOOLEAN
+- Deletes a log entry belonging to the authenticated user
+- Auto-deletes the parent workout if it has 0 remaining logs
+
 #### Data Retrieval
 
 **get_user_workouts()** → TABLE
 - Returns all workouts for authenticated user
-- Columns: `id`, `datetime`, `exerciseCount`, `logCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3), `totalVolume`, `totalDistance`, `distanceUnit`
+- Columns: `id`, `datetime`, `exerciseCount`, `logCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3), `totalVolume`, `totalDistance`, `distanceUnit`, `durationMinutes`
 - Ordered by datetime DESC
 
 **get_workout_details(p_workout_id)** → JSONB
 - Returns full workout with exercises and nested logs
 - Groups logs by `{input, category, modifiers, equipment}`
-- Structure: `{ id, datetime, exercises: [{ id, input, category, modifiers, equipment, logs: [...] }] }`
+- Structure: `{ id, datetime, endTime, exercises: [{ id, input, category, modifiers, equipment, logs: [{ ..., input }] }] }`
 
 **get_exercise_stats()** → TABLE
 - Returns exercise statistics grouped by `{category, modifiers, equipment}`
@@ -197,6 +212,26 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 **calculate_current_streak()** → INTEGER - Consecutive workout days (1-day grace period)
 **calculate_longest_streak()** → INTEGER - Longest consecutive streak in history
 **parse_iso8601_duration_to_seconds(duration_str)** → NUMERIC - Converts "PT30M" to seconds
+
+#### Filtering
+
+**filter_user_workouts(p_categories, p_equipment, p_date_from, p_date_to)** → TABLE
+- Returns workouts matching category/equipment/date filters
+- Same column shape as `get_user_workouts`
+
+**get_workout_filter_options()** → TABLE
+- Returns available categories and equipment for the authenticated user's workouts
+
+**get_exercise_filter_options()** → TABLE
+- Returns available categories, modifiers, and equipment for the authenticated user's exercises
+
+**get_filtered_exercise_stats(p_categories, p_modifiers, p_equipment, p_time_range)** → TABLE
+- Returns filtered exercise stats with PRs and progress trends
+- Supports time range filtering (e.g., 4 weeks, 12 weeks, all-time)
+
+**get_filter_relationships()** → TABLE
+- Returns category/equipment/modifiers combinations present in user data
+- Used for cascading filter UIs (selecting a category narrows available equipment/modifiers)
 
 ### Supabase Migration Workflow
 - Migrations are **timestamp-ordered** (YYYYMMDDHHmmss_description.sql)
