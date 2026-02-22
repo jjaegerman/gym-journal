@@ -2,11 +2,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
 import { H5, YStack } from "tamagui";
-import {
-  Exercise,
-  WorkoutDetails,
-  WorkoutDetailsSchema,
-} from "types/exercise";
+import { WorkoutDetails, WorkoutDetailsSchema } from "types/exercise";
 import { ExerciseList } from "./shared/ExerciseList";
 
 export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
@@ -39,10 +35,10 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
     setWorkout(WorkoutDetailsSchema.parse(data));
   };
 
-  const lastLog = workout ? lastLogTime(workout.exercises) : undefined;
+  const endTime = workout?.endTime;
   const workoutStart = workout?.datetime;
   const showEndTime =
-    lastLog && workoutStart && lastLog.getTime() !== workoutStart.getTime();
+    endTime && workoutStart && endTime.getTime() !== workoutStart.getTime();
 
   return (
     <YStack width="90%" maxW={600} gap="$4" mx="auto" pb="$4" pt="$4">
@@ -58,7 +54,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
           <>
             {" "}
             to{" "}
-            {lastLog?.toLocaleString(undefined, {
+            {endTime.toLocaleString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -73,18 +69,3 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   );
 };
 
-function lastLogTime(exercises: Exercise[] | undefined): Date | undefined {
-  if (!exercises || exercises.length === 0) {
-    return undefined;
-  }
-  let lastTime: Date | null = null;
-  exercises.forEach((exercise) => {
-    exercise.logs.forEach((log) => {
-      const logTime = new Date(log.datetime);
-      if (!lastTime || logTime > lastTime) {
-        lastTime = logTime;
-      }
-    });
-  });
-  return lastTime || undefined;
-}

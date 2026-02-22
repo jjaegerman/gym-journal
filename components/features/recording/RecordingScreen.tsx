@@ -24,7 +24,6 @@ import {
 } from "@/lib/storage/inputMode";
 import { ExerciseList } from "@/components/shared/ExerciseList";
 import { formatDuration } from "@/lib/utils";
-import type { Exercise } from "@/types/exercise";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -41,11 +40,10 @@ export function RecordingScreen() {
   const hasActiveWorkout = currentWorkout !== null;
 
   const workoutDuration = useMemo(() => {
-    if (!currentWorkout) return null;
-    const lastLog = lastLogTime(currentWorkout.exercises);
-    if (!lastLog) return null;
+    if (!currentWorkout?.endTime) return null;
     const minutes = Math.round(
-      (lastLog.getTime() - currentWorkout.datetime.getTime()) / 60000
+      (currentWorkout.endTime.getTime() - currentWorkout.datetime.getTime()) /
+        60000
     );
     return formatDuration(Math.max(minutes, 0));
   }, [currentWorkout]);
@@ -203,15 +201,3 @@ export function RecordingScreen() {
   );
 }
 
-function lastLogTime(exercises: Exercise[]): Date | undefined {
-  let latest: Date | null = null;
-  for (const exercise of exercises) {
-    for (const log of exercise.logs) {
-      const logTime = new Date(log.datetime);
-      if (!latest || logTime > latest) {
-        latest = logTime;
-      }
-    }
-  }
-  return latest ?? undefined;
-}

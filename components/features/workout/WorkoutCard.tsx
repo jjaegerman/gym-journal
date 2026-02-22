@@ -13,14 +13,6 @@ interface WorkoutCardProps {
  * Displays workout summary with date, duration, and navigation
  */
 export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
-  // Calculate workout duration in minutes
-  const workoutDuration = Math.max(
-    Math.round(
-      (workout.mostRecentLog.getTime() - workout.datetime.getTime()) / 60000
-    ),
-    1
-  );
-
   // Format datetime with relative dates
   const formattedDate = formatRelativeDate(workout.datetime);
 
@@ -30,7 +22,7 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
       ? "1 exercise"
       : `${workout.exerciseCount} exercises`;
 
-  const firstLine = `${exerciseText} • ${formatDuration(workoutDuration)}`;
+  const firstLine = `${exerciseText} • ${formatDuration(workout.durationMinutes)}`;
 
   // Build second line: exercise preview and stats
   const secondLineParts: string[] = [];

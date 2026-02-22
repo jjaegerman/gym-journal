@@ -50,6 +50,7 @@ export const WorkoutSchema = z.object({
   totalVolume: z.coerce.number().nullable().optional(),
   totalDistance: z.coerce.number().nullable().optional(),
   distanceUnit: z.string().nullable().optional(),
+  durationMinutes: z.coerce.number().int(),
 });
 export type Workout = z.infer<typeof WorkoutSchema>;
 export const WorkoutsArraySchema = z.array(WorkoutSchema);
@@ -58,6 +59,7 @@ export const WorkoutsArraySchema = z.array(WorkoutSchema);
 export const WorkoutDetailsSchema = z.object({
   id: z.string(),
   datetime: z.coerce.date(),
+  endTime: z.coerce.date().nullable().optional(),
   exercises: z.array(ExerciseSchema),
 });
 export type WorkoutDetails = z.infer<typeof WorkoutDetailsSchema>;
