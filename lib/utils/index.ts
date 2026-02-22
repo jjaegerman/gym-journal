@@ -29,3 +29,7 @@ export {
   formatExerciseGrouping,
   getExerciseGroupingKey,
 } from "./exerciseDisplay";
+
+// Exercise summary utilities
+export { summarizeExerciseLogs, descriptionFromSummary } from "./exerciseSummary";
+export type { ExerciseLogSummary } from "./exerciseSummary";

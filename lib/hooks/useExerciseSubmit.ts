@@ -11,7 +11,7 @@ const SPINNER_DURATION_MS = 1000;
  * Custom hook for submitting exercise data via audio or text
  * Uses optimistic UI: shows spinner for 1s, then processes in background
  */
-export function useExerciseSubmit() {
+export function useExerciseSubmit(onSuccess?: () => void) {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
 
@@ -40,6 +40,7 @@ export function useExerciseSubmit() {
           duration: 3000,
           customData: { theme: 'green', icon: 'check' },
         });
+        onSuccess?.();
       })
       .catch((error) => {
         console.error('Error submitting audio:', error);
@@ -66,6 +67,7 @@ export function useExerciseSubmit() {
           duration: 3000,
           customData: { theme: 'green', icon: 'check' },
         });
+        onSuccess?.();
       })
       .catch((error) => {
         console.error('Error submitting text:', error);
