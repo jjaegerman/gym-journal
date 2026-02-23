@@ -1,6 +1,7 @@
 import { RecordButton } from "./RecordButton";
 import { RecordTextBox } from "./RecordTextBox";
 import { InputModeToggle } from "./InputModeToggle";
+import { ContextChip } from "./ContextChip";
 import { H5, Paragraph, View, YStack, Spinner } from "tamagui";
 import {
   useAudioRecording,
@@ -23,9 +24,41 @@ import {
   setInputMode,
 } from "@/lib/storage/inputMode";
 import { ExerciseList } from "@/components/shared/ExerciseList";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, capitalizeEachWord, formatExerciseGrouping } from "@/lib/utils";
+import { Exercise } from "@/types/exercise";
+import { ExerciseContext } from "@/lib/api/supabase/functions";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+
+function buildExerciseContext(exercise: Exercise): ExerciseContext {
+  const lastLog = exercise.logs[exercise.logs.length - 1];
+  const exerciseName = capitalizeEachWord(
+    formatExerciseGrouping({
+      modifiers: exercise.modifiers,
+      equipment: exercise.equipment,
+      category: exercise.category,
+    })
+  );
+
+  return {
+    exerciseName,
+    category: exercise.category,
+    modifiers: exercise.modifiers ?? undefined,
+    equipment: exercise.equipment ?? null,
+    lastSet: lastLog
+      ? {
+          weight: lastLog.weight ?? null,
+          weightUnit: lastLog.weightUnit ?? null,
+          repetitions: lastLog.repetitions ?? null,
+          distance: lastLog.distance ?? null,
+          distanceUnit: lastLog.distance_unit ?? null,
+          duration: lastLog.duration ?? null,
+          resistanceLevel: lastLog.resistance_level ?? null,
+          effort: lastLog.effort ?? null,
+        }
+      : undefined,
+  };
+}
 
 export function RecordingScreen() {
   const { startRecording, stopRecording, cancelRecording, recorderState } =
@@ -35,6 +68,7 @@ export function RecordingScreen() {
   const { setTabsDisabled } = useTabContext();
   const blurIntensity = useSharedValue(0);
   const [inputMode, setInputModeState] = useState<InputMode>("voice");
+  const [selectedContext, setSelectedContext] = useState<Exercise | null>(null);
   const examplePrompts = useMemo(() => getRandomPrompts(3), []);
 
   const hasActiveWorkout = currentWorkout !== null;
@@ -66,11 +100,32 @@ export function RecordingScreen() {
     intensity: blurIntensity.value,
   }));
 
+  const handleLogDeleted = () => {
+    refetch().then(() => {
+      if (selectedContext) {
+        const stillExists = currentWorkout?.exercises.some(
+          (e) => e.id === selectedContext.id
+        );
+        if (!stillExists) setSelectedContext(null);
+      }
+    });
+  };
+
   const handleStopRecording = async () => {
     const uri = await stopRecording();
     if (uri) {
-      await submitAudio(uri);
+      await submitAudio(
+        uri,
+        selectedContext ? buildExerciseContext(selectedContext) : undefined
+      );
     }
+  };
+
+  const handleSubmitText = async (text: string) => {
+    await submitText(
+      text,
+      selectedContext ? buildExerciseContext(selectedContext) : undefined
+    );
   };
 
   const handleModeChange = (mode: InputMode) => {
@@ -80,6 +135,14 @@ export function RecordingScreen() {
 
   const inputSection = (
     <View z={100} items="center" justify="center">
+      {selectedContext && (
+        <View width="100%" mb="$2">
+          <ContextChip
+            exercise={selectedContext}
+            onClear={() => setSelectedContext(null)}
+          />
+        </View>
+      )}
       {loading ? (
         <View height={176} items="center" justify="center">
           <Spinner size="large" color="$color" />
@@ -95,7 +158,7 @@ export function RecordingScreen() {
         />
       ) : (
         <View width="100%">
-          <RecordTextBox submitText={submitText} loading={loading} />
+          <RecordTextBox submitText={handleSubmitText} loading={loading} />
         </View>
       )}
     </View>
@@ -138,7 +201,9 @@ export function RecordingScreen() {
                 </H5>
                 <ExerciseList
                   exercises={currentWorkout.exercises}
-                  onLogDeleted={refetch}
+                  onLogDeleted={handleLogDeleted}
+                  contextExerciseId={selectedContext?.id}
+                  onContextChange={setSelectedContext}
                 />
               </View>
             </ScrollView>
@@ -200,4 +265,3 @@ export function RecordingScreen() {
     </KeyboardAvoidingView>
   );
 }
-

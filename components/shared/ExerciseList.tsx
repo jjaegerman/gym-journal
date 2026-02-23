@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, ListItem, YGroup, Separator } from "tamagui";
+import { View, ListItem, YGroup, Separator, Button } from "tamagui";
 import { Expand } from "@tamagui/lucide-icons";
 import { Exercise } from "@/types/exercise";
 import {
@@ -15,9 +15,16 @@ import { ExerciseLogs } from "../ExerciseLogs";
 interface ExerciseListProps {
   exercises: Exercise[];
   onLogDeleted?: () => void;
+  contextExerciseId?: string;
+  onContextChange?: (exercise: Exercise | null) => void;
 }
 
-export function ExerciseList({ exercises, onLogDeleted }: ExerciseListProps) {
+export function ExerciseList({
+  exercises,
+  onLogDeleted,
+  contextExerciseId,
+  onContextChange,
+}: ExerciseListProps) {
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -44,6 +51,7 @@ export function ExerciseList({ exercises, onLogDeleted }: ExerciseListProps) {
           const ExerciseIcon: any = () =>
             getExerciseIcon(exercise.category, 24);
           const iconColor = getExerciseIconColor(exercise.category);
+          const isSelected = exercise.id === contextExerciseId;
 
           return (
             <YGroup.Item key={exercise.id}>
@@ -54,15 +62,29 @@ export function ExerciseList({ exercises, onLogDeleted }: ExerciseListProps) {
                 paddingBlock="$3"
                 hoverTheme
                 pressTheme
+                backgroundColor={isSelected ? "$blue2" : undefined}
+                borderColor={isSelected ? "$blue7" : undefined}
                 icon={
                   <View>
-                    <ExerciseIcon color={iconColor} />
+                    <ExerciseIcon color={isSelected ? "$blue9" : iconColor} />
                   </View>
                 }
-                iconAfter={Expand}
+                iconAfter={
+                  <Button
+                    size="$2"
+                    chromeless
+                    circular
+                    icon={Expand}
+                    onPress={() => {
+                      setFocusedExerciseIdx(i);
+                      setDialogOpen(true);
+                    }}
+                  />
+                }
                 onPress={() => {
-                  setFocusedExerciseIdx(i);
-                  setDialogOpen(true);
+                  if (onContextChange) {
+                    onContextChange(isSelected ? null : exercise);
+                  }
                 }}
               />
             </YGroup.Item>

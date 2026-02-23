@@ -5,6 +5,23 @@ import { supabase } from './client';
  * Wrapper functions for invoking edge functions
  */
 
+export interface ExerciseContext {
+  exerciseName: string;
+  category: string;
+  modifiers?: string[];
+  equipment?: string | null;
+  lastSet?: {
+    weight?: number | null;
+    weightUnit?: string | null;
+    repetitions?: number | null;
+    distance?: number | null;
+    distanceUnit?: string | null;
+    duration?: string | null;
+    resistanceLevel?: number | null;
+    effort?: string | null;
+  };
+}
+
 interface OpenAIRequestBody {
   audio?: {
     fileExtension: string;
@@ -12,6 +29,7 @@ interface OpenAIRequestBody {
     base64: string;
   };
   query?: string;
+  context?: ExerciseContext;
 }
 
 interface OpenAIResponse {
@@ -31,7 +49,8 @@ export async function invokeOpenAI(
     fileExtension: string;
     fileName: string;
   },
-  query?: string
+  query?: string,
+  context?: ExerciseContext
 ): Promise<OpenAIResponse> {
   // Require either audioData or query
   if (!audioData && !query) {
@@ -46,6 +65,10 @@ export async function invokeOpenAI(
 
   if (query) {
     body.query = query;
+  }
+
+  if (context) {
+    body.context = context;
   }
 
   const { data, error } = await supabase.functions.invoke('openai', {

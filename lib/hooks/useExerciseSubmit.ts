@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Platform } from 'expo-modules-core';
 import { audioFileToBase64 } from '@/lib/utils';
-import { invokeOpenAI } from '@/lib/api/supabase/functions';
+import { invokeOpenAI, ExerciseContext } from '@/lib/api/supabase/functions';
 import { useToastController } from '@tamagui/toast';
 import * as Haptics from 'expo-haptics';
 
@@ -15,7 +15,7 @@ export function useExerciseSubmit(onSuccess?: () => void) {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
 
-  const submitAudio = async (audioUri: string) => {
+  const submitAudio = async (audioUri: string, context?: ExerciseContext) => {
     setLoading(true);
 
     // Start API call and attach handlers immediately to prevent unhandled rejection
@@ -31,7 +31,8 @@ export function useExerciseSubmit(onSuccess?: () => void) {
           fileName,
           base64: base64Audio,
         },
-        undefined
+        undefined,
+        context
       );
     })()
       .then(() => {
@@ -56,11 +57,11 @@ export function useExerciseSubmit(onSuccess?: () => void) {
     setLoading(false);
   };
 
-  const submitText = async (text: string) => {
+  const submitText = async (text: string, context?: ExerciseContext) => {
     setLoading(true);
 
     // Start API call and attach handlers immediately to prevent unhandled rejection
-    invokeOpenAI(undefined, text)
+    invokeOpenAI(undefined, text, context)
       .then(() => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         toast.show('Exercise logged!', {

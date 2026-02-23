@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       },
     );
 
-    const { query, audio } = await req.json();
+    const { query, audio, context } = await req.json();
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     const openai = new OpenAI({
       apiKey: apiKey,
@@ -95,13 +95,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const structured = await openai.responses.parse({
-      model: "gpt-4.1",
-      input: [
-        {
-          role: "system",
-          content:
-            `Extract structured workout data from user's transcribed audio.
+    const systemContent = `Extract structured workout data from user's transcribed audio.
 
 FIELD RULES:
 - input: The exercise exactly as spoken (source of truth). Examples:
@@ -120,7 +114,14 @@ FIELD RULES:
 
 LOGIC:
 If repetitions not specified but sets are, assume repetitions equal sets and sets equals 1.
-If both specified, repeat item with same repetitions for each set.`,
+If both specified, repeat item with same repetitions for each set.${context ? buildContextBlock(context) : ""}`;
+
+    const structured = await openai.responses.parse({
+      model: "gpt-4.1",
+      input: [
+        {
+          role: "system",
+          content: systemContent,
         },
         {
           role: "user",
@@ -194,6 +195,43 @@ If both specified, repeat item with same repetitions for each set.`,
     return new Response(String(error), { status: 500, headers: corsHeaders });
   }
 });
+
+interface ExerciseContext {
+  exerciseName: string;
+  category: string;
+  modifiers?: string[];
+  equipment?: string | null;
+  lastSet?: {
+    weight?: number | null;
+    weightUnit?: string | null;
+    repetitions?: number | null;
+    distance?: number | null;
+    distanceUnit?: string | null;
+    duration?: string | null;
+    resistanceLevel?: number | null;
+    effort?: string | null;
+  };
+}
+
+function buildContextBlock(ctx: ExerciseContext): string {
+  const lines = [
+    `\n\nCONTEXT:`,
+    `The user is continuing an exercise. Apply these defaults when relative terms are used ("more", "same weight", "again"):`,
+    `- Exercise: ${ctx.exerciseName}`,
+    `- Category: ${ctx.category}${ctx.modifiers?.length ? ` | Modifiers: ${ctx.modifiers.join(", ")}` : ""}${ctx.equipment ? ` | Equipment: ${ctx.equipment}` : ""}`,
+  ];
+  if (ctx.lastSet) {
+    const { weight, weightUnit, repetitions, distance, distanceUnit, duration } = ctx.lastSet;
+    if (weight && repetitions) {
+      lines.push(`- Most recent set: ${repetitions} reps @ ${weight} ${weightUnit}`);
+    } else if (distance) {
+      lines.push(`- Most recent set: ${distance} ${distanceUnit}`);
+    } else if (duration) {
+      lines.push(`- Most recent set: duration ${duration}`);
+    }
+  }
+  return lines.join("\n");
+}
 
 function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(base64);
