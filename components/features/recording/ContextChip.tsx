@@ -1,12 +1,7 @@
-import { X } from "@tamagui/lucide-icons";
+import { X, Repeat } from "@tamagui/lucide-icons";
 import { Button, XStack, Text } from "tamagui";
 import { Exercise } from "@/types/exercise";
-import {
-  capitalizeEachWord,
-  formatExerciseGrouping,
-  summarizeExerciseLogs,
-  descriptionFromSummary,
-} from "@/lib/utils";
+import { capitalizeEachWord, formatExerciseGrouping } from "@/lib/utils";
 
 interface ContextChipProps {
   exercise: Exercise;
@@ -19,37 +14,34 @@ export function ContextChip({ exercise, onClear }: ContextChipProps) {
       modifiers: exercise.modifiers,
       equipment: exercise.equipment,
       category: exercise.category,
-    })
+    }),
   );
-
-  const summary = summarizeExerciseLogs(exercise.logs);
-  const description = descriptionFromSummary(summary);
 
   return (
     <XStack
-      bg="$blue3"
-      borderColor="$blue7"
-      bordered
-      rounded="$10"
-      px="$3"
+      self="flex-start"
+      bg="$color3"
+      borderWidth={1}
+      borderColor="$color5"
+      pl="$3.5"
+      pr="$2"
       py="$2"
       gap="$2"
       items="center"
-      alignSelf="flex-start"
-      maxWidth="100%"
+      rounded="$10"
     >
-      <Text fontSize="$3" color="$blue11" numberOfLines={1} flex={1} shrink={1}>
+      <Repeat size={14} color="$blue9" />
+      <Text fontSize="$3" fontWeight="500" color="$color11" numberOfLines={1}>
         {title}
-        {description ? `  ·  ${description}` : ""}
       </Text>
       <Button
         size="$2"
         circular
         chromeless
         icon={X}
-        color="$blue9"
+        color="$color10"
         onPress={onClear}
-        flexShrink={0}
+        shrink={0}
       />
     </XStack>
   );

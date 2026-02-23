@@ -71,6 +71,16 @@ export function RecordingScreen() {
   const [selectedContext, setSelectedContext] = useState<Exercise | null>(null);
   const examplePrompts = useMemo(() => getRandomPrompts(3), []);
 
+  // Auto-pin the most recent exercise whenever the workout changes
+  useEffect(() => {
+    const exercises = currentWorkout?.exercises;
+    if (exercises && exercises.length > 0) {
+      setSelectedContext(exercises[exercises.length - 1]);
+    } else {
+      setSelectedContext(null);
+    }
+  }, [currentWorkout]);
+
   const hasActiveWorkout = currentWorkout !== null;
 
   const workoutDuration = useMemo(() => {
