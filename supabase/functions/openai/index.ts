@@ -222,9 +222,13 @@ function buildContextBlock(ctx: ExerciseContext): string {
   ];
   if (ctx.lastSet) {
     const { weight, weightUnit, repetitions, distance, distanceUnit, duration } = ctx.lastSet;
-    if (weight && repetitions) {
+    if (weight != null && repetitions != null) {
       lines.push(`- Most recent set: ${repetitions} reps @ ${weight} ${weightUnit}`);
-    } else if (distance) {
+    } else if (repetitions != null) {
+      lines.push(`- Most recent set: ${repetitions} reps`);
+    } else if (weight != null) {
+      lines.push(`- Most recent set: ${weight} ${weightUnit}`);
+    } else if (distance != null) {
       lines.push(`- Most recent set: ${distance} ${distanceUnit}`);
     } else if (duration) {
       lines.push(`- Most recent set: duration ${duration}`);

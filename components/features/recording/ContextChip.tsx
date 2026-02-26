@@ -30,7 +30,7 @@ export function ContextChip({ exercise, onClear }: ContextChipProps) {
       items="center"
       rounded="$10"
     >
-      <Repeat size={14} color="$blue9" />
+      <Repeat size={14} stroke="$blue9" />
       <Text fontSize="$3" fontWeight="500" color="$color11" numberOfLines={1}>
         {title}
       </Text>
