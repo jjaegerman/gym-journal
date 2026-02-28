@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { YStack, XStack, Text, Button } from "tamagui";
-import Svg, { Path, Line, Circle, G } from "react-native-svg";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
+import { YStack, XStack, Text, Button, useTheme, Theme } from "tamagui";
+import { LineChart } from "react-native-gifted-charts";
 
 interface ProgressDataPoint {
   week: string;
@@ -18,16 +18,36 @@ type MetricType = "volume" | "maxWeight";
 function formatValue(value: number, metric: MetricType): string {
   if (metric === "volume") {
     if (value >= 1000) {
-      return (value / 1000).toFixed(0) + "K";
+      return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K lbs";
     }
-    return value.toFixed(0);
+    return value.toFixed(0) + " lbs";
   }
-  return value.toFixed(0);
+  return value.toFixed(0) + " lbs";
 }
 
 export function ProgressChart({ data }: ProgressChartProps) {
+  // Resolve grid color from the base theme — gray isn't in the accent theme's extra
+  const baseTheme = useTheme();
+  const gridColor = baseTheme.color5.val;
+  return (
+    <Theme name="accent">
+      <ProgressChartContent data={data} gridColor={gridColor} />
+    </Theme>
+  );
+}
+
+function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridColor: string }) {
   const [metric, setMetric] = useState<MetricType>("volume");
   const { width: screenWidth } = useWindowDimensions();
+  // Inside <Theme name="accent">, useTheme() resolves accent palette tokens
+  const theme = useTheme();
+
+  // Resolved colors for gifted-charts (requires plain strings, not tokens)
+  const lineColor = theme.color10.val;
+  const stripColor = theme.color7.val;
+  const tooltipBg = theme.color3.val;
+  const tooltipValueColor = theme.color12.val;
+  const tooltipDateColor = theme.color10.val;
 
   if (data.length === 0) {
     return (
@@ -37,45 +57,39 @@ export function ProgressChart({ data }: ProgressChartProps) {
     );
   }
 
-  const chartWidth = Math.min(screenWidth - 64, 400);
+  // The wrapper adds visual padding so data point dots aren't clipped at edges.
+  // initialSpacing MUST be 0: gifted-charts puts paddingLeft=initialSpacing on the
+  // ScrollView content, but the SVG wrapper uses explicit left:0 (ignoring padding)
+  // while the pointer overlay has no left and inherits paddingLeft — causing a
+  // persistent right-shift equal to initialSpacing. Setting it to 0 removes this.
+  const DOT_RADIUS = 4;
+  const WRAPPER_PADDING = DOT_RADIUS + 2;
+  const outerWidth = Math.min(screenWidth - 64, 400);
+  const chartWidth = outerWidth - WRAPPER_PADDING * 2;
   const chartHeight = 180;
-  const padding = { top: 20, right: 20, bottom: 40, left: 50 };
-  const innerWidth = chartWidth - padding.left - padding.right;
-  const innerHeight = chartHeight - padding.top - padding.bottom;
+  const spacing = data.length > 1 ? Math.max(16, chartWidth / (data.length - 1)) : 60;
 
-  const values = data.map((d) =>
-    metric === "volume" ? d.volume : d.maxWeight,
-  );
+  // First point gets pointerShiftX because gifted-charts clamps pointerX to 0.1
+  // when initialSpacing=0 (getX(0)=0 → z=-radius-1 → clamped), shifting the
+  // pointer right. pointerShiftX in Pointer.js is broken (reads from the number
+  // pointerX, not pointerItemLocal), so it's applied manually via pointerComponent.
+  const POINTER_SHIFT_FIRST_X = -(DOT_RADIUS + 1);
+  const chartData = data.map((d, i) => ({
+    value: metric === "volume" ? d.volume : d.maxWeight,
+    week: d.week,
+    ...(i === 0 ? { pointerShiftX: POINTER_SHIFT_FIRST_X } : {}),
+  }));
+
+  const values = chartData.map((d) => d.value);
   const maxValue = Math.max(...values, 1);
-  const minValue = Math.min(...values, 0);
-  const valueRange = maxValue - minValue || 1;
-
-  const xScale = (index: number) =>
-    padding.left + (index / Math.max(data.length - 1, 1)) * innerWidth;
-  const yScale = (value: number) =>
-    padding.top + innerHeight - ((value - minValue) / valueRange) * innerHeight;
-
-  const pathData = data
-    .map((d, i) => {
-      const x = xScale(i);
-      const y = yScale(metric === "volume" ? d.volume : d.maxWeight);
-      return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-    })
-    .join(" ");
-
-  const gridLines = 4;
-  const yGridValues = Array.from(
-    { length: gridLines + 1 },
-    (_, i) => minValue + (valueRange / gridLines) * i,
-  );
 
   return (
-    <YStack gap="$3">
+    <YStack gap="$3" width={outerWidth} alignSelf="center">
       <XStack gap="$2" justify="center">
         <Button
           size="$2"
           chromeless={metric !== "volume"}
-          bg={metric === "volume" ? "$blue4" : "$gray3"}
+          bg={metric === "volume" ? "$color3" : "$gray3"}
           onPress={() => setMetric("volume")}
           borderRadius="$3"
           px="$3"
@@ -83,7 +97,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
           <Text
             fontSize="$2"
             fontWeight={metric === "volume" ? "600" : "400"}
-            color={metric === "volume" ? "$blue11" : "$gray11"}
+            color={metric === "volume" ? "$color11" : "$gray11"}
           >
             Volume
           </Text>
@@ -91,7 +105,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
         <Button
           size="$2"
           chromeless={metric !== "maxWeight"}
-          bg={metric === "maxWeight" ? "$blue4" : "$gray3"}
+          bg={metric === "maxWeight" ? "$color3" : "$gray3"}
           onPress={() => setMetric("maxWeight")}
           borderRadius="$3"
           px="$3"
@@ -99,65 +113,98 @@ export function ProgressChart({ data }: ProgressChartProps) {
           <Text
             fontSize="$2"
             fontWeight={metric === "maxWeight" ? "600" : "400"}
-            color={metric === "maxWeight" ? "$blue11" : "$gray11"}
+            color={metric === "maxWeight" ? "$color11" : "$gray11"}
           >
             Max Weight
           </Text>
         </Button>
       </XStack>
 
-      <YStack items="center">
-        <Svg width={chartWidth} height={chartHeight}>
-          <G>
-            {yGridValues.map((value, i) => (
-              <G key={i}>
-                <Line
-                  x1={padding.left}
-                  y1={yScale(value)}
-                  x2={chartWidth - padding.right}
-                  y2={yScale(value)}
-                  stroke="#e0e0e0"
-                  strokeWidth={1}
-                  strokeDasharray="4,4"
-                />
-              </G>
-            ))}
-          </G>
-
-          <Path d={pathData} stroke="#3b82f6" strokeWidth={2} fill="none" />
-
-          {data.map((d, i) => (
-            <Circle
-              key={i}
-              cx={xScale(i)}
-              cy={yScale(metric === "volume" ? d.volume : d.maxWeight)}
-              r={4}
-              fill="#3b82f6"
-            />
-          ))}
-        </Svg>
-      </YStack>
+      <View style={{ paddingHorizontal: WRAPPER_PADDING }}>
+        <LineChart
+          data={chartData}
+          width={chartWidth}
+          height={chartHeight}
+          spacing={spacing}
+          initialSpacing={0}
+          endSpacing={0}
+          color={lineColor}
+          thickness={2}
+          curved
+          hideDataPoints={false}
+          dataPointsColor={lineColor}
+          dataPointsRadius={DOT_RADIUS}
+          noOfSections={4}
+          maxValue={maxValue * 1.15}
+          rulesType="dashed"
+          rulesColor={gridColor}
+          yAxisColor="transparent"
+          xAxisColor={gridColor}
+          hideXAxisText
+          yAxisLabelWidth={0}
+          yAxisThickness={0}
+          hideYAxisText
+          pointerConfig={{
+            pointerStripHeight: chartHeight,
+            pointerStripColor: stripColor,
+            pointerStripWidth: 1,
+            pointerColor: lineColor,
+            radius: DOT_RADIUS,
+            pointerLabelWidth: 80,
+            pointerLabelHeight: 48,
+            activatePointersOnLongPress: false,
+            autoAdjustPointerLabelPosition: true,
+            pointerComponent: (item: { pointerShiftX?: number }) => (
+              <View
+                style={{
+                  height: DOT_RADIUS * 2,
+                  width: DOT_RADIUS * 2,
+                  backgroundColor: lineColor,
+                  borderRadius: DOT_RADIUS,
+                  marginLeft: item?.pointerShiftX ?? 0,
+                }}
+              />
+            ),
+            pointerLabelComponent: (items: Array<{ value: number; week?: string }>) => {
+              const item = items[0];
+              const date = item?.week
+                ? new Date(item.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : "";
+              return (
+                <View
+                  style={{
+                    backgroundColor: tooltipBg,
+                    borderRadius: 6,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Text style={{ color: tooltipValueColor, fontSize: 12, fontWeight: "600" }}>
+                    {formatValue(item?.value ?? 0, metric)}
+                  </Text>
+                  <Text style={{ color: tooltipDateColor, fontSize: 10 }}>{date}</Text>
+                </View>
+              );
+            },
+          }}
+        />
+      </View>
 
       <XStack justify="space-between" px="$2">
         <Text fontSize="$1" color="$gray10">
-          {data[0]?.week
-            ? new Date(data[0].week).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              })
-            : ""}
-        </Text>
-        <Text fontSize="$2" color="$gray11">
-          {formatValue(maxValue, metric)} {metric === "volume" ? "lbs" : "lbs"}{" "}
-          max
+          {new Date(data[0].week).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
         </Text>
         <Text fontSize="$1" color="$gray10">
-          {data[data.length - 1]?.week
-            ? new Date(data[data.length - 1].week).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              })
-            : ""}
+          {new Date(data[data.length - 1].week).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
         </Text>
       </XStack>
     </YStack>

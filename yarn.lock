@@ -7207,6 +7207,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-linear-gradient@npm:^55.0.8":
+  version: 55.0.8
+  resolution: "expo-linear-gradient@npm:55.0.8"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/ab1a230325cd4ca9bc4841f01992ece005400e51e3e3041ecad77a657938be85d24384815819659ee2bbcc6cf08083e7184a3c510eb0c8abfbf081edef226991
+  languageName: node
+  linkType: hard
+
 "expo-linking@npm:~8.0.8":
   version: 8.0.8
   resolution: "expo-linking@npm:8.0.8"
@@ -7892,6 +7903,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gifted-charts-core@npm:0.1.78":
+  version: 0.1.78
+  resolution: "gifted-charts-core@npm:0.1.78"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-svg: "*"
+  checksum: 10c0/fb9081c345759d9fafc616e78992beeae603e3b284e2e069b7dfdaabaea5b99469d2d607f4d725b10ca67042d96d0c5293fd08f5c39ff022e78fb12676455155
+  languageName: node
+  linkType: hard
+
 "glob-parent@npm:^5.1.2, glob-parent@npm:~5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
@@ -8019,6 +8041,7 @@ __metadata:
     expo-file-system: "npm:~19.0.17"
     expo-font: "npm:~14.0.9"
     expo-haptics: "npm:~15.0.7"
+    expo-linear-gradient: "npm:^55.0.8"
     expo-linking: "npm:~8.0.8"
     expo-router: "npm:~6.0.14"
     expo-splash-screen: "npm:~31.0.10"
@@ -8029,6 +8052,7 @@ __metadata:
     react-dom: "npm:19.1.0"
     react-hook-form: "npm:^7.66.0"
     react-native: "npm:0.81.5"
+    react-native-gifted-charts: "npm:^1.4.74"
     react-native-reanimated: "npm:~4.1.1"
     react-native-safe-area-context: "npm:~5.6.0"
     react-native-screens: "npm:~4.16.0"
@@ -10605,6 +10629,26 @@ __metadata:
     react-native-svg:
       optional: true
   checksum: 10c0/d6052499b8615b58e02ee43b7d2906fd2b5ef90410c26af94dd11d6d93ed116ab0c96f7228573734030f1d41b4e8e2878a63b2223eb86c797730df207ed0c2f0
+  languageName: node
+  linkType: hard
+
+"react-native-gifted-charts@npm:^1.4.74":
+  version: 1.4.74
+  resolution: "react-native-gifted-charts@npm:1.4.74"
+  dependencies:
+    gifted-charts-core: "npm:0.1.78"
+  peerDependencies:
+    expo-linear-gradient: "*"
+    react: "*"
+    react-native: "*"
+    react-native-linear-gradient: "*"
+    react-native-svg: "*"
+  peerDependenciesMeta:
+    expo-linear-gradient:
+      optional: true
+    react-native-linear-gradient:
+      optional: true
+  checksum: 10c0/7fc02f8af595419f9b3d21ac8277726148b4b8723d0508debeda4cd62688240088a110648a6f2c548fcfd0d6930eb784fbca1a1f4f7fbf9a0d6407fc4a0e2ab3
   languageName: node
   linkType: hard
 

@@ -1,4 +1,4 @@
-import { XStack, YStack, Text, Card, H5 } from "tamagui";
+import { XStack, YStack, Text, Card, H5, Theme } from "tamagui";
 import { Trophy, ChevronRight } from "@tamagui/lucide-icons";
 
 interface PRData {
@@ -34,7 +34,7 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
     <Card
       flex={1}
       p="$3"
-      bg="$red3"
+      bg="$color3"
       borderRadius="$4"
       bordered
       onPress={onPress}
@@ -44,24 +44,24 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
       <XStack items="center" justify="space-between">
         <YStack gap="$2" flex={1}>
           <XStack items="center" gap="$2">
-            <Trophy size={16} color="$red10" />
-            <Text fontSize="$2" color="$red11" fontWeight="600">
+            <Trophy size={16} color="$color10" />
+            <Text fontSize="$2" color="$color11" fontWeight="600">
               {title}
             </Text>
           </XStack>
           <XStack items="baseline" gap="$1">
-            <Text fontSize="$7" fontWeight="700" color="$red12">
+            <Text fontSize="$7" fontWeight="700" color="$color12">
               {pr.value}
             </Text>
-            <Text fontSize="$3" color="$red11">
+            <Text fontSize="$3" color="$color11">
               {unit}
             </Text>
           </XStack>
-          <Text fontSize="$1" color="$red10" numberOfLines={1}>
+          <Text fontSize="$1" color="$color10" numberOfLines={1}>
             {formattedDate}
           </Text>
         </YStack>
-        {onPress && <ChevronRight size={16} color="$red10" />}
+        {onPress && <ChevronRight size={16} color="$color10" />}
       </XStack>
     </Card>
   );
@@ -73,24 +73,26 @@ export function PersonalRecords({ weightPr, repsPr, onPRPress }: PersonalRecords
   }
 
   return (
-    <YStack gap="$2">
-      <H5 opacity={0.7} fontWeight="600">
-        Personal Records
-      </H5>
-      <XStack gap="$3">
-        <PRCard
-          title="Weight PR"
-          pr={weightPr}
-          unit="lbs"
-          onPress={weightPr?.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
-        />
-        <PRCard
-          title="Reps PR"
-          pr={repsPr}
-          unit="reps"
-          onPress={repsPr?.workoutId ? () => onPRPress?.(repsPr.workoutId!) : undefined}
-        />
-      </XStack>
-    </YStack>
+    <Theme name="accent">
+      <YStack gap="$2">
+        <H5 opacity={0.7} fontWeight="600">
+          Personal Records
+        </H5>
+        <XStack gap="$3">
+          <PRCard
+            title="Weight PR"
+            pr={weightPr}
+            unit="lbs"
+            onPress={weightPr?.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
+          />
+          <PRCard
+            title="Reps PR"
+            pr={repsPr}
+            unit="reps"
+            onPress={repsPr?.workoutId ? () => onPRPress?.(repsPr.workoutId!) : undefined}
+          />
+        </XStack>
+      </YStack>
+    </Theme>
   );
 }
