@@ -26,17 +26,22 @@ function formatValue(value: number, metric: MetricType): string {
 }
 
 export function ProgressChart({ data }: ProgressChartProps) {
-  // Resolve grid color from the base theme — gray isn't in the accent theme's extra
+  // Resolve base-theme colors — gray/neutral tokens aren't in the accent theme's extra
   const baseTheme = useTheme();
   const gridColor = baseTheme.color5.val;
+  const labelColor = baseTheme.color9.val;
   return (
     <Theme name="accent">
-      <ProgressChartContent data={data} gridColor={gridColor} />
+      <ProgressChartContent data={data} gridColor={gridColor} labelColor={labelColor} />
     </Theme>
   );
 }
 
-function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridColor: string }) {
+function ProgressChartContent({
+  data,
+  gridColor,
+  labelColor,
+}: ProgressChartProps & { gridColor: string; labelColor: string }) {
   const [metric, setMetric] = useState<MetricType>("volume");
   const { width: screenWidth } = useWindowDimensions();
   // Inside <Theme name="accent">, useTheme() resolves accent palette tokens
@@ -64,8 +69,9 @@ function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridCo
   // persistent right-shift equal to initialSpacing. Setting it to 0 removes this.
   const DOT_RADIUS = 4;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
+  const Y_LABEL_WIDTH = 40;
   const outerWidth = Math.min(screenWidth - 64, 400);
-  const chartWidth = outerWidth - WRAPPER_PADDING * 2;
+  const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
   const spacing = data.length > 1 ? Math.max(16, chartWidth / (data.length - 1)) : 60;
 
@@ -81,7 +87,19 @@ function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridCo
   }));
 
   const values = chartData.map((d) => d.value);
-  const maxValue = Math.max(...values, 1);
+  // Round up to a "nice" ceiling so section lines fall on round numbers
+  const rawMax = Math.max(...values, 1);
+  const noOfSections = 4;
+  const roughStep = rawMax / noOfSections;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(roughStep, 1))));
+  const maxValue = Math.ceil(roughStep / magnitude) * magnitude * noOfSections;
+
+  const formatYLabel = (val: string) => {
+    const num = parseFloat(val);
+    if (num === 0) return "0";
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return String(Math.round(num));
+  };
 
   return (
     <YStack gap="$3" width={outerWidth} alignSelf="center">
@@ -134,16 +152,17 @@ function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridCo
           hideDataPoints={false}
           dataPointsColor={lineColor}
           dataPointsRadius={DOT_RADIUS}
-          noOfSections={4}
-          maxValue={maxValue * 1.15}
+          noOfSections={noOfSections}
+          maxValue={maxValue}
           rulesType="dashed"
           rulesColor={gridColor}
           yAxisColor="transparent"
           xAxisColor={gridColor}
           hideXAxisText
-          yAxisLabelWidth={0}
+          yAxisLabelWidth={Y_LABEL_WIDTH}
           yAxisThickness={0}
-          hideYAxisText
+          yAxisTextStyle={{ color: labelColor, fontSize: 10 }}
+          formatYLabel={formatYLabel}
           pointerConfig={{
             pointerStripHeight: chartHeight,
             pointerStripColor: stripColor,
@@ -193,7 +212,7 @@ function ProgressChartContent({ data, gridColor }: ProgressChartProps & { gridCo
         />
       </View>
 
-      <XStack justify="space-between" px="$2">
+      <XStack justify="space-between" pl={WRAPPER_PADDING + Y_LABEL_WIDTH} pr={WRAPPER_PADDING}>
         <Text fontSize="$1" color="$gray10">
           {new Date(data[0].week).toLocaleDateString("en-US", {
             month: "short",
