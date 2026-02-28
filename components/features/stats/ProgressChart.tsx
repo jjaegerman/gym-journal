@@ -73,7 +73,7 @@ function ProgressChartContent({
   const outerWidth = Math.min(screenWidth - 64, 400);
   const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
-  const spacing = data.length > 1 ? Math.max(16, chartWidth / (data.length - 1)) : 60;
+  const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
 
   // First point gets pointerShiftX because gifted-charts clamps pointerX to 0.1
   // when initialSpacing=0 (getX(0)=0 → z=-radius-1 → clamped), shifting the
@@ -87,12 +87,16 @@ function ProgressChartContent({
   }));
 
   const values = chartData.map((d) => d.value);
-  // Round up to a "nice" ceiling so section lines fall on round numbers
+  // Compute a nice min/max so gridlines fall on round numbers and the
+  // chart isn't mostly empty space below the data range.
+  const rawMin = Math.min(...values);
   const rawMax = Math.max(...values, 1);
   const noOfSections = 4;
   const roughStep = rawMax / noOfSections;
   const magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(roughStep, 1))));
-  const maxValue = Math.ceil(roughStep / magnitude) * magnitude * noOfSections;
+  const niceStep = Math.ceil(roughStep / magnitude) * magnitude;
+  const maxValue = niceStep * noOfSections;
+  const minValue = Math.max(0, Math.floor(rawMin / niceStep) * niceStep);
 
   const formatYLabel = (val: string) => {
     const num = parseFloat(val);
@@ -100,6 +104,14 @@ function ProgressChartContent({
     if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
     return String(Math.round(num));
   };
+
+  const MAX_X_LABELS = Math.min(data.length, 4);
+  const xLabelIndices =
+    MAX_X_LABELS <= 1
+      ? [0]
+      : Array.from({ length: MAX_X_LABELS }, (_, k) =>
+          Math.round((k * (data.length - 1)) / (MAX_X_LABELS - 1))
+        ).filter((v, i, arr) => arr.indexOf(v) === i);
 
   return (
     <YStack gap="$3" width={outerWidth} alignSelf="center">
@@ -146,6 +158,7 @@ function ProgressChartContent({
           spacing={spacing}
           initialSpacing={0}
           endSpacing={0}
+          disableScroll
           color={lineColor}
           thickness={2}
           curved
@@ -154,11 +167,13 @@ function ProgressChartContent({
           dataPointsRadius={DOT_RADIUS}
           noOfSections={noOfSections}
           maxValue={maxValue}
+          minValue={minValue}
           rulesType="dashed"
           rulesColor={gridColor}
           yAxisColor="transparent"
           xAxisColor={gridColor}
           hideXAxisText
+          xAxisLabelsHeight={0}
           yAxisLabelWidth={Y_LABEL_WIDTH}
           yAxisThickness={0}
           yAxisTextStyle={{ color: labelColor, fontSize: 10 }}
@@ -212,20 +227,34 @@ function ProgressChartContent({
         />
       </View>
 
-      <XStack justify="space-between" pl={WRAPPER_PADDING + Y_LABEL_WIDTH} pr={WRAPPER_PADDING}>
-        <Text fontSize="$1" color="$gray10">
-          {new Date(data[0].week).toLocaleDateString("en-US", {
+      <View style={{ height: 16, position: "relative", marginTop: -18 }}>
+        {xLabelIndices.map((i) => {
+          const x = WRAPPER_PADDING + Y_LABEL_WIDTH + i * spacing;
+          const isFirst = i === 0;
+          const isLast = i === data.length - 1;
+          const date = new Date(data[i].week).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
-          })}
-        </Text>
-        <Text fontSize="$1" color="$gray10">
-          {new Date(data[data.length - 1].week).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })}
-        </Text>
-      </XStack>
+          });
+          return (
+            <Text
+              key={i}
+              style={{
+                position: "absolute",
+                ...(isLast
+                  ? { right: WRAPPER_PADDING }
+                  : { left: isFirst ? x : x - 18 }),
+                ...(!isFirst && !isLast ? { width: 36 } : {}),
+                fontSize: 10,
+                color: labelColor,
+                textAlign: isFirst ? "left" : isLast ? "right" : "center",
+              }}
+            >
+              {date}
+            </Text>
+          );
+        })}
+      </View>
     </YStack>
   );
 }
