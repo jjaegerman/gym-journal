@@ -70,7 +70,7 @@ function ProgressChartContent({
   const DOT_RADIUS = 4;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
   const Y_LABEL_WIDTH = 40;
-  const outerWidth = Math.min(screenWidth - 64, 400);
+  const outerWidth = Math.min(screenWidth * 0.9, 600);
   const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
   const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
