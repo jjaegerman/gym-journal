@@ -166,8 +166,8 @@ function ProgressChartContent({
           dataPointsColor={lineColor}
           dataPointsRadius={DOT_RADIUS}
           noOfSections={noOfSections}
-          maxValue={maxValue}
-          minValue={minValue}
+          maxValue={maxValue - minValue}
+          yAxisOffset={minValue}
           rulesType="dashed"
           rulesColor={gridColor}
           yAxisColor="transparent"
