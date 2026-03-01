@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Platform } from "react-native";
 import { Sheet, YStack, XStack, Text, Button, Separator, RadioGroup } from "tamagui";
 import { Calendar } from "@tamagui/lucide-icons";
@@ -42,13 +42,24 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  const committedRef = useRef(false);
+
+  // Only reset when the sheet opens — ghost presses fire during the close animation
+  // (after open=false), so we must NOT reset on close.
+  useEffect(() => {
+    if (open) committedRef.current = false;
+  }, [open]);
 
   const handlePresetSelect = (preset: DateRangePreset) => {
+    if (committedRef.current) return;
+    committedRef.current = true;
     if (preset === "custom") {
-      // When selecting custom, keep current dates or set defaults
       const defaultFrom = value.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const defaultTo = value.to ?? new Date();
       onChange({ preset: "custom", from: defaultFrom, to: defaultTo });
+      // Sheet stays open for custom — release the guard after animation so
+      // the user can still change their mind within the same session.
+      setTimeout(() => { committedRef.current = false; }, 400);
     } else {
       const range = getDateRangeFromPreset(preset);
       onChange({ preset, from: range.from, to: range.to });
@@ -60,15 +71,14 @@ export function DateRangePicker({
     if (event.type === "set" && date) {
       onChange({ preset: "custom", from: date, to: value.to ?? new Date() });
     }
-    // Close picker after interaction on both platforms
-    setShowStartPicker(false);
+    if (Platform.OS === "android") setShowStartPicker(false);
   };
 
   const handleEndDateChange = (event: DateTimePickerEvent, date?: Date) => {
     if (event.type === "set" && date) {
       onChange({ preset: "custom", from: value.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), to: date });
     }
-    setShowEndPicker(false);
+    if (Platform.OS === "android") setShowEndPicker(false);
   };
 
   const handleDone = () => {
@@ -103,10 +113,7 @@ export function DateRangePicker({
 
           <Separator />
 
-          <RadioGroup
-            value={currentPreset}
-            onValueChange={(value) => handlePresetSelect(value as DateRangePreset)}
-          >
+          <RadioGroup value={currentPreset}>
             <YStack gap="$2">
               {DATE_RANGE_OPTIONS.map((option, index) => {
                 const id = `date-range-${index}`;

@@ -31,17 +31,7 @@ export function WorkoutFilters({
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>("all_time");
 
   const getDateRangeValue = (): DateRangeValue => {
-    if (dateRangePreset === "custom") {
-      return { preset: "custom", from: filters.dateFrom, to: filters.dateTo };
-    }
-    if (!filters.dateFrom) return { preset: "all_time" };
-    const daysDiff = Math.round(
-      (Date.now() - filters.dateFrom.getTime()) / (24 * 60 * 60 * 1000)
-    );
-    if (daysDiff <= 7) return { preset: "7_days", from: filters.dateFrom, to: filters.dateTo };
-    if (daysDiff <= 30) return { preset: "30_days", from: filters.dateFrom, to: filters.dateTo };
-    if (daysDiff <= 90) return { preset: "3_months", from: filters.dateFrom, to: filters.dateTo };
-    return { preset: "custom", from: filters.dateFrom, to: filters.dateTo };
+    return { preset: dateRangePreset, from: filters.dateFrom, to: filters.dateTo };
   };
 
   const handleCategoryChange = (selected: string[]) => {

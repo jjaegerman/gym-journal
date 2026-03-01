@@ -284,3 +284,14 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
    - Stored as TEXT in ISO 8601 format (e.g., "PT30M", "PT1H15M30S")
    - OpenAI returns ISO 8601 directly; stored without conversion
    - Use `parse_iso8601_duration_to_seconds()` for calculations
+
+10. **Tamagui Sheet Ghost Press Pattern**:
+    - When a Tamagui `<Sheet>` closes, its dismiss animation fires phantom touch events at the original tap coordinates. These ghost presses land on whatever content is now under that position and can re-trigger handlers.
+    - Fix with a `committedRef = useRef(false)` guard in any interactive sheet:
+      - Set `committedRef.current = true` at the start of the selection handler
+      - Guard the handler: `if (committedRef.current) return`
+      - Reset **only when the sheet opens** (`useEffect` on `open` prop, trigger only when `open === true`)
+      - **Do NOT reset when `open` goes to `false`** — ghost presses fire during the close animation, after `open` is already `false`, so resetting on close lets them through
+      - For options that keep the sheet open (e.g. "Custom" date range): reset via `setTimeout(..., 400)` instead so the user can still change their selection within the same session
+    - Also avoid attaching the same handler to both `RadioGroup.onValueChange` AND `XStack.onPress` — both fire on a single tap, causing double invocation. Use only `XStack.onPress`.
+    - See `components/ui/filters/DateRangePicker.tsx` and `components/ui/filters/FilterSheet.tsx` for reference implementations.
