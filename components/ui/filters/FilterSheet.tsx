@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import {
   Sheet,
   YStack,
@@ -31,6 +31,12 @@ export function FilterSheet({
   onOpenChange,
   singleSelect = false,
 }: FilterSheetProps) {
+  const committedRef = useRef(false);
+
+  useEffect(() => {
+    if (open) committedRef.current = false;
+  }, [open]);
+
   const handleToggle = (option: string) => {
     const next = selected.includes(option)
       ? selected.filter((o) => o !== option)
@@ -38,7 +44,7 @@ export function FilterSheet({
     onSelectionChange(next);
   };
 
-  const handleClear = () => {
+const handleClear = () => {
     onSelectionChange([]);
   };
 
@@ -72,6 +78,8 @@ export function FilterSheet({
               <RadioGroup
                 value={selected[0] ?? ""}
                 onValueChange={(value) => {
+                  if (committedRef.current) return;
+                  committedRef.current = true;
                   onSelectionChange([value]);
                   onOpenChange(false);
                 }}
@@ -88,6 +96,8 @@ export function FilterSheet({
                         px="$2"
                         pressStyle={{ opacity: 0.7 }}
                         onPress={() => {
+                          if (committedRef.current) return;
+                          committedRef.current = true;
                           onSelectionChange([option]);
                           onOpenChange(false);
                         }}

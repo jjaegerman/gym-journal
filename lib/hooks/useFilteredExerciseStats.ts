@@ -10,7 +10,6 @@ import {
 } from '@/lib/api/supabase/stats';
 import { computeCascadedOptions } from '@/lib/utils/filterCascade';
 import { useSession } from './useSession';
-import { getLastCategory, setLastCategory } from '@/lib/storage/statsCategory';
 
 export type { ExerciseFilterOptions, ExerciseFilters, FilteredExerciseStats, AppliedFilters };
 
@@ -27,9 +26,8 @@ export function useFilteredExerciseStats() {
   const [stats, setStats] = useState<FilteredExerciseStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const initialCategoryLoaded = useRef(false);
-
   const fetchStatsRef = useRef<() => Promise<void> | undefined>(undefined);
+  const fetchGenerationRef = useRef(0);
 
   const hasActiveFilters = useCallback(() => {
     return !!(
@@ -38,51 +36,38 @@ export function useFilteredExerciseStats() {
     );
   }, [filters]);
 
-  // Load stored category on mount
-  useEffect(() => {
-    if (initialCategoryLoaded.current) return;
-    initialCategoryLoaded.current = true;
-
-    getLastCategory().then((stored) => {
-      if (stored) {
-        setFilters((prev) => ({ ...prev, categories: [stored] }));
-      }
-    });
-  }, []);
-
-  // Persist category when it changes
-  useEffect(() => {
-    if (filters.categories?.length === 1) {
-      setLastCategory(filters.categories[0]);
-    }
-  }, [filters.categories]);
-
   const fetchStats = useCallback(async () => {
     if (!session?.user.id) return;
+
+    const generation = ++fetchGenerationRef.current;
 
     try {
       setLoading(true);
       setError(null);
 
       const data = await getFilteredExerciseStats(filters);
+
+      if (fetchGenerationRef.current !== generation) return;
+
       setStats(data);
 
       // Sync category only from server auto-selection (no equipment)
-      if (data.appliedFilters && !filters.categories?.length) {
+      if (data.appliedFilters) {
         const applied = data.appliedFilters;
         if (applied.categories?.length > 0) {
-          setFilters((prev) => ({
-            ...prev,
-            categories: applied.categories,
-          }));
+          setFilters((prev) => {
+            if (prev.categories?.length) return prev;
+            return { ...prev, categories: applied.categories };
+          });
         }
       }
     } catch (err) {
+      if (fetchGenerationRef.current !== generation) return;
       console.error("Error fetching filtered exercise stats:", err);
       setError(err as Error);
       setStats(null);
     } finally {
-      setLoading(false);
+      if (fetchGenerationRef.current === generation) setLoading(false);
     }
   }, [session?.user.id, filters]);
 

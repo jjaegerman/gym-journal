@@ -42,7 +42,7 @@ function ProgressChartContent({
   gridColor,
   labelColor,
 }: ProgressChartProps & { gridColor: string; labelColor: string }) {
-  const [metric, setMetric] = useState<MetricType>("volume");
+  const [metric, setMetric] = useState<MetricType>("maxWeight");
   const { width: screenWidth } = useWindowDimensions();
   // Inside <Theme name="accent">, useTheme() resolves accent palette tokens
   const theme = useTheme();
@@ -118,22 +118,6 @@ function ProgressChartContent({
       <XStack gap="$2" justify="center">
         <Button
           size="$2"
-          chromeless={metric !== "volume"}
-          bg={metric === "volume" ? "$color3" : "$gray3"}
-          onPress={() => setMetric("volume")}
-          borderRadius="$3"
-          px="$3"
-        >
-          <Text
-            fontSize="$2"
-            fontWeight={metric === "volume" ? "600" : "400"}
-            color={metric === "volume" ? "$color11" : "$gray11"}
-          >
-            Volume
-          </Text>
-        </Button>
-        <Button
-          size="$2"
           chromeless={metric !== "maxWeight"}
           bg={metric === "maxWeight" ? "$color3" : "$gray3"}
           onPress={() => setMetric("maxWeight")}
@@ -146,6 +130,22 @@ function ProgressChartContent({
             color={metric === "maxWeight" ? "$color11" : "$gray11"}
           >
             Max Weight
+          </Text>
+        </Button>
+        <Button
+          size="$2"
+          chromeless={metric !== "volume"}
+          bg={metric === "volume" ? "$color3" : "$gray3"}
+          onPress={() => setMetric("volume")}
+          borderRadius="$3"
+          px="$3"
+        >
+          <Text
+            fontSize="$2"
+            fontWeight={metric === "volume" ? "600" : "400"}
+            color={metric === "volume" ? "$color11" : "$gray11"}
+          >
+            Volume
           </Text>
         </Button>
       </XStack>
