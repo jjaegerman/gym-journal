@@ -11,6 +11,7 @@ interface PRData {
 interface PersonalRecordsProps {
   weightPr: PRData | null;
   repsPr: PRData | null;
+  weightUnit?: string;
   onPRPress?: (workoutId: string) => void;
 }
 
@@ -67,7 +68,7 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
   );
 }
 
-export function PersonalRecords({ weightPr, repsPr, onPRPress }: PersonalRecordsProps) {
+export function PersonalRecords({ weightPr, repsPr, weightUnit, onPRPress }: PersonalRecordsProps) {
   if (!weightPr && !repsPr) {
     return null;
   }
@@ -82,7 +83,7 @@ export function PersonalRecords({ weightPr, repsPr, onPRPress }: PersonalRecords
           <PRCard
             title="Weight PR"
             pr={weightPr}
-            unit="lbs"
+            unit={weightUnit ?? "lbs"}
             onPress={weightPr?.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
           />
           <PRCard

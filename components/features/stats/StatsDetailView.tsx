@@ -38,7 +38,11 @@ export function StatsDetailView({
                 <H5 opacity={0.7} fontWeight="600">
                   Progress
                 </H5>
-                <ProgressChart data={stats.progressData} />
+                <ProgressChart
+                  data={stats.progressData}
+                  weightUnit={stats.weightUnit}
+                  distanceUnit={stats.distanceUnit}
+                />
               </YStack>
             </>
           )}
@@ -49,6 +53,7 @@ export function StatsDetailView({
               <PersonalRecords
                 weightPr={stats.weightPr}
                 repsPr={stats.repsPr}
+                weightUnit={stats.weightUnit ?? undefined}
                 onPRPress={onSessionPress}
               />
             </>

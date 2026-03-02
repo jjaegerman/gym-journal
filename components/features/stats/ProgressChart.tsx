@@ -1,38 +1,63 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { YStack, XStack, Text, Button, useTheme, Theme } from "tamagui";
 import { LineChart } from "react-native-gifted-charts";
+import { formatDuration, formatPace } from "@/lib/utils/formatters";
 
 interface ProgressDataPoint {
   week: string;
   volume: number;
   maxWeight: number;
+  maxReps: number | null;
+  distance: number | null;
+  avgPace: number | null;
+  maxDuration: number | null;
+  maxResistance: number | null;
 }
 
 interface ProgressChartProps {
   data: ProgressDataPoint[];
+  weightUnit?: string | null;
+  distanceUnit?: string | null;
 }
 
-type MetricType = "volume" | "maxWeight";
+type MetricType = "volume" | "maxWeight" | "maxReps" | "distance" | "avgPace" | "maxDuration" | "maxResistance";
 
-function formatValue(value: number, metric: MetricType): string {
-  if (metric === "volume") {
-    if (value >= 1000) {
-      return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K lbs";
-    }
-    return value.toFixed(0) + " lbs";
+const METRIC_LABELS: Record<MetricType, string> = {
+  volume: "Volume",
+  maxWeight: "Max Weight",
+  maxReps: "Max Reps",
+  distance: "Distance",
+  avgPace: "Avg Pace",
+  maxDuration: "Max Duration",
+  maxResistance: "Max Resistance",
+};
+
+function getValue(d: ProgressDataPoint, metric: MetricType): number {
+  switch (metric) {
+    case "volume": return d.volume;
+    case "maxWeight": return d.maxWeight;
+    case "maxReps": return d.maxReps ?? 0;
+    case "distance": return d.distance ?? 0;
+    case "avgPace": return d.avgPace ?? 0;
+    case "maxDuration": return d.maxDuration ?? 0;
+    case "maxResistance": return d.maxResistance ?? 0;
   }
-  return value.toFixed(0) + " lbs";
 }
 
-export function ProgressChart({ data }: ProgressChartProps) {
-  // Resolve base-theme colors — gray/neutral tokens aren't in the accent theme's extra
+export function ProgressChart({ data, weightUnit, distanceUnit }: ProgressChartProps) {
   const baseTheme = useTheme();
   const gridColor = baseTheme.color5.val;
   const labelColor = baseTheme.color9.val;
   return (
     <Theme name="accent">
-      <ProgressChartContent data={data} gridColor={gridColor} labelColor={labelColor} />
+      <ProgressChartContent
+        data={data}
+        gridColor={gridColor}
+        labelColor={labelColor}
+        weightUnit={weightUnit}
+        distanceUnit={distanceUnit}
+      />
     </Theme>
   );
 }
@@ -41,20 +66,42 @@ function ProgressChartContent({
   data,
   gridColor,
   labelColor,
+  weightUnit,
+  distanceUnit,
 }: ProgressChartProps & { gridColor: string; labelColor: string }) {
-  const [metric, setMetric] = useState<MetricType>("maxWeight");
   const { width: screenWidth } = useWindowDimensions();
-  // Inside <Theme name="accent">, useTheme() resolves accent palette tokens
   const theme = useTheme();
 
-  // Resolved colors for gifted-charts (requires plain strings, not tokens)
   const lineColor = theme.color10.val;
   const stripColor = theme.color7.val;
   const tooltipBg = theme.color3.val;
   const tooltipValueColor = theme.color12.val;
   const tooltipDateColor = theme.color10.val;
 
-  if (data.length === 0) {
+  const wUnit = weightUnit ?? "lbs";
+  const dUnit = distanceUnit ?? "mi";
+
+  const availableMetrics = useMemo<MetricType[]>(() => {
+    const metrics: MetricType[] = [];
+    if (data.some((d) => d.maxWeight > 0)) metrics.push("maxWeight");
+    if (data.some((d) => d.volume > 0)) metrics.push("volume");
+    if (data.some((d) => (d.maxReps ?? 0) > 0)) metrics.push("maxReps");
+    if (data.some((d) => (d.distance ?? 0) > 0)) metrics.push("distance");
+    if (data.some((d) => (d.avgPace ?? 0) > 0)) metrics.push("avgPace");
+    if (data.some((d) => (d.maxDuration ?? 0) > 0)) metrics.push("maxDuration");
+    if (data.some((d) => (d.maxResistance ?? 0) > 0)) metrics.push("maxResistance");
+    return metrics;
+  }, [data]);
+
+  const [metric, setMetric] = useState<MetricType>(() => availableMetrics[0] ?? "maxWeight");
+
+  useEffect(() => {
+    if (!availableMetrics.includes(metric)) {
+      setMetric(availableMetrics[0] ?? "maxWeight");
+    }
+  }, [availableMetrics, metric]);
+
+  if (data.length === 0 || availableMetrics.length === 0) {
     return (
       <YStack p="$4" items="center" justify="center" height={200}>
         <Text opacity={0.5}>No progress data available</Text>
@@ -62,11 +109,51 @@ function ProgressChartContent({
     );
   }
 
-  // The wrapper adds visual padding so data point dots aren't clipped at edges.
-  // initialSpacing MUST be 0: gifted-charts puts paddingLeft=initialSpacing on the
-  // ScrollView content, but the SVG wrapper uses explicit left:0 (ignoring padding)
-  // while the pointer overlay has no left and inherits paddingLeft — causing a
-  // persistent right-shift equal to initialSpacing. Setting it to 0 removes this.
+  const formatValue = (value: number, m: MetricType): string => {
+    switch (m) {
+      case "volume":
+        if (value >= 1000) return (value / 1000).toFixed(1).replace(/\.0$/, "") + `K ${wUnit}`;
+        return value.toFixed(0) + ` ${wUnit}`;
+      case "maxWeight":
+        return value.toFixed(0) + ` ${wUnit}`;
+      case "maxReps":
+        return value.toFixed(0) + " reps";
+      case "distance":
+        return value.toFixed(1) + ` ${dUnit}`;
+      case "avgPace":
+        return formatPace(value, distanceUnit ?? null);
+      case "maxDuration": {
+        const totalSecs = Math.round(value);
+        const m2 = Math.floor(totalSecs / 60);
+        const s = totalSecs % 60;
+        return s > 0 ? `${m2}m ${s}s` : `${m2}m`;
+      }
+      case "maxResistance":
+        return "Level " + value.toFixed(0);
+    }
+  };
+
+  const formatYLabel = (val: string): string => {
+    const num = parseFloat(val);
+    if (metric === "avgPace") {
+      const mins = Math.floor(num);
+      const secs = Math.round((num - mins) * 60);
+      return `${mins}:${String(secs).padStart(2, "0")}`;
+    }
+    if (metric === "maxDuration") {
+      const totalSecs = Math.round(num);
+      const m2 = Math.floor(totalSecs / 60);
+      const s = totalSecs % 60;
+      return s > 0 ? `${m2}:${String(s).padStart(2, "0")}` : `${m2}m`;
+    }
+    if (metric === "maxResistance") {
+      return String(Math.round(num));
+    }
+    if (num === 0) return "0";
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return String(Math.round(num));
+  };
+
   const DOT_RADIUS = 4;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
   const Y_LABEL_WIDTH = 40;
@@ -75,20 +162,14 @@ function ProgressChartContent({
   const chartHeight = 180;
   const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
 
-  // First point gets pointerShiftX because gifted-charts clamps pointerX to 0.1
-  // when initialSpacing=0 (getX(0)=0 → z=-radius-1 → clamped), shifting the
-  // pointer right. pointerShiftX in Pointer.js is broken (reads from the number
-  // pointerX, not pointerItemLocal), so it's applied manually via pointerComponent.
   const POINTER_SHIFT_FIRST_X = -(DOT_RADIUS + 1);
   const chartData = data.map((d, i) => ({
-    value: metric === "volume" ? d.volume : d.maxWeight,
+    value: getValue(d, metric),
     week: d.week,
     ...(i === 0 ? { pointerShiftX: POINTER_SHIFT_FIRST_X } : {}),
   }));
 
   const values = chartData.map((d) => d.value);
-  // Compute a nice min/max so gridlines fall on round numbers and the
-  // chart isn't mostly empty space below the data range.
   const rawMin = Math.min(...values);
   const rawMax = Math.max(...values, 1);
   const noOfSections = 4;
@@ -97,13 +178,6 @@ function ProgressChartContent({
   const niceStep = Math.ceil(roughStep / magnitude) * magnitude;
   const maxValue = niceStep * noOfSections;
   const minValue = Math.max(0, Math.floor(rawMin / niceStep) * niceStep);
-
-  const formatYLabel = (val: string) => {
-    const num = parseFloat(val);
-    if (num === 0) return "0";
-    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
-    return String(Math.round(num));
-  };
 
   const MAX_X_LABELS = Math.min(data.length, 4);
   const xLabelIndices =
@@ -115,40 +189,29 @@ function ProgressChartContent({
 
   return (
     <YStack gap="$3" width={outerWidth} alignSelf="center">
-      <XStack gap="$2" justify="center">
-        <Button
-          size="$2"
-          chromeless={metric !== "maxWeight"}
-          bg={metric === "maxWeight" ? "$color3" : "$gray3"}
-          onPress={() => setMetric("maxWeight")}
-          borderRadius="$3"
-          px="$3"
-        >
-          <Text
-            fontSize="$2"
-            fontWeight={metric === "maxWeight" ? "600" : "400"}
-            color={metric === "maxWeight" ? "$color11" : "$gray11"}
-          >
-            Max Weight
-          </Text>
-        </Button>
-        <Button
-          size="$2"
-          chromeless={metric !== "volume"}
-          bg={metric === "volume" ? "$color3" : "$gray3"}
-          onPress={() => setMetric("volume")}
-          borderRadius="$3"
-          px="$3"
-        >
-          <Text
-            fontSize="$2"
-            fontWeight={metric === "volume" ? "600" : "400"}
-            color={metric === "volume" ? "$color11" : "$gray11"}
-          >
-            Volume
-          </Text>
-        </Button>
-      </XStack>
+      {availableMetrics.length > 0 && (
+        <XStack gap="$2" justify="center" flexWrap="wrap">
+          {availableMetrics.map((m) => (
+            <Button
+              key={m}
+              size="$2"
+              chromeless={metric !== m}
+              bg={metric === m ? "$color3" : "$gray3"}
+              onPress={() => setMetric(m)}
+              borderRadius="$3"
+              px="$3"
+            >
+              <Text
+                fontSize="$2"
+                fontWeight={metric === m ? "600" : "400"}
+                color={metric === m ? "$color11" : "$gray11"}
+              >
+                {METRIC_LABELS[m]}
+              </Text>
+            </Button>
+          ))}
+        </XStack>
+      )}
 
       <View style={{ paddingHorizontal: WRAPPER_PADDING }}>
         <LineChart
@@ -184,7 +247,7 @@ function ProgressChartContent({
             pointerStripWidth: 1,
             pointerColor: lineColor,
             radius: DOT_RADIUS,
-            pointerLabelWidth: 80,
+            pointerLabelWidth: 100,
             pointerLabelHeight: 48,
             activatePointersOnLongPress: false,
             autoAdjustPointerLabelPosition: true,

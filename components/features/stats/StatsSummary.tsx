@@ -1,5 +1,6 @@
 import { XStack, YStack, Text, Card } from "tamagui";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
+import { formatDuration, formatPace } from "@/lib/utils/formatters";
 
 interface StatsSummaryProps {
   stats: FilteredExerciseStats;
@@ -33,6 +34,10 @@ function MetricCard({ label, value, unit }: MetricCardProps) {
   );
 }
 
+function Spacer() {
+  return <Card flex={1} flexBasis={0} p="$3" bg="transparent" />;
+}
+
 function formatVolume(volume: number): string {
   if (volume >= 1000000) {
     return (volume / 1000000).toFixed(1) + "M";
@@ -44,52 +49,108 @@ function formatVolume(volume: number): string {
 }
 
 export function StatsSummary({ stats }: StatsSummaryProps) {
-  const hasStrengthData = stats.totalVolume > 0 || stats.maxWeight !== null;
-  const hasCardioData = stats.totalDistance > 0;
+  const hasWeightData = stats.maxWeight !== null || stats.totalVolume > 0;
+  const hasRepData = stats.maxReps !== null;
+  const hasDistanceData = stats.totalDistance > 0;
+  const hasDurationData = stats.totalDurationSeconds > 0;
+  const hasPaceData = stats.bestPace !== null;
+  const hasResistanceData = stats.maxResistanceLevel !== null;
+  const weightUnit = stats.weightUnit ?? "lbs";
+  const distanceUnit = stats.distanceUnit ?? "mi";
 
   return (
     <YStack gap="$3" width="100%">
+      {/* Always-shown row */}
       <XStack gap="$3">
         <MetricCard label="Workouts" value={stats.totalWorkouts} />
         <MetricCard label="Total Sets" value={stats.totalSets} />
       </XStack>
 
-      {hasStrengthData && (
+      {/* Strength: volume + max weight */}
+      {hasWeightData && (
         <XStack gap="$3">
           <MetricCard
             label="Total Volume"
             value={formatVolume(stats.totalVolume)}
-            unit="lbs"
+            unit={weightUnit}
           />
           {stats.maxWeight !== null ? (
             <MetricCard
               label="Max Weight"
               value={stats.maxWeight}
-              unit="lbs"
+              unit={weightUnit}
             />
-          ) : stats.maxReps !== null ? (
-            <MetricCard label="Max Reps" value={stats.maxReps} />
           ) : (
-            <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
+            <Spacer />
           )}
         </XStack>
       )}
 
-      {hasStrengthData && stats.maxReps !== null && stats.maxWeight !== null && (
+      {/* Max Reps — shown whenever there are reps, regardless of weight data */}
+      {hasRepData && (
         <XStack gap="$3">
-          <MetricCard label="Max Reps" value={stats.maxReps} />
-          <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
+          <MetricCard label="Max Reps" value={stats.maxReps!} />
+          <Spacer />
         </XStack>
       )}
 
-      {hasCardioData && (
+      {/* Distance + Duration row */}
+      {(hasDistanceData || hasDurationData) && (
+        <XStack gap="$3">
+          {hasDistanceData ? (
+            <MetricCard
+              label="Total Distance"
+              value={stats.totalDistance.toFixed(1)}
+              unit={distanceUnit}
+            />
+          ) : (
+            <MetricCard
+              label="Total Duration"
+              value={formatDuration(stats.totalDurationSeconds)}
+            />
+          )}
+          {hasDistanceData && hasDurationData ? (
+            <MetricCard
+              label="Total Duration"
+              value={formatDuration(stats.totalDurationSeconds)}
+            />
+          ) : hasDurationData && !hasDistanceData ? (
+            <MetricCard
+              label="Max Duration"
+              value={formatDuration(stats.maxDurationSeconds!)}
+            />
+          ) : (
+            <Spacer />
+          )}
+        </XStack>
+      )}
+
+      {/* Pace + Max Duration row (only when both distance and duration present) */}
+      {hasDistanceData && hasDurationData && (
+        <XStack gap="$3">
+          {hasPaceData ? (
+            <MetricCard
+              label="Best Pace"
+              value={formatPace(stats.bestPace!, distanceUnit)}
+            />
+          ) : (
+            <Spacer />
+          )}
+          <MetricCard
+            label="Max Duration"
+            value={formatDuration(stats.maxDurationSeconds!)}
+          />
+        </XStack>
+      )}
+
+      {/* Resistance row */}
+      {hasResistanceData && (
         <XStack gap="$3">
           <MetricCard
-            label="Total Distance"
-            value={stats.totalDistance.toFixed(1)}
-            unit="mi"
+            label="Max Resistance Level"
+            value={stats.maxResistanceLevel!}
           />
-          <Card flex={1} flexBasis={0} p="$3" bg="transparent" />
+          <Spacer />
         </XStack>
       )}
     </YStack>

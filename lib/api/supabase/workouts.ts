@@ -19,7 +19,6 @@ export interface WorkoutFilterRelationship {
 export interface WorkoutFilters {
   categories?: string[];
   equipment?: string[];
-  dateFrom?: Date;
   dateTo?: Date;
 }
 
@@ -95,7 +94,7 @@ export async function filterUserWorkouts(filters: WorkoutFilters): Promise<Worko
   const { data, error } = await supabase.rpc("filter_user_workouts", {
     p_categories: filters.categories?.length ? filters.categories : null,
     p_equipment: filters.equipment?.length ? filters.equipment : null,
-    p_date_from: filters.dateFrom?.toISOString() ?? null,
+    p_date_from: null,
     p_date_to: filters.dateTo?.toISOString() ?? null,
   });
 

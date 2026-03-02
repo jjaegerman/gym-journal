@@ -58,7 +58,6 @@ export function useWorkoutHistory() {
     return !!(
       (filters.categories && filters.categories.length > 0) ||
       (filters.equipment && filters.equipment.length > 0) ||
-      filters.dateFrom ||
       filters.dateTo
     );
   }, [filters]);

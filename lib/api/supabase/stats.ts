@@ -142,9 +142,24 @@ export interface FilteredExerciseStats {
   totalDistance: number;
   maxWeight: number | null;
   maxReps: number | null;
+  totalDurationSeconds: number;
+  maxDurationSeconds: number | null;
+  bestPace: number | null;
+  maxResistanceLevel: number | null;
+  weightUnit: string | null;
+  distanceUnit: string | null;
   weightPr: { value: number; date: string; exercise: string; workoutId?: string } | null;
   repsPr: { value: number; date: string; exercise: string; workoutId?: string } | null;
-  progressData: { week: string; volume: number; maxWeight: number }[];
+  progressData: {
+    week: string;
+    volume: number;
+    maxWeight: number;
+    maxReps: number | null;
+    distance: number | null;
+    avgPace: number | null;
+    maxDuration: number | null;
+    maxResistance: number | null;
+  }[];
   recentSessions: { workoutId: string; date: string; summary: string }[];
   firstLogged: string | null;
   lastLogged: string | null;
@@ -194,6 +209,12 @@ export async function getFilteredExerciseStats(
       totalDistance: 0,
       maxWeight: null,
       maxReps: null,
+      totalDurationSeconds: 0,
+      maxDurationSeconds: null,
+      bestPace: null,
+      maxResistanceLevel: null,
+      weightUnit: null,
+      distanceUnit: null,
       weightPr: null,
       repsPr: null,
       progressData: [],
@@ -213,6 +234,12 @@ export async function getFilteredExerciseStats(
     totalDistance: row.total_distance ?? 0,
     maxWeight: row.max_weight,
     maxReps: row.max_reps,
+    totalDurationSeconds: row.total_duration_seconds ?? 0,
+    maxDurationSeconds: row.max_duration_seconds ?? null,
+    bestPace: row.best_pace ?? null,
+    maxResistanceLevel: row.max_resistance_level ?? null,
+    weightUnit: row.weight_unit ?? null,
+    distanceUnit: row.distance_unit ?? null,
     weightPr: row.weight_pr,
     repsPr: row.reps_pr,
     progressData: row.progress_data ?? [],
