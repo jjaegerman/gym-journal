@@ -220,7 +220,9 @@ function ProgressChartContent({
           height={chartHeight}
           spacing={spacing}
           initialSpacing={0}
-          endSpacing={0}
+          endSpacing={data.length > 1 ? 10 - spacing : 0}
+          rulesLength={chartWidth}
+          xAxisLength={chartWidth}
           disableScroll
           color={lineColor}
           thickness={2}
