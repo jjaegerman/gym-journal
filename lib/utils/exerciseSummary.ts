@@ -34,8 +34,11 @@ export function summarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
   let minDurationMinutes = Infinity;
   let maxDuration: string | undefined = undefined;
   let maxDurationMinutes = -Infinity;
-  let minEffort = Infinity;
-  let maxEffort = -Infinity;
+  const EFFORT_ORDINAL: Record<string, number> = { low: 1, medium: 2, high: 3 };
+  let minEffortOrdinal = Infinity;
+  let maxEffortOrdinal = -Infinity;
+  let minEffort: string | undefined = undefined;
+  let maxEffort: string | undefined = undefined;
 
   logs.forEach((log) => {
     if (log.repetitions) {
@@ -68,10 +71,16 @@ export function summarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
       }
     }
     if (log.effort) {
-      const effortValue = parseInt(log.effort);
-      if (!isNaN(effortValue)) {
-        minEffort = Math.min(minEffort, effortValue);
-        maxEffort = Math.max(maxEffort, effortValue);
+      const ordinal = EFFORT_ORDINAL[log.effort];
+      if (ordinal !== undefined) {
+        if (ordinal < minEffortOrdinal) {
+          minEffortOrdinal = ordinal;
+          minEffort = log.effort;
+        }
+        if (ordinal > maxEffortOrdinal) {
+          maxEffortOrdinal = ordinal;
+          maxEffort = log.effort;
+        }
       }
     }
   });
@@ -92,8 +101,8 @@ export function summarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
       maxResistanceLevel === -Infinity ? undefined : maxResistanceLevel,
     minDuration,
     maxDuration,
-    minEffort: minEffort === Infinity ? undefined : minEffort.toString(),
-    maxEffort: maxEffort === -Infinity ? undefined : maxEffort.toString(),
+    minEffort,
+    maxEffort,
   };
 }
 

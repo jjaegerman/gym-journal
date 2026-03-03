@@ -1,39 +1,22 @@
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "lib/supabase";
 import { useEffect, useState } from "react";
 import { H5, YStack } from "tamagui";
-import { WorkoutDetails, WorkoutDetailsSchema } from "types/exercise";
+import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
+import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
 import { ExerciseList } from "./shared/ExerciseList";
 
 export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (session) {
-      getWorkout();
-    }
-  }, [session]);
-
-  const getWorkout = async () => {
-    const { data, error } = await supabase.rpc("get_workout_details", {
-      p_workout_id: workoutId,
-    });
-    if (error) {
-      console.error("Error fetching workout details:", error);
-      return;
-    }
-    setWorkout(WorkoutDetailsSchema.parse(data));
+  const fetchWorkout = async () => {
+    try {
+      const data = await getWorkoutDetails(workoutId);
+      setWorkout(WorkoutDetailsSchema.parse(data));
+    } catch {}
   };
+
+  useEffect(() => {
+    fetchWorkout();
+  }, [workoutId]);
 
   const endTime = workout?.endTime;
   const workoutStart = workout?.datetime;
@@ -63,9 +46,8 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
       </H5>
       <ExerciseList
         exercises={workout?.exercises ?? []}
-        onLogDeleted={getWorkout}
+        onLogDeleted={fetchWorkout}
       />
     </YStack>
   );
 };
-

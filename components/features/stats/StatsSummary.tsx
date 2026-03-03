@@ -1,6 +1,6 @@
 import { XStack, YStack, Text, Card } from "tamagui";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
-import { formatDuration, formatPace } from "@/lib/utils/formatters";
+import { formatDurationSeconds, formatPace } from "@/lib/utils/formatters";
 
 interface StatsSummaryProps {
   stats: FilteredExerciseStats;
@@ -106,18 +106,18 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
           ) : (
             <MetricCard
               label="Total Duration"
-              value={formatDuration(stats.totalDurationSeconds)}
+              value={formatDurationSeconds(stats.totalDurationSeconds)}
             />
           )}
           {hasDistanceData && hasDurationData ? (
             <MetricCard
               label="Total Duration"
-              value={formatDuration(stats.totalDurationSeconds)}
+              value={formatDurationSeconds(stats.totalDurationSeconds)}
             />
           ) : hasDurationData && !hasDistanceData ? (
             <MetricCard
               label="Max Duration"
-              value={formatDuration(stats.maxDurationSeconds!)}
+              value={formatDurationSeconds(stats.maxDurationSeconds!)}
             />
           ) : (
             <Spacer />
@@ -138,7 +138,7 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
           )}
           <MetricCard
             label="Max Duration"
-            value={formatDuration(stats.maxDurationSeconds!)}
+            value={formatDurationSeconds(stats.maxDurationSeconds!)}
           />
         </XStack>
       )}

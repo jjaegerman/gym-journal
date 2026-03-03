@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { YStack, XStack, Text, Button, useTheme, Theme } from "tamagui";
 import { LineChart } from "react-native-gifted-charts";
-import { formatDuration, formatPace } from "@/lib/utils/formatters";
+import { formatDurationSeconds, formatPace } from "@/lib/utils/formatters";
 
 interface ProgressDataPoint {
   week: string;

@@ -147,8 +147,6 @@ export function useAudioRecording() {
   const isPending =
     state === "starting" || state === "stopping" || state === "cancelling";
 
-  console.log("[useAudioRecording] state:", state, "isRecording:", isRecording);
-
   return {
     audioRecorder,
     recorderState: {

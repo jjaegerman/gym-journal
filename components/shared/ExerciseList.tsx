@@ -48,8 +48,6 @@ export function ExerciseList({
             }),
           );
 
-          const ExerciseIcon: any = () =>
-            getExerciseIcon(exercise.category, 24);
           const iconColor = getExerciseIconColor(exercise.category);
           const isSelected = exercise.id === contextExerciseId;
 
@@ -66,7 +64,7 @@ export function ExerciseList({
                 borderColor={isSelected ? "$blue7" : undefined}
                 icon={
                   <View>
-                    <ExerciseIcon color={isSelected ? "$blue9" : iconColor} />
+                    {getExerciseIcon(exercise.category, 24, isSelected ? "$blue9" : iconColor)}
                   </View>
                 }
                 iconAfter={

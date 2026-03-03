@@ -293,5 +293,18 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
       - Reset **only when the sheet opens** (`useEffect` on `open` prop, trigger only when `open === true`)
       - **Do NOT reset when `open` goes to `false`** — ghost presses fire during the close animation, after `open` is already `false`, so resetting on close lets them through
       - For options that keep the sheet open (e.g. "Custom" date range): reset via `setTimeout(..., 400)` instead so the user can still change their selection within the same session
-    - Also avoid attaching the same handler to both `RadioGroup.onValueChange` AND `XStack.onPress` — both fire on a single tap, causing double invocation. Use only `XStack.onPress`.
-    - See `components/ui/filters/DateRangePicker.tsx` and `components/ui/filters/FilterSheet.tsx` for reference implementations.
+    - Also avoid attaching the same handler to both an input component's change callback AND `XStack.onPress` — both fire on a single tap, causing double invocation. Affected pairs:
+      - `RadioGroup.onValueChange` + `XStack.onPress` → use only `XStack.onPress`
+      - `Checkbox.onCheckedChange` + `XStack.onPress` → use only `XStack.onPress`
+    - See `components/ui/filters/DateRangePicker.tsx`, `components/ui/filters/FilterSheet.tsx`, and `components/ui/filters/MoreFiltersSheet.tsx` for reference implementations.
+
+11. **Two `formatDuration` functions — different units, don't mix them**:
+   - `lib/utils/date.ts` exports `formatDuration(minutes: number)` — this is re-exported from the barrel (`lib/utils/index.ts`)
+   - `lib/utils/formatters.ts` exports `formatDurationSeconds(seconds: number)` — direct import only
+   - Never import `formatDurationSeconds` via the barrel (it isn't there); always import directly from `@/lib/utils/formatters`
+   - Consumers: `ProgressChart.tsx`, `StatsSummary.tsx`
+
+12. **Don't add session management inside components**:
+   - Auth is enforced at `components/Provider.tsx` — children only render when a valid session exists
+   - Components should call `lib/api/supabase/` functions directly (e.g., `getWorkoutDetails`, `getUserWorkouts`) — never call `supabase.rpc()` directly
+   - No `useEffect + onAuthStateChange` boilerplate needed inside screens or components

@@ -2,7 +2,6 @@ import "../tamagui-web.css";
 import "../global.css";
 
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import {
   DarkTheme,
@@ -56,7 +55,6 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 };
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
   const theme = useTheme();
   return (
     <ThemeProvider value={DarkTheme}>
@@ -78,7 +76,7 @@ function RootLayoutNav() {
             gestureEnabled: true,
             gestureDirection: "horizontal",
             contentStyle: {
-              backgroundColor: "theme.background.val",
+              backgroundColor: theme.background.val,
             },
           }}
         />

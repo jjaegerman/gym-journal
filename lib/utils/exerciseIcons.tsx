@@ -24,39 +24,41 @@ import { ReactElement } from "react";
  */
 export function getExerciseIcon(
   exerciseType?: string | null,
-  size: number = 20
+  size: number = 20,
+  // biome-ignore lint/suspicious/noExplicitAny: Tamagui color tokens are strings at runtime
+  color?: any
 ): ReactElement {
   if (!exerciseType) {
-    return <Activity size={size} />;
+    return <Activity size={size} color={color} />;
   }
 
   const type = exerciseType.toLowerCase();
 
   // Lower Body Compound
   if (type.includes("squat")) {
-    return <Dumbbell size={size} />;
+    return <Dumbbell size={size} color={color} />;
   }
   if (type.includes("deadlift")) {
-    return <TrendingUp size={size} />;
+    return <TrendingUp size={size} color={color} />;
   }
   if (type.includes("lunge") || type.includes("split")) {
-    return <Navigation size={size} />;
+    return <Navigation size={size} color={color} />;
   }
 
   // Upper Body Compound
   if (type.includes("bench") || type.includes("press")) {
-    return <Dumbbell size={size} />;
+    return <Dumbbell size={size} color={color} />;
   }
   if (type.includes("row")) {
-    return <TrendingUp size={size} />;
+    return <TrendingUp size={size} color={color} />;
   }
   if (type.includes("pull")) {
-    return <TrendingUp size={size} />;
+    return <TrendingUp size={size} color={color} />;
   }
 
   // Olympic & Power
   if (type.includes("olympic") || type.includes("power")) {
-    return <Zap size={size} />;
+    return <Zap size={size} color={color} />;
   }
 
   // Isolation exercises
@@ -68,21 +70,21 @@ export function getExerciseIcon(
     type.includes("shoulder") ||
     type.includes("arm")
   ) {
-    return <Target size={size} />;
+    return <Target size={size} color={color} />;
   }
 
   // Core
   if (type.includes("core")) {
-    return <Circle size={size} />;
+    return <Circle size={size} color={color} />;
   }
 
   // Cardio
   if (type.includes("cardio")) {
-    return <Heart size={size} />;
+    return <Heart size={size} color={color} />;
   }
 
   // Default
-  return <Activity size={size} />;
+  return <Activity size={size} color={color} />;
 }
 
 /**

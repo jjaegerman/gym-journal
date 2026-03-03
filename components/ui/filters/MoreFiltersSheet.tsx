@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from "react";
 import {
   Sheet,
   YStack,
@@ -31,14 +32,25 @@ export function MoreFiltersSheet({
   open,
   onOpenChange,
 }: MoreFiltersSheetProps) {
+  const committedRef = useRef(false);
+
+  useEffect(() => {
+    if (open) committedRef.current = false;
+  }, [open]);
+
   const totalSelected = sections.reduce((sum, s) => sum + s.selected.length, 0);
 
   const handleToggle = (sectionIndex: number, option: string) => {
+    if (committedRef.current) return;
+    committedRef.current = true;
     const current = sections[sectionIndex].selected;
     const next = current.includes(option)
       ? current.filter((o) => o !== option)
       : [...current, option];
     onChange(sectionIndex, next);
+    setTimeout(() => {
+      committedRef.current = false;
+    }, 400);
   };
 
   return (
@@ -90,9 +102,6 @@ export function MoreFiltersSheet({
                       >
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={() =>
-                            handleToggle(sectionIndex, option)
-                          }
                           size="$4"
                         >
                           <Checkbox.Indicator>
