@@ -4,8 +4,8 @@ import { Popover, Button, YGroup, ListItem, Separator } from "tamagui";
 import { Settings, MessageSquare, HelpCircle, LogOut } from "@tamagui/lucide-icons";
 import { signOut } from "@/lib/api/supabase/auth";
 
-const FEEDBACK_URL = "";
-const HELP_URL = "";
+const FEEDBACK_URL = "https://forms.gle/twrXS5ZPS8GNcugA7";
+const HELP_URL = "https://forms.gle/twrXS5ZPS8GNcugA7";
 
 export function SettingsMenu() {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export function SettingsMenu() {
       <Popover.Trigger asChild>
         <Button chromeless mr="$3" icon={<Settings size={22} />} />
       </Popover.Trigger>
-      <Popover.Content bordered elevate p={0} minWidth="$16" overflow="hidden">
+      <Popover.Content bordered elevate p={0} overflow="hidden">
         <YGroup width="100%" separator={<Separator />}>
           <YGroup.Item>
             <ListItem
