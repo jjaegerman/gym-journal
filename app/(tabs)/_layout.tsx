@@ -1,8 +1,8 @@
 import { Tabs } from "expo-router";
-import { Button, useTheme } from "tamagui";
+import { useTheme } from "tamagui";
 import { BarChart3, List, Plus, User } from "@tamagui/lucide-icons";
-import { signOut } from "@/lib/api/supabase/auth";
 import { useTabContext } from "@/lib/context/TabContext";
+import { SettingsMenu } from "@/components/ui/SettingsMenu";
 
 export default function TabLayout() {
   const theme = useTheme();
@@ -24,6 +24,7 @@ export default function TabLayout() {
           borderBottomColor: theme.color8.val,
         },
         headerShown: true,
+        headerRight: () => <SettingsMenu />,
       }}
     >
       <Tabs.Screen
@@ -73,11 +74,6 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => <User color={color as any} />,
-          headerRight: () => (
-            <Button mr="$4" size="$2.5" onPress={() => signOut()}>
-              Sign Out
-            </Button>
-          ),
         }}
         listeners={{
           tabPress: (e) => {

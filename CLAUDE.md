@@ -46,6 +46,21 @@ yarn upgrade:tamagui:canary    # Upgrade to canary
 yarn check:tamagui             # Validate Tamagui config
 ```
 
+## Tamagui Guidelines
+
+### Use Tamagui components and props first
+Before writing custom styled layout, check if a Tamagui component already handles it. Common examples:
+- Use `ListItem` for interactive rows (has built-in `hoverTheme`, `pressTheme`)
+- Use `Popover` for small contextual menus (3–5 items); reserve `Sheet` for full panel content
+- Prefer built-in component props (`hoverTheme`, `pressTheme`, `bordered`, `elevate`) over equivalent custom styles — they are theme-aware and consistent by default
+- `Sheet.Overlay` requires explicit `opacity` (e.g. `opacity={0.5}`) — default renders fully opaque black
+
+### No magic numbers; use the token system
+All sizes and spacing must use `$N` tokens — never raw pixel values.
+- Size tokens: `$1`=20, `$2`=28, `$4`=44, `$6`=64, `$8`=84, `$10`=104, `$12`=144, `$14`=184, `$16`=224
+- Use tokens in: `p`, `m`, `gap`, `py`, `px`, `minWidth`, `width`, `size`, etc.
+- To look up token values: `node -e "const c=require('.tamagui/tamagui.config.cjs'); console.log(c.config.tokens.size)"`
+
 ## Architecture
 
 ### File-Based Routing (Expo Router)
