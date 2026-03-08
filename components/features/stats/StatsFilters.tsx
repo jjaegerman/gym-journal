@@ -31,7 +31,7 @@ export function StatsFilters({
   onClear,
   hasActiveFilters,
 }: StatsFiltersProps) {
-  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [exerciseKindSheetOpen, setExerciseKindSheetOpen] = useState(false);
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [timeRangeSheetOpen, setTimeRangeSheetOpen] = useState(false);
 
@@ -41,10 +41,10 @@ export function StatsFilters({
   const moreFiltersCount =
     (filters.modifiers?.length ?? 0) + (filters.equipment?.length ?? 0);
 
-  const handleCategoryChange = (selected: string[]) => {
+  const handleExerciseKindChange = (selected: string[]) => {
     onFiltersChange({
       ...filters,
-      categories: selected.length > 0 ? selected : undefined,
+      exercise_kinds: selected.length > 0 ? selected : undefined,
     });
   };
 
@@ -94,9 +94,9 @@ export function StatsFilters({
     <>
       <XStack gap="$1.5" py="$2" flexWrap="wrap">
         <FilterChip
-          label={filters.categories?.[0] ?? "Category"}
-          active={!!filters.categories?.length}
-          onPress={() => setCategorySheetOpen(true)}
+          label={filters.exercise_kinds?.[0] ?? "Category"}
+          active={!!filters.exercise_kinds?.length}
+          onPress={() => setExerciseKindSheetOpen(true)}
         />
         <FilterChip
           label="Filter"
@@ -122,11 +122,11 @@ export function StatsFilters({
 
       <FilterSheet
         title="Select Category"
-        options={filterOptions.categories}
-        selected={filters.categories ?? []}
-        onSelectionChange={handleCategoryChange}
-        open={categorySheetOpen}
-        onOpenChange={setCategorySheetOpen}
+        options={filterOptions.exercise_kinds}
+        selected={filters.exercise_kinds ?? []}
+        onSelectionChange={handleExerciseKindChange}
+        open={exerciseKindSheetOpen}
+        onOpenChange={setExerciseKindSheetOpen}
         singleSelect
       />
 

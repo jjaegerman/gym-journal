@@ -1,4 +1,4 @@
-import { Log } from "@/types/exercise";
+import { Set } from "@/types/exercise";
 import { parseIsoDuration, formatIsoDuration } from "./date";
 
 export interface ExerciseLogSummary {
@@ -19,7 +19,7 @@ export interface ExerciseLogSummary {
   maxEffort: string | undefined;
 }
 
-export function summarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
+export function summarizeExerciseLogs(sets: Set[]): ExerciseLogSummary {
   let minReps = Infinity;
   let maxReps = -Infinity;
   let minWeight = Infinity;
@@ -40,53 +40,53 @@ export function summarizeExerciseLogs(logs: Log[]): ExerciseLogSummary {
   let minEffort: string | undefined = undefined;
   let maxEffort: string | undefined = undefined;
 
-  logs.forEach((log) => {
-    if (log.repetitions) {
-      minReps = Math.min(minReps, log.repetitions);
-      maxReps = Math.max(maxReps, log.repetitions);
+  sets.forEach((set) => {
+    if (set.repetitions) {
+      minReps = Math.min(minReps, set.repetitions);
+      maxReps = Math.max(maxReps, set.repetitions);
     }
-    if (log.weight) {
-      minWeight = Math.min(minWeight, log.weight);
-      maxWeight = Math.max(maxWeight, log.weight);
-      weightUnit = log.weightUnit ?? "";
+    if (set.weight) {
+      minWeight = Math.min(minWeight, set.weight);
+      maxWeight = Math.max(maxWeight, set.weight);
+      weightUnit = set.weightUnit ?? "";
     }
-    if (log.distance) {
-      minDistance = Math.min(minDistance, log.distance);
-      maxDistance = Math.max(maxDistance, log.distance);
-      distanceUnit = log.distance_unit ?? "";
+    if (set.distance) {
+      minDistance = Math.min(minDistance, set.distance);
+      maxDistance = Math.max(maxDistance, set.distance);
+      distanceUnit = set.distanceUnit ?? "";
     }
-    if (log.resistance_level) {
-      minResistanceLevel = Math.min(minResistanceLevel, log.resistance_level);
-      maxResistanceLevel = Math.max(maxResistanceLevel, log.resistance_level);
+    if (set.resistanceLevel) {
+      minResistanceLevel = Math.min(minResistanceLevel, set.resistanceLevel);
+      maxResistanceLevel = Math.max(maxResistanceLevel, set.resistanceLevel);
     }
-    if (log.duration) {
-      const durationMinutes = parseIsoDuration(log.duration);
+    if (set.duration) {
+      const durationMinutes = parseIsoDuration(set.duration);
       if (durationMinutes < minDurationMinutes) {
         minDurationMinutes = durationMinutes;
-        minDuration = log.duration;
+        minDuration = set.duration;
       }
       if (durationMinutes > maxDurationMinutes) {
         maxDurationMinutes = durationMinutes;
-        maxDuration = log.duration;
+        maxDuration = set.duration;
       }
     }
-    if (log.effort) {
-      const ordinal = EFFORT_ORDINAL[log.effort];
+    if (set.effort) {
+      const ordinal = EFFORT_ORDINAL[set.effort];
       if (ordinal !== undefined) {
         if (ordinal < minEffortOrdinal) {
           minEffortOrdinal = ordinal;
-          minEffort = log.effort;
+          minEffort = set.effort;
         }
         if (ordinal > maxEffortOrdinal) {
           maxEffortOrdinal = ordinal;
-          maxEffort = log.effort;
+          maxEffort = set.effort;
         }
       }
     }
   });
 
   return {
-    sets: logs.length,
+    sets: sets.length,
     minReps: minReps === Infinity ? undefined : minReps,
     maxReps: maxReps === -Infinity ? undefined : maxReps,
     minWeight: minWeight === Infinity ? undefined : minWeight,

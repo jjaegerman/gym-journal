@@ -13,7 +13,7 @@ export function ContextChip({ exercise, onClear }: ContextChipProps) {
     formatExerciseGrouping({
       modifiers: exercise.modifiers,
       equipment: exercise.equipment,
-      category: exercise.category,
+      exercise_kind: exercise.exercise_kind,
     }),
   );
 

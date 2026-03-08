@@ -7,7 +7,7 @@ import { supabase } from './client';
 
 export interface ExerciseContext {
   exerciseName: string;
-  category: string;
+  exercise_kind: string;
   modifiers?: string[];
   equipment?: string | null;
   lastSet?: {

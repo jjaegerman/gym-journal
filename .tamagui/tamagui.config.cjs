@@ -2202,7 +2202,7 @@ var yellow2 = {
 
 // themes.ts
 var darkPalette = [
-  "hsla(240, 3%, 6%, 1)",
+  "#0f0f10",
   "hsla(240, 3%, 11%, 1)",
   "hsla(240, 3%, 16%, 1)",
   "hsla(240, 3%, 21%, 1)",
@@ -2216,7 +2216,7 @@ var darkPalette = [
   "hsla(0, 15%, 99%, 1)"
 ];
 var lightPalette = [
-  "hsla(240, 3%, 99%, 1)",
+  "#fcfcfd",
   "hsla(240, 3%, 94%, 1)",
   "hsla(240, 3%, 88%, 1)",
   "hsla(240, 3%, 83%, 1)",
@@ -2272,7 +2272,7 @@ var builtThemes = createThemes({
   accent: {
     palette: {
       dark: [
-        "hsla(0, 50%, 35%, 1)",
+        "#862d2d",
         "hsla(0, 50%, 38%, 1)",
         "hsla(0, 50%, 41%, 1)",
         "hsla(0, 50%, 43%, 1)",
@@ -2286,7 +2286,7 @@ var builtThemes = createThemes({
         "hsla(250, 50%, 95%, 1)"
       ],
       light: [
-        "hsla(0, 50%, 43%, 1)",
+        "#a43737",
         "hsla(0, 50%, 45%, 1)",
         "hsla(0, 50%, 48%, 1)",
         "hsla(0, 50%, 50%, 1)",

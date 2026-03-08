@@ -32,7 +32,7 @@ export function WorkoutFilters({
   onClear,
   hasActiveFilters,
 }: WorkoutFiltersProps) {
-  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [exerciseKindSheetOpen, setExerciseKindSheetOpen] = useState(false);
   const [showNativeDatePicker, setShowNativeDatePicker] = useState(false);
   const endDateInputRef = useRef<any>(null);
   const endDateWrapperRef = useRef<any>(null);
@@ -50,10 +50,10 @@ export function WorkoutFilters({
     input.showPicker?.();
   };
 
-  const handleCategoryChange = (selected: string[]) => {
+  const handleExerciseKindChange = (selected: string[]) => {
     onFiltersChange({
       ...filters,
-      categories: selected.length > 0 ? selected : undefined,
+      exercise_kinds: selected.length > 0 ? selected : undefined,
     });
   };
 
@@ -76,8 +76,8 @@ export function WorkoutFilters({
       <XStack gap="$1.5" py="$2" flexWrap="wrap">
         <FilterChip
           label="Category"
-          selectedCount={filters.categories?.length ?? 0}
-          onPress={() => setCategorySheetOpen(true)}
+          selectedCount={filters.exercise_kinds?.length ?? 0}
+          onPress={() => setExerciseKindSheetOpen(true)}
         />
         <View ref={endDateWrapperRef}>
           <FilterChip
@@ -126,11 +126,11 @@ export function WorkoutFilters({
 
       <FilterSheet
         title="Select Categories"
-        options={filterOptions.categories}
-        selected={filters.categories ?? []}
-        onSelectionChange={handleCategoryChange}
-        open={categorySheetOpen}
-        onOpenChange={setCategorySheetOpen}
+        options={filterOptions.exercise_kinds}
+        selected={filters.exercise_kinds ?? []}
+        onSelectionChange={handleExerciseKindChange}
+        open={exerciseKindSheetOpen}
+        onOpenChange={setExerciseKindSheetOpen}
       />
     </>
   );

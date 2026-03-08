@@ -48,8 +48,8 @@ export function ExerciseStats() {
     router.push(`/workout?workoutId=${workoutId}`);
   };
 
-  const handleCategorySelect = (category: string) => {
-    setFilters({ ...filters, categories: [category] });
+  const handleExerciseKindSelect = (exercise_kind: string) => {
+    setFilters({ ...filters, exercise_kinds: [exercise_kind] });
   };
 
   if (loading && !stats) {
@@ -88,8 +88,8 @@ export function ExerciseStats() {
             <StatsDetailView
               stats={stats}
               onSessionPress={handleSessionPress}
-              onCategorySelect={handleCategorySelect}
-              availableCategories={filterOptions?.categories}
+              onExerciseKindSelect={handleExerciseKindSelect}
+              availableExerciseKinds={filterOptions?.exercise_kinds}
             />
           ) : (
             <YStack flex={1} items="center" justify="center" py="$8">

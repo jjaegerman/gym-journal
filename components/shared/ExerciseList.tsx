@@ -37,18 +37,18 @@ export function ExerciseList({
         overflow="hidden"
       >
         {exercises.map((exercise, i) => {
-          const summary = summarizeExerciseLogs(exercise.logs);
+          const summary = summarizeExerciseLogs(exercise.sets);
           const description = descriptionFromSummary(summary);
 
           const title = capitalizeEachWord(
             formatExerciseGrouping({
               modifiers: exercise.modifiers,
               equipment: exercise.equipment,
-              category: exercise.category,
+              exercise_kind: exercise.exercise_kind,
             }),
           );
 
-          const iconColor = getExerciseIconColor(exercise.category);
+          const iconColor = getExerciseIconColor(exercise.exercise_kind);
           const isSelected = exercise.id === contextExerciseId;
 
           return (
@@ -64,7 +64,7 @@ export function ExerciseList({
                 borderColor={isSelected ? "$blue7" : undefined}
                 icon={
                   <View>
-                    {getExerciseIcon(exercise.category, 24, isSelected ? "$blue9" : iconColor)}
+                    {getExerciseIcon(exercise.exercise_kind, 24, isSelected ? "$blue9" : iconColor)}
                   </View>
                 }
                 iconAfter={

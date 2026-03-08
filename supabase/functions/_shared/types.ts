@@ -1,6 +1,6 @@
 import { z } from "npm:zod";
 
-export const ExerciseCategory = z.enum([
+export const ExerciseKind = z.enum([
   // Compound Lower - Knee Dominant
   "Squat",
   "Lunge",
@@ -55,6 +55,7 @@ export const ExerciseCategory = z.enum([
   // Cardio
   "Running",
   "Cycling",
+  "Stationary Bike",
   "Rowing Machine",
   "Swimming",
   "Elliptical",
@@ -189,10 +190,6 @@ export const Equipment = z.enum([
 
   // Cardio Equipment
   "Treadmill",
-  "Rowing Machine",
-  "Stationary Bike",
-  "Elliptical",
-  "Stair Climber",
 
   // Bodyweight & Functional
   "Resistance Band",
@@ -202,7 +199,6 @@ export const Equipment = z.enum([
   "Stability Ball",
   "Sled",
   "Battle Rope",
-  "Jump Rope",
   "Box",
   "Ab Wheel",
 
@@ -213,7 +209,7 @@ export const Equipment = z.enum([
 export const OpenAILogDetails = z.object({
   // Exercise identification
   input: z.string(), // Raw exercise input as spoken (source of truth)
-  category: ExerciseCategory,
+  exercise_kind: ExerciseKind,
   modifiers: z.array(Modifier).nullable().optional(),
   equipment: Equipment.nullable().optional(),
 

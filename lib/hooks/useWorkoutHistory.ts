@@ -13,30 +13,30 @@ import { useSession } from './useSession';
 export type { WorkoutFilterOptions, WorkoutFilters };
 
 /**
- * Compute cascaded filter options for workouts (category + equipment only)
+ * Compute cascaded filter options for workouts (exercise_kind + equipment only)
  */
 function computeWorkoutCascadedOptions(
   relationships: WorkoutFilterRelationship[],
-  selectedCategories?: string[],
+  selectedExerciseKinds?: string[],
   selectedEquipment?: string[]
 ): WorkoutFilterOptions {
-  // Categories: if equipment selected, show only categories that use that equipment
-  const categories = [...new Set(
+  // Exercise kinds: if equipment selected, show only exercise_kinds that use that equipment
+  const exercise_kinds = [...new Set(
     (selectedEquipment?.length
       ? relationships.filter(r => r.equipment !== null && selectedEquipment.includes(r.equipment))
       : relationships
-    ).map(r => r.category)
+    ).map(r => r.exercise_kind)
   )].sort();
 
-  // Equipment: if categories selected, show only equipment used by those categories
+  // Equipment: if exercise_kinds selected, show only equipment used by those exercise_kinds
   const equipment = [...new Set(
-    (selectedCategories?.length
-      ? relationships.filter(r => selectedCategories.includes(r.category))
+    (selectedExerciseKinds?.length
+      ? relationships.filter(r => selectedExerciseKinds.includes(r.exercise_kind))
       : relationships
     ).filter(r => r.equipment !== null).map(r => r.equipment!)
   )].sort();
 
-  return { categories, equipment };
+  return { exercise_kinds, equipment };
 }
 
 /**
@@ -56,7 +56,7 @@ export function useWorkoutHistory() {
 
   const hasActiveFilters = useCallback(() => {
     return !!(
-      (filters.categories && filters.categories.length > 0) ||
+      (filters.exercise_kinds && filters.exercise_kinds.length > 0) ||
       (filters.equipment && filters.equipment.length > 0) ||
       filters.dateTo
     );
@@ -117,11 +117,11 @@ export function useWorkoutHistory() {
 
     const options = computeWorkoutCascadedOptions(
       relationships,
-      filters.categories,
+      filters.exercise_kinds,
       filters.equipment
     );
     setFilterOptions(options);
-  }, [relationships, filters.categories, filters.equipment]);
+  }, [relationships, filters.exercise_kinds, filters.equipment]);
 
   useEffect(() => {
     if (session) {

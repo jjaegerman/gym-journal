@@ -51,13 +51,13 @@ export function useFilteredExerciseStats() {
 
       setStats(data);
 
-      // Sync category only from server auto-selection (no equipment)
+      // Sync exercise_kind only from server auto-selection (no equipment)
       if (data.appliedFilters) {
         const applied = data.appliedFilters;
-        if (applied.categories?.length > 0) {
+        if (applied.exercise_kinds?.length > 0) {
           setFilters((prev) => {
-            if (prev.categories?.length) return prev;
-            return { ...prev, categories: applied.categories };
+            if (prev.exercise_kinds?.length) return prev;
+            return { ...prev, exercise_kinds: applied.exercise_kinds };
           });
         }
       }
@@ -82,7 +82,7 @@ export function useFilteredExerciseStats() {
       // Compute initial options from relationships
       const options = computeCascadedOptions(data);
       setFilterOptions({
-        categories: options.categories,
+        exercise_kinds: options.exercise_kinds,
         modifiers: options.modifiers,
         equipment: options.equipment,
       });
@@ -106,16 +106,16 @@ export function useFilteredExerciseStats() {
 
     const options = computeCascadedOptions(
       relationships,
-      filters.categories,
+      filters.exercise_kinds,
       filters.equipment,
       filters.modifiers
     );
     setFilterOptions({
-      categories: options.categories,
+      exercise_kinds: options.exercise_kinds,
       modifiers: options.modifiers,
       equipment: options.equipment,
     });
-  }, [relationships, filters.categories, filters.equipment, filters.modifiers]);
+  }, [relationships, filters.exercise_kinds, filters.equipment, filters.modifiers]);
 
   useEffect(() => {
     if (session) {
@@ -132,7 +132,7 @@ export function useFilteredExerciseStats() {
 
   const clearFilters = useCallback(() => {
     setFilters((prev) => ({
-      categories: prev.categories,
+      exercise_kinds: prev.exercise_kinds,
       timeRange: 'all_time',
     }));
   }, []);

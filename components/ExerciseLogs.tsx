@@ -12,13 +12,13 @@ import {
   YGroup,
 } from "tamagui";
 import { useToastController } from "@tamagui/toast";
-import { Exercise, Log } from "types/exercise";
+import { Exercise, Set } from "types/exercise";
 import {
   capitalizeEachWord,
   formatExerciseGrouping,
   formatIsoDuration,
 } from "@/lib/utils";
-import { deleteLog } from "@/lib/api/supabase/workouts";
+import { deleteSet } from "@/lib/api/supabase/workouts";
 
 export const ExerciseLogs = ({
   exercise,
@@ -32,43 +32,43 @@ export const ExerciseLogs = ({
   onLogDeleted?: () => void;
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [logToDelete, setLogToDelete] = useState<Log | null>(null);
+  const [setToDelete, setSetToDelete] = useState<Set | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const toast = useToastController();
 
-  const handleDeletePress = (log: Log) => {
-    setLogToDelete(log);
+  const handleDeletePress = (set: Set) => {
+    setSetToDelete(set);
     setDeleteConfirmOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!logToDelete) return;
+    if (!setToDelete) return;
 
     setIsDeleting(true);
     try {
-      const deleted = await deleteLog(logToDelete.id);
+      const deleted = await deleteSet(setToDelete.id);
       if (deleted) {
-        toast.show("Log deleted", { duration: 2000 });
+        toast.show("Set deleted", { duration: 2000 });
         onLogDeleted?.();
-        // Close ExerciseLogs dialog if this was the last log
-        if (exercise.logs.length <= 1) {
+        // Close ExerciseLogs dialog if this was the last set
+        if (exercise.sets.length <= 1) {
           setOpen(false);
         }
       } else {
-        toast.show("Log not found", { duration: 2000 });
+        toast.show("Set not found", { duration: 2000 });
       }
     } catch (error) {
-      toast.show("Failed to delete log", { duration: 3000 });
+      toast.show("Failed to delete set", { duration: 3000 });
     } finally {
       setIsDeleting(false);
       setDeleteConfirmOpen(false);
-      setLogToDelete(null);
+      setSetToDelete(null);
     }
   };
 
   const handleCancelDelete = () => {
     setDeleteConfirmOpen(false);
-    setLogToDelete(null);
+    setSetToDelete(null);
   };
 
   return (
@@ -116,7 +116,7 @@ export const ExerciseLogs = ({
                     formatExerciseGrouping({
                       modifiers: exercise.modifiers,
                       equipment: exercise.equipment,
-                      category: exercise.category,
+                      exercise_kind: exercise.exercise_kind,
                     }),
                   )}
                 </Dialog.Title>
@@ -126,11 +126,11 @@ export const ExerciseLogs = ({
                   rounded="$4"
                   overflow="hidden"
                 >
-                  {exercise?.logs?.map((log) => (
-                    <YGroup.Item key={log.id}>
+                  {exercise?.sets?.map((set) => (
+                    <YGroup.Item key={set.id}>
                       <ListItem
-                        title={logDescription(log)}
-                        subTitle={log.input ? `"${log.input}"` : undefined}
+                        title={setDescription(set)}
+                        subTitle={set.input ? `"${set.input}"` : undefined}
                         subTitleProps={{ fontStyle: "italic", color: "$color9" }}
                         iconAfter={
                           <Button
@@ -139,7 +139,7 @@ export const ExerciseLogs = ({
                             chromeless
                             color="$red9"
                             icon={Trash2}
-                            onPress={() => handleDeletePress(log)}
+                            onPress={() => handleDeletePress(set)}
                           />
                         }
                         hoverTheme
@@ -187,9 +187,9 @@ export const ExerciseLogs = ({
             exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
           >
             <View gap="$4" p="$4">
-              <Dialog.Title>Delete Log?</Dialog.Title>
+              <Dialog.Title>Delete Set?</Dialog.Title>
               <Dialog.Description>
-                This will permanently delete this log entry.
+                This will permanently delete this set.
               </Dialog.Description>
               <XStack gap="$3" justify="flex-end">
                 <Button onPress={handleCancelDelete} disabled={isDeleting}>
@@ -212,31 +212,31 @@ export const ExerciseLogs = ({
   );
 };
 
-function logDescription(log: Log): string {
+function setDescription(set: Set): string {
   const parts: string[] = [];
 
   // Strength metrics
-  if (log.repetitions) {
-    parts.push(`${log.repetitions} reps`);
+  if (set.repetitions) {
+    parts.push(`${set.repetitions} reps`);
   }
-  if (log.weight) {
-    parts.push(`@ ${log.weight} ${log.weightUnit}`);
+  if (set.weight) {
+    parts.push(`@ ${set.weight} ${set.weightUnit}`);
   }
 
   // Cardio metrics
-  if (log.distance) {
-    parts.push(`${log.distance} ${log.distance_unit || "units"}`);
+  if (set.distance) {
+    parts.push(`${set.distance} ${set.distanceUnit || "units"}`);
   }
-  if (log.resistance_level) {
-    parts.push(`resistance ${log.resistance_level}`);
+  if (set.resistanceLevel) {
+    parts.push(`resistance ${set.resistanceLevel}`);
   }
 
   // General
-  if (log.duration) {
-    parts.push(`for ${formatIsoDuration(log.duration)}`);
+  if (set.duration) {
+    parts.push(`for ${formatIsoDuration(set.duration)}`);
   }
-  if (log.effort) {
-    parts.push(`(${log.effort} effort)`);
+  if (set.effort) {
+    parts.push(`(${set.effort} effort)`);
   }
 
   return parts.join(" ");

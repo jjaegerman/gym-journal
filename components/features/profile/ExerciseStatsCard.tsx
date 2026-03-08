@@ -24,7 +24,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
     formatExerciseGrouping({
       modifiers: exercise.modifiers,
       equipment: exercise.equipment,
-      category: exercise.category,
+      exercise_kind: exercise.exercise_kind,
     })
   );
 

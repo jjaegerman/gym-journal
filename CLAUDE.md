@@ -51,7 +51,7 @@ yarn check:tamagui             # Validate Tamagui config
 ### File-Based Routing (Expo Router)
 - `app/` - Route screens using file system convention
   - `app/_layout.tsx` - Root layout with auth providers
-  - `app/(tabs)/` - Tab navigation (index = workouts, history, stats, profile, recording)
+  - `app/(tabs)/` - Tab navigation (index = record, history, stats, profile)
   - `app/(tabs)/history.tsx` - Workout history with filtering
   - `app/(tabs)/stats.tsx` - Exercise statistics with filtering
   - `app/workout.tsx` - Workout details screen
@@ -67,7 +67,7 @@ yarn check:tamagui             # Validate Tamagui config
   - `components/shared/` - Cross-feature shared components
   - `components/Provider.tsx` - Wraps app with Tamagui, Toast providers
   - `components/WorkoutView.tsx` - Detailed workout display with exercise summaries
-  - `components/ExerciseLogs.tsx` - Dialog showing all logs for an exercise
+  - `components/ExerciseLogs.tsx` - Dialog showing all sets for an exercise
 
 ### Data Layer
 - `lib/api/supabase/` - Supabase API client and data fetching functions
@@ -78,13 +78,13 @@ yarn check:tamagui             # Validate Tamagui config
   - `useWorkoutHistory` - Workout list with filtering support
   - `useFilteredExerciseStats` - Exercise stats with filter parameters
   - `useCurrentWorkout` - Active/most-recent workout state
-- `lib/storage/` - Local persistence (inputMode, statsCategory) via AsyncStorage
+- `lib/storage/` - Local persistence (inputMode) via AsyncStorage
 - `lib/utils/` - Utility functions (date formatting, string manipulation)
   - `lib/utils/filterCascade.ts` - Cascading filter option computation from relationship data
 
 ### Type Safety
 - `types/` - Zod schemas and TypeScript types
-  - `types/exercise.ts` - Core domain types (Exercise, Log, Workout, WorkoutDetails)
+  - `types/exercise.ts` - Core domain types (Exercise, Set, Workout, WorkoutDetails)
   - All database responses validated through Zod schemas with `.parse()`
 
 ### Supabase Backend
@@ -102,17 +102,17 @@ yarn check:tamagui             # Validate Tamagui config
 **workouts** - Workout sessions (auto-created via 1-hour gap detection)
 - `id`, `user_id`, `datetime`, `started_at`, `ended_at`
 
-**logs** - Individual exercise entries (event sourcing model)
+**sets** - Individual performance sets (event sourcing model)
 - `id`, `workout_id`, `submission_id` (audit trail)
 - `input` (TEXT, NOT NULL) - Raw spoken/typed exercise (source of truth)
-- `category` (TEXT, NOT NULL) - Structured category enum (18 types)
+- `exercise_kind` (TEXT, NOT NULL) - Structured category enum (e.g. "Squat", "Running")
 - `modifiers` (JSONB, default `[]`) - Variant descriptors (e.g., `["Incline", "Close Grip"]`)
 - `equipment` (TEXT) - Equipment used
 - Strength: `weight`, `weight_unit`, `repetitions`
 - Cardio: `distance`, `distance_unit`, `duration` (ISO 8601), `resistance_level`
 - `effort`, `datetime`
 
-**workout_submissions** - Immutable audit trail for raw input
+**log_submissions** - Immutable audit trail for raw input
 - `id`, `user_id`, `workout_id`, `submission_type` (audio/text)
 - `raw_text` - Original transcription (immutable)
 - `ai_response` (JSONB) - Full OpenAI structured output
@@ -121,29 +121,24 @@ yarn check:tamagui             # Validate Tamagui config
 **profiles** - User profile data
 - `id` (FK to auth.users), `username`, `full_name`, `avatar_url`
 
-#### Views
-
-**workout_exercises** - Aggregates logs by `{input, category, modifiers, equipment}` within a workout
-- Returns: `total_sets`, `max_weight`, `max_reps`, `avg_weight`, `total_volume`, `total_distance`
-
 #### Key Design Patterns
 
-- **Event Sourcing**: Raw input stored in `workout_submissions` (immutable), logs derived with extracted metadata
-- **Workout Grouping**: 1-hour gap between logs = new workout (implemented in RPC functions)
-- **Stats Aggregation**: Groups by `{category, modifiers, equipment}` for trend analysis
+- **Event Sourcing**: Raw input stored in `log_submissions` (immutable), sets derived with extracted metadata
+- **Workout Grouping**: 1-hour gap between sets = new workout (implemented in RPC functions)
+- **Stats Aggregation**: Groups by `{exercise_kind, modifiers, equipment}` for trend analysis
 - **RLS**: Direct table access revoked; all reads via SECURITY DEFINER functions using `auth.uid()`
-- **Empty Workout Cleanup**: `delete_log` auto-deletes workouts with 0 remaining logs; `get_user_workouts` uses INNER JOIN as defense-in-depth
+- **Empty Workout Cleanup**: `delete_set` auto-deletes workouts with 0 remaining sets; `get_user_workouts` uses INNER JOIN as defense-in-depth
 
 ### OpenAI Integration Flow
 1. User records audio via Expo Audio (native iOS module fallback for better control)
 2. Audio sent to `supabase/functions/openai/index.ts`
 3. OpenAI transcribes with `gpt-4o-transcribe`, then extracts structured data via `responses.parse()` with Zod schema using `gpt-4.1`
-4. Edge function calls `add_submission_with_logs()` RPC to insert submission + logs transactionally
+4. Edge function calls `add_submission_with_sets()` RPC to insert submission + sets transactionally
 5. Frontend refetches workout data
 
 **Schema Definition**: `supabase/functions/_shared/types.ts` defines `OpenAILogDetails` schema with:
 - `input`: Exercise exactly as spoken (source of truth)
-- `category`: Enum (ExerciseCategory) - 18 broad categories
+- `exercise_kind`: Enum (ExerciseCategory) - broad category (e.g. "Squat", "Running")
 - `modifiers`: Array of applicable modifiers (Back, Incline, Pause, etc.)
 - `equipment`: Optional enum (Equipment) - ~30 equipment types
 - Strength metrics: weight, weightUnit, repetitions
@@ -167,40 +162,31 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 
 #### Data Mutation
 
-**add_submission_with_logs(p_raw_text, p_submission_type, p_ai_response, p_logs, p_model_version, p_prompt_version, p_audio_duration_seconds)** → UUID
+**add_submission_with_sets(p_raw_text, p_submission_type, p_ai_response, p_logs, p_model_version, p_prompt_version, p_audio_duration_seconds)** → UUID
 - Primary function called by OpenAI edge function
-- Creates submission + all logs atomically in one transaction
-- Auto-groups into existing workout (if last log < 1 hour) or creates new workout
-- Skips logs missing required `input` or `category` fields
+- Creates submission + all sets atomically in one transaction
+- Auto-groups into existing workout (if last set < 1 hour ago) or creates new workout
+- Skips sets missing required `input` or `exercise_kind` fields
 
-**add_submission(...)** → UUID
-- Creates submission record only (used before add_log for separate operations)
-
-**add_log(p_submission_id, p_input, p_category, p_modifiers, p_equipment, p_weight, p_weight_unit, p_repetitions, p_duration, p_effort, p_distance, p_distance_unit, p_resistance_level)** → UUID
-- Creates individual log entry linked to submission
+**add_set(p_submission_id, p_input, p_exercise_kind, p_modifiers, p_equipment, p_weight, p_weight_unit, p_repetitions, p_duration, p_effort, p_distance, p_distance_unit, p_resistance_level)** → UUID
+- Creates individual set entry linked to submission
 - Validates submission belongs to current user
 
-**delete_log(p_log_id)** → BOOLEAN
-- Deletes a log entry belonging to the authenticated user
-- Auto-deletes the parent workout if it has 0 remaining logs
+**delete_set(p_set_id)** → BOOLEAN
+- Deletes a set belonging to the authenticated user
+- Auto-deletes the parent workout if it has 0 remaining sets
 
 #### Data Retrieval
 
 **get_user_workouts()** → TABLE
 - Returns all workouts for authenticated user
-- Columns: `id`, `datetime`, `exerciseCount`, `logCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3), `totalVolume`, `totalDistance`, `distanceUnit`, `durationMinutes`
+- Columns: `id`, `datetime`, `exerciseCount`, `setCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3 exercise_kinds), `totalVolume`, `totalDistance`, `distanceUnit`, `durationMinutes`
 - Ordered by datetime DESC
 
 **get_workout_details(p_workout_id)** → JSONB
-- Returns full workout with exercises and nested logs
-- Groups logs by `{input, category, modifiers, equipment}`
-- Structure: `{ id, datetime, endTime, exercises: [{ id, input, category, modifiers, equipment, logs: [{ ..., input }] }] }`
-
-**get_exercise_stats()** → TABLE
-- Returns exercise statistics grouped by `{category, modifiers, equipment}`
-- All-time: `total_workouts`, `total_volume`, `alltime_max_weight`, `alltime_max_reps`, `alltime_avg_pace`
-- Recent 4 weeks: `recent_*` columns (per-week averages)
-- Previous 4 weeks: `prev_*` columns (for trend comparison)
+- Returns full workout with exercises and nested sets
+- Groups sets by `{exercise_kind, modifiers, equipment}`
+- Structure: `{ id, datetime, endTime, exercises: [{ id, exercise_kind, modifiers, equipment, sets: [{ id, input, weight, weightUnit, repetitions, ... }] }] }`
 
 **get_user_profile_stats()** → JSONB
 - Returns profile dashboard statistics
@@ -215,23 +201,24 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 
 #### Filtering
 
-**filter_user_workouts(p_categories, p_equipment, p_date_from, p_date_to)** → TABLE
-- Returns workouts matching category/equipment/date filters
+**filter_user_workouts(p_exercise_kinds, p_equipment, p_date_from, p_date_to)** → TABLE
+- Returns workouts matching exercise_kind/equipment/date filters
 - Same column shape as `get_user_workouts`
 
 **get_workout_filter_options()** → TABLE
-- Returns available categories and equipment for the authenticated user's workouts
+- Returns available exercise_kinds and equipment for the authenticated user's workouts
 
 **get_exercise_filter_options()** → TABLE
-- Returns available categories, modifiers, and equipment for the authenticated user's exercises
+- Returns available exercise_kinds, modifiers, and equipment for the authenticated user's exercises
 
-**get_filtered_exercise_stats(p_categories, p_modifiers, p_equipment, p_time_range)** → TABLE
+**get_filtered_exercise_stats(p_exercise_kinds, p_modifiers, p_equipment, p_time_range)** → TABLE
 - Returns filtered exercise stats with PRs and progress trends
 - Supports time range filtering (e.g., 4 weeks, 12 weeks, all-time)
+- Auto-selects most recent exercise if no filters passed
 
 **get_filter_relationships()** → TABLE
-- Returns category/equipment/modifiers combinations present in user data
-- Used for cascading filter UIs (selecting a category narrows available equipment/modifiers)
+- Returns exercise_kind/equipment/modifiers combinations present in user data
+- Used for cascading filter UIs (selecting an exercise_kind narrows available equipment/modifiers)
 
 ### Supabase Migration Workflow
 - Migrations are **timestamp-ordered** (YYYYMMDDHHmmss_description.sql)
@@ -245,7 +232,7 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 1. **Zod Schemas Must Match Across Boundaries**:
    - `supabase/functions/_shared/types.ts` (OpenAI schema)
    - `types/exercise.ts` (Frontend types)
-   - Database column names must align with frontend types (use snake_case in DB, map to camelCase in Zod)
+   - DB uses snake_case columns; JSONB returned from RPCs uses camelCase (e.g. `weightUnit`, `distanceUnit`, `resistanceLevel`)
 
 2. **PostgreSQL Function Updates**:
    - Changing return columns or parameter types requires `DROP FUNCTION` first
@@ -275,10 +262,10 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
    - All imports use `@/*` prefix (configured in `tsconfig.base.json`)
    - Example: `import { supabase } from "@/lib/api/supabase/client"`
 
-8. **Required Log Fields**:
-   - `input` and `category` are NOT NULL in database
-   - `add_submission_with_logs` silently skips logs missing these fields
-   - `add_log` raises exception if these are NULL or empty
+8. **Required Set Fields**:
+   - `input` and `exercise_kind` are NOT NULL in database
+   - `add_submission_with_sets` silently skips sets missing these fields
+   - `add_set` raises exception if these are NULL or empty
 
 9. **Duration Storage**:
    - Stored as TEXT in ISO 8601 format (e.g., "PT30M", "PT1H15M30S")

@@ -6,7 +6,7 @@ DECLARE
 BEGIN
   -- Get the user who has existing workouts
   SELECT user_id INTO v_user_id FROM workouts LIMIT 1;
-  IF v_user_id IS NULL THEN RAISE EXCEPTION 'No user found'; END IF;
+  IF v_user_id IS NULL THEN RETURN; END IF;
 
   -- Helper to insert a run: creates a workout + one log
   -- Runs spread across past 8 weeks, showing gradual progression

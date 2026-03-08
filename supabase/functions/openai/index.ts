@@ -102,7 +102,7 @@ FIELD RULES:
   - "back squat"
   - "incline dumbbell press"
   - "Romanian deadlift"
-- category: Best matching category from schema enum
+- exercise_kind: Best matching category from schema enum
 - modifiers: Array of applicable modifiers from schema enum. Examples:
   - "back squat" → ["Back"]
   - "pause front squat" → ["Front", "Pause"]
@@ -139,7 +139,7 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
     const logsForDb = exerciseLogs.map((log: any) => {
       return {
         input: log.input ? String(log.input) : null,
-        category: String(log.category),
+        exercise_kind: String(log.exercise_kind),
         modifiers: log.modifiers ?? [],
         equipment: log.equipment ? String(log.equipment) : null,
         weight: log.weight ? Number(log.weight) : null,
@@ -162,9 +162,9 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
       );
     }
 
-    // Create submission + all logs in a single transaction
+    // Create submission + all sets in a single transaction
     const { data: submissionId, error: submissionError } = await supabase.rpc(
-      "add_submission_with_logs",
+      "add_submission_with_sets",
       {
         p_raw_text: textLog,
         p_submission_type: query ? "text" : "audio",
@@ -198,7 +198,7 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
 
 interface ExerciseContext {
   exerciseName: string;
-  category: string;
+  exercise_kind: string;
   modifiers?: string[];
   equipment?: string | null;
   lastSet?: {
@@ -218,7 +218,7 @@ function buildContextBlock(ctx: ExerciseContext): string {
     `\n\nCONTEXT:`,
     `The user is continuing an exercise. Apply these defaults when relative terms are used ("more", "same weight", "again"):`,
     `- Exercise: ${ctx.exerciseName}`,
-    `- Category: ${ctx.category}${ctx.modifiers?.length ? ` | Modifiers: ${ctx.modifiers.join(", ")}` : ""}${ctx.equipment ? ` | Equipment: ${ctx.equipment}` : ""}`,
+    `- Category: ${ctx.exercise_kind}${ctx.modifiers?.length ? ` | Modifiers: ${ctx.modifiers.join(", ")}` : ""}${ctx.equipment ? ` | Equipment: ${ctx.equipment}` : ""}`,
   ];
   if (ctx.lastSet) {
     const { weight, weightUnit, repetitions, distance, distanceUnit, duration } = ctx.lastSet;

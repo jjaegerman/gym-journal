@@ -27,41 +27,6 @@ export interface ProfileStats {
   prev_total_distance: number;
 }
 
-export interface ExerciseStats {
-  category: string;
-  modifiers: string[] | null;
-  equipment: string | null;
-
-  // All-time stats
-  total_workouts: number;
-  total_volume: number;
-  total_distance: number;
-  alltime_max_weight: number | null;
-  alltime_max_distance: number | null;
-  alltime_avg_pace: number | null;
-  alltime_max_reps: number | null;
-
-  // Recent 4 weeks
-  recent_workouts_per_week: number;
-  recent_volume_per_week: number;
-  recent_distance_per_week: number;
-  recent_max_weight: number | null;
-  recent_max_distance: number | null;
-  recent_avg_pace: number | null;
-  recent_max_reps: number | null;
-
-  // Previous 4 weeks (for trends)
-  prev_workouts_per_week: number;
-  prev_volume_per_week: number;
-  prev_distance_per_week: number;
-  prev_max_weight: number | null;
-  prev_max_distance: number | null;
-  prev_avg_pace: number | null;
-  prev_max_reps: number | null;
-
-  last_logged: string;
-}
-
 /**
  * Get comprehensive user profile statistics
  * Automatically uses the authenticated user's ID (auth.uid())
@@ -71,18 +36,6 @@ export async function getUserProfileStats(): Promise<ProfileStats> {
 
   if (error) throw error;
   return data as ProfileStats;
-}
-
-/**
- * Get per-exercise statistics
- * Automatically uses the authenticated user's ID (auth.uid())
- * Returns both all-time and recent (4 weeks) data
- */
-export async function getExerciseStats(): Promise<ExerciseStats[]> {
-  const { data, error } = await supabase.rpc('get_exercise_stats');
-
-  if (error) throw error;
-  return data as ExerciseStats[];
 }
 
 /**
@@ -108,26 +61,26 @@ export async function getLongestStreak(): Promise<number> {
 }
 
 export interface ExerciseFilterOptions {
-  categories: string[];
+  exercise_kinds: string[];
   modifiers: string[];
   equipment: string[];
 }
 
 export interface FilterRelationship {
-  category: string;
+  exercise_kind: string;
   equipment: string | null;
   modifiers: string[];
 }
 
 export interface ExerciseFilters {
-  categories?: string[];
+  exercise_kinds?: string[];
   modifiers?: string[];
   equipment?: string[];
   timeRange?: 'all_time' | '1_year' | '3_months' | '1_month';
 }
 
 export interface AppliedFilters {
-  categories: string[];
+  exercise_kinds: string[];
   equipment: string[];
   modifiers: string[];
   timeRange: 'all_time' | '1_year' | '3_months' | '1_month';
@@ -174,7 +127,7 @@ export async function getFilterRelationships(): Promise<FilterRelationship[]> {
   const { data, error } = await supabase.rpc("get_filter_relationships");
   if (error) throw error;
   return (data ?? []).map((row: any) => ({
-    category: row.category,
+    exercise_kind: row.exercise_kind,
     equipment: row.equipment,
     modifiers: Array.isArray(row.modifiers) ? row.modifiers : [],
   }));
@@ -187,7 +140,7 @@ export async function getFilteredExerciseStats(
   filters?: ExerciseFilters
 ): Promise<FilteredExerciseStats> {
   const { data, error } = await supabase.rpc("get_filtered_exercise_stats", {
-    p_categories: filters?.categories?.length ? filters.categories : null,
+    p_exercise_kinds: filters?.exercise_kinds?.length ? filters.exercise_kinds : null,
     p_modifiers: filters?.modifiers?.length ? filters.modifiers : null,
     p_equipment: filters?.equipment?.length ? filters.equipment : null,
     p_time_range: filters?.timeRange ?? 'all_time',

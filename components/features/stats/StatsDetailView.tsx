@@ -9,15 +9,15 @@ import { RecentSessions } from "./RecentSessions";
 interface StatsDetailViewProps {
   stats: FilteredExerciseStats;
   onSessionPress: (workoutId: string) => void;
-  onCategorySelect?: (category: string) => void;
-  availableCategories?: string[];
+  onExerciseKindSelect?: (exercise_kind: string) => void;
+  availableExerciseKinds?: string[];
 }
 
 export function StatsDetailView({
   stats,
   onSessionPress,
-  onCategorySelect,
-  availableCategories,
+  onExerciseKindSelect,
+  availableExerciseKinds,
 }: StatsDetailViewProps) {
   const hasData = stats.totalWorkouts > 0;
   const showEmptyPrompt = !hasData && stats.displayName === "No exercises";

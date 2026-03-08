@@ -26,11 +26,11 @@
 export function formatExerciseGrouping(exercise: {
   modifiers?: string[] | null;
   equipment?: string | null;
-  category?: string | null;
+  exercise_kind?: string | null;
 }): string {
   const mainParts = [
     ...(exercise.modifiers?.sort() || []),
-    exercise.category,
+    exercise.exercise_kind,
   ].filter(Boolean);
 
   const main = mainParts.join(" ");
@@ -52,11 +52,11 @@ export function formatExerciseGrouping(exercise: {
 export function getExerciseGroupingKey(exercise: {
   modifiers?: string[] | null;
   equipment?: string | null;
-  category?: string | null;
+  exercise_kind?: string | null;
 }): string {
   const modifierKey = exercise.modifiers?.sort().join(",") || "";
   const equipmentKey = exercise.equipment || "";
-  const categoryKey = exercise.category || "";
+  const exerciseKindKey = exercise.exercise_kind || "";
 
-  return `${modifierKey}|${equipmentKey}|${categoryKey}`;
+  return `${modifierKey}|${equipmentKey}|${exerciseKindKey}`;
 }

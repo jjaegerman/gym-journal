@@ -7,17 +7,17 @@ import { Workout, WorkoutDetails } from '@/types/exercise';
  */
 
 export interface WorkoutFilterOptions {
-  categories: string[];
+  exercise_kinds: string[];
   equipment: string[];
 }
 
 export interface WorkoutFilterRelationship {
-  category: string;
+  exercise_kind: string;
   equipment: string | null;
 }
 
 export interface WorkoutFilters {
-  categories?: string[];
+  exercise_kinds?: string[];
   equipment?: string[];
   dateTo?: Date;
 }
@@ -57,17 +57,17 @@ export async function getWorkoutDetails(workoutId: string) {
 }
 
 /**
- * Delete a specific log entry
- * @param logId - The log ID to delete
+ * Delete a specific set entry
+ * @param setId - The set ID to delete
  * @returns true if deleted, false if not found (RLS may silently filter unauthorized)
  */
-export async function deleteLog(logId: string): Promise<boolean> {
-  const { data, error } = await supabase.rpc("delete_log", {
-    p_log_id: logId,
+export async function deleteSet(setId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("delete_set", {
+    p_set_id: setId,
   });
 
   if (error) {
-    console.error("Error deleting log:", error);
+    console.error("Error deleting set:", error);
     throw error;
   }
 
@@ -82,7 +82,7 @@ export async function getWorkoutFilterRelationships(): Promise<WorkoutFilterRela
   const { data, error } = await supabase.rpc("get_filter_relationships");
   if (error) throw error;
   return (data ?? []).map((row: any) => ({
-    category: row.category,
+    exercise_kind: row.exercise_kind,
     equipment: row.equipment,
   }));
 }
@@ -92,7 +92,7 @@ export async function getWorkoutFilterRelationships(): Promise<WorkoutFilterRela
  */
 export async function filterUserWorkouts(filters: WorkoutFilters): Promise<Workout[]> {
   const { data, error } = await supabase.rpc("filter_user_workouts", {
-    p_categories: filters.categories?.length ? filters.categories : null,
+    p_exercise_kinds: filters.exercise_kinds?.length ? filters.exercise_kinds : null,
     p_equipment: filters.equipment?.length ? filters.equipment : null,
     p_date_from: null,
     p_date_to: filters.dateTo?.toISOString() ?? null,

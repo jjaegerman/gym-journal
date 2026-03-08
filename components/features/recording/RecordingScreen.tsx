@@ -31,30 +31,30 @@ import { ExerciseContext } from "@/lib/api/supabase/functions";
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 function buildExerciseContext(exercise: Exercise): ExerciseContext {
-  const lastLog = exercise.logs[exercise.logs.length - 1];
+  const lastSet = exercise.sets[exercise.sets.length - 1];
   const exerciseName = capitalizeEachWord(
     formatExerciseGrouping({
       modifiers: exercise.modifiers,
       equipment: exercise.equipment,
-      category: exercise.category,
+      exercise_kind: exercise.exercise_kind,
     })
   );
 
   return {
     exerciseName,
-    category: exercise.category,
+    exercise_kind: exercise.exercise_kind,
     modifiers: exercise.modifiers ?? undefined,
     equipment: exercise.equipment ?? null,
-    lastSet: lastLog
+    lastSet: lastSet
       ? {
-          weight: lastLog.weight ?? null,
-          weightUnit: lastLog.weightUnit ?? null,
-          repetitions: lastLog.repetitions ?? null,
-          distance: lastLog.distance ?? null,
-          distanceUnit: lastLog.distance_unit ?? null,
-          duration: lastLog.duration ?? null,
-          resistanceLevel: lastLog.resistance_level ?? null,
-          effort: lastLog.effort ?? null,
+          weight: lastSet.weight ?? null,
+          weightUnit: lastSet.weightUnit ?? null,
+          repetitions: lastSet.repetitions ?? null,
+          distance: lastSet.distance ?? null,
+          distanceUnit: lastSet.distanceUnit ?? null,
+          duration: lastSet.duration ?? null,
+          resistanceLevel: lastSet.resistanceLevel ?? null,
+          effort: lastSet.effort ?? null,
         }
       : undefined,
   };

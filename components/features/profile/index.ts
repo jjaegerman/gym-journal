@@ -6,4 +6,3 @@
 
 export { ProfileSummary } from './ProfileSummary';
 export { StatCard } from './StatCard';
-export { ExerciseStatsCard } from './ExerciseStatsCard';

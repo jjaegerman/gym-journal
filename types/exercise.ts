@@ -7,10 +7,10 @@ export type EffortLevel = z.infer<typeof EffortLevelSchema>;
 export const WeightUnitSchema = z.enum(["kg", "lbs"]);
 export type WeightUnit = z.infer<typeof WeightUnitSchema>;
 
-/* --- Log (single set) --- */
-export const LogSchema = z.object({
+/* --- Set (single performance set) --- */
+export const SetSchema = z.object({
   id: z.string(),
-  input: z.string().nullable().optional(),
+  input: z.string(),
   datetime: z.coerce.date(),
 
   // Strength metrics
@@ -20,22 +20,22 @@ export const LogSchema = z.object({
 
   // Cardio metrics
   distance: z.coerce.number().nullable().optional(),
-  distance_unit: z.string().nullable().optional(),
-  resistance_level: z.coerce.number().int().nullable().optional(),
+  distanceUnit: z.string().nullable().optional(),
+  resistanceLevel: z.coerce.number().int().nullable().optional(),
 
   // General
   duration: z.iso.duration().nullable().optional(),
   effort: EffortLevelSchema.nullable().optional(),
 });
-export type Log = z.infer<typeof LogSchema>;
+export type Set = z.infer<typeof SetSchema>;
 
-/* --- Exercise (groups logs by category, modifiers, equipment) --- */
+/* --- Exercise (groups sets by exercise_kind, modifiers, equipment) --- */
 export const ExerciseSchema = z.object({
   id: z.string(),
-  category: z.string(),
+  exercise_kind: z.string(),
   modifiers: z.array(z.string()).nullable().optional(),
   equipment: z.string().nullable().optional(),
-  logs: z.array(LogSchema),
+  sets: z.array(SetSchema),
 });
 export type Exercise = z.infer<typeof ExerciseSchema>;
 
@@ -44,7 +44,7 @@ export const WorkoutSchema = z.object({
   id: z.string(),
   datetime: z.coerce.date(),
   exerciseCount: z.coerce.number().int(),
-  logCount: z.coerce.number().int(),
+  setCount: z.coerce.number().int(),
   mostRecentLog: z.coerce.date(),
   exercisePreview: z.array(z.string()).nullable().optional(),
   totalVolume: z.coerce.number().nullable().optional(),
@@ -64,8 +64,8 @@ export const WorkoutDetailsSchema = z.object({
 });
 export type WorkoutDetails = z.infer<typeof WorkoutDetailsSchema>;
 
-/* --- WorkoutSubmission (source of truth) --- */
-export const WorkoutSubmissionSchema = z.object({
+/* --- LogSubmission (source of truth) --- */
+export const LogSubmissionSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
   workoutId: z.string().uuid().nullable(),
@@ -77,4 +77,4 @@ export const WorkoutSubmissionSchema = z.object({
   audioDurationSeconds: z.number().nullable(),
   createdAt: z.string(),
 });
-export type WorkoutSubmission = z.infer<typeof WorkoutSubmissionSchema>;
+export type LogSubmission = z.infer<typeof LogSubmissionSchema>;
