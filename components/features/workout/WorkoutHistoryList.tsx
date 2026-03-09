@@ -1,6 +1,6 @@
 import { SectionList, RefreshControl } from "react-native";
 import { router } from "expo-router";
-import { Separator, YGroup, YStack, H4, H6 } from "tamagui";
+import { Separator, YGroup, YStack, H4, H6, Spinner } from "tamagui";
 import { Workout } from "@/types/exercise";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutEmptyState } from "./WorkoutEmptyState";
@@ -38,24 +38,25 @@ interface WorkoutHistoryListProps {
   error?: Error | null;
   refreshing?: boolean;
   onRefresh?: () => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  sortAscending?: boolean;
 }
 
 /**
  * Group workouts into sections by month with week subgroups
- * Special handling for Today/Yesterday as top-level sections
+ * Special handling for Today/Yesterday as top-level sections (always at top for desc, bottom for asc)
  */
-function groupWorkoutsIntoSections(workouts: Workout[]): Section[] {
+function groupWorkoutsIntoSections(workouts: Workout[], sortAscending: boolean): Section[] {
   const sections: Section[] = [];
   const monthMap = new Map<string, Map<string, WeekGroup>>();
-
-  // Track special sections (Today, Yesterday)
   const specialSections = new Map<string, Section>();
 
   for (const workout of workouts) {
     const specialLabel = getSpecialDayLabel(workout.datetime);
 
     if (specialLabel) {
-      // Handle Today/Yesterday as separate top-level sections
       if (!specialSections.has(specialLabel)) {
         specialSections.set(specialLabel, {
           title: specialLabel,
@@ -65,7 +66,6 @@ function groupWorkoutsIntoSections(workouts: Workout[]): Section[] {
       }
       specialSections.get(specialLabel)!.data[0].workouts.push(workout);
     } else {
-      // Group by month, then by week
       const monthLabel = getMonthLabel(workout.datetime);
       const monthKey = `${workout.datetime.getFullYear()}-${workout.datetime.getMonth()}`;
       const weekKey = getWeekKey(workout.datetime);
@@ -84,35 +84,33 @@ function groupWorkoutsIntoSections(workouts: Workout[]): Section[] {
     }
   }
 
-  // Add special sections first (Today, then Yesterday)
-  if (specialSections.has("Today")) {
-    sections.push(specialSections.get("Today")!);
-  }
-  if (specialSections.has("Yesterday")) {
-    sections.push(specialSections.get("Yesterday")!);
-  }
-
-  // Convert month map to sections, sorted by date descending
-  const sortedMonths = Array.from(monthMap.entries()).sort(
-    ([keyA], [keyB]) => keyB.localeCompare(keyA)
+  const sortedMonths = Array.from(monthMap.entries()).sort(([keyA], [keyB]) =>
+    sortAscending ? keyA.localeCompare(keyB) : keyB.localeCompare(keyA)
   );
 
-  for (const [monthKey, weekMap] of sortedMonths) {
-    // Get month label from first workout in the month
+  const monthSections: Section[] = sortedMonths.map(([monthKey, weekMap]) => {
     const firstWeek = weekMap.values().next().value as WeekGroup | undefined;
-    if (!firstWeek) continue;
+    if (!firstWeek) return null!;
     const monthLabel = getMonthLabel(firstWeek.workouts[0].datetime);
 
-    // Sort weeks within month descending
     const sortedWeeks = Array.from(weekMap.values()).sort((a, b) =>
-      b.weekKey.localeCompare(a.weekKey)
+      sortAscending ? a.weekKey.localeCompare(b.weekKey) : b.weekKey.localeCompare(a.weekKey)
     );
 
-    sections.push({
-      title: monthLabel,
-      monthKey,
-      data: sortedWeeks,
-    });
+    return { title: monthLabel, monthKey, data: sortedWeeks };
+  }).filter(Boolean);
+
+  const todaySection = specialSections.get("Today");
+  const yesterdaySection = specialSections.get("Yesterday");
+
+  if (sortAscending) {
+    sections.push(...monthSections);
+    if (yesterdaySection) sections.push(yesterdaySection);
+    if (todaySection) sections.push(todaySection);
+  } else {
+    if (todaySection) sections.push(todaySection);
+    if (yesterdaySection) sections.push(yesterdaySection);
+    sections.push(...monthSections);
   }
 
   return sections;
@@ -120,7 +118,8 @@ function groupWorkoutsIntoSections(workouts: Workout[]): Section[] {
 
 /**
  * Workout History List Component
- * Displays a list of workouts grouped by month with sticky headers
+ * Displays a list of workouts grouped by month with sticky headers.
+ * Supports infinite scroll downward: load more on scroll-to-bottom.
  */
 export function WorkoutHistoryList({
   workouts,
@@ -128,12 +127,15 @@ export function WorkoutHistoryList({
   error,
   refreshing = false,
   onRefresh,
+  onLoadMore,
+  hasMore = false,
+  loadingMore = false,
+  sortAscending = false,
 }: WorkoutHistoryListProps) {
   const handleWorkoutPress = (workoutId: string) => {
     router.push(`/workout?workoutId=${workoutId}`);
   };
 
-  // Only show loading state if we don't have any data yet
   if (loading && !workouts) {
     return <LoadingState message="Loading workouts..." />;
   }
@@ -148,7 +150,7 @@ export function WorkoutHistoryList({
     return <WorkoutEmptyState />;
   }
 
-  const sections = groupWorkoutsIntoSections(workouts);
+  const sections = groupWorkoutsIntoSections(workouts, sortAscending);
 
   return (
     <SectionList
@@ -165,7 +167,6 @@ export function WorkoutHistoryList({
         </YStack>
       )}
       renderItem={({ item: weekGroup, section }) => {
-        // For special sections (Today/Yesterday), don't show week label
         const showWeekLabel =
           !section.monthKey.startsWith("special-") && weekGroup.weekLabel;
 
@@ -200,6 +201,15 @@ export function WorkoutHistoryList({
         onRefresh ? (
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         ) : undefined
+      }
+      onEndReached={onLoadMore}
+      onEndReachedThreshold={0.3}
+      ListFooterComponent={
+        loadingMore && hasMore ? (
+          <YStack py="$4" items="center">
+            <Spinner size="small" />
+          </YStack>
+        ) : null
       }
       contentContainerStyle={{ paddingBottom: 16 }}
     />

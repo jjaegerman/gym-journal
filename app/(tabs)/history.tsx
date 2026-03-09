@@ -1,4 +1,5 @@
-import { YStack, Paragraph, View } from "tamagui";
+import { YStack, Paragraph, View, Button, XStack, Text } from "tamagui";
+import { ArrowDownUp } from "@tamagui/lucide-icons";
 import { WorkoutHistoryList, WorkoutFilters } from "@/components/features/workout";
 import { useWorkoutHistory } from "@/lib/hooks/useWorkoutHistory";
 import { useFocusEffect } from "expo-router";
@@ -6,8 +7,8 @@ import { useCallback, useRef, useState } from "react";
 
 /**
  * Workout History Screen (Tab 3)
- * Displays a list of all user workouts with filtering
- * Refreshes data when tab comes into focus
+ * Displays a list of all user workouts with filtering and infinite scroll.
+ * Refreshes data when tab comes into focus.
  */
 export default function TabThreeScreen() {
   const {
@@ -20,6 +21,11 @@ export default function TabThreeScreen() {
     filterOptions,
     clearFilters,
     hasActiveFilters,
+    hasMore,
+    loadMore,
+    loadingMore,
+    sortAscending,
+    toggleSortOrder,
   } = useWorkoutHistory();
   const isFirstFocus = useRef(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,15 +50,29 @@ export default function TabThreeScreen() {
 
   return (
     <View flex={1} bg="$background">
-      <YStack gap="$1" maxW={600} width="90%" mx="auto">
-        <WorkoutFilters
-          filters={filters}
-          filterOptions={filterOptions}
-          onFiltersChange={setFilters}
-          onClear={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
-      </YStack>
+      <XStack maxW={600} width="90%" mx="auto" items="center">
+        <YStack flex={1}>
+          <WorkoutFilters
+            filters={filters}
+            filterOptions={filterOptions}
+            onFiltersChange={setFilters}
+            onClear={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </YStack>
+        <Button
+          size="$3"
+          chromeless
+          onPress={toggleSortOrder}
+          borderRadius="$10"
+          px="$2"
+          icon={<ArrowDownUp size={14} color="$gray11" />}
+        >
+          <Text fontSize="$2" color="$gray11">
+            {sortAscending ? "Oldest" : "Newest"}
+          </Text>
+        </Button>
+      </XStack>
       {showEmptyFilterResult ? (
         <YStack py="$8" items="center">
           <Paragraph opacity={0.6}>
@@ -66,6 +86,10 @@ export default function TabThreeScreen() {
           error={error}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+          sortAscending={sortAscending}
         />
       )}
     </View>

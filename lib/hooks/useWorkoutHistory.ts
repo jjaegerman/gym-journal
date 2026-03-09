@@ -1,12 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Workout, WorkoutsArraySchema } from '@/types/exercise';
 import {
-  getUserWorkouts,
   getWorkoutFilterRelationships,
+  getUserWorkouts,
   filterUserWorkouts,
   WorkoutFilterOptions,
   WorkoutFilters,
   WorkoutFilterRelationship,
+  PAGE_SIZE,
 } from '@/lib/api/supabase/workouts';
 import { useSession } from './useSession';
 
@@ -20,7 +21,6 @@ function computeWorkoutCascadedOptions(
   selectedExerciseKinds?: string[],
   selectedEquipment?: string[]
 ): WorkoutFilterOptions {
-  // Exercise kinds: if equipment selected, show only exercise_kinds that use that equipment
   const exercise_kinds = [...new Set(
     (selectedEquipment?.length
       ? relationships.filter(r => r.equipment !== null && selectedEquipment.includes(r.equipment))
@@ -28,7 +28,6 @@ function computeWorkoutCascadedOptions(
     ).map(r => r.exercise_kind)
   )].sort();
 
-  // Equipment: if exercise_kinds selected, show only equipment used by those exercise_kinds
   const equipment = [...new Set(
     (selectedExerciseKinds?.length
       ? relationships.filter(r => selectedExerciseKinds.includes(r.exercise_kind))
@@ -40,7 +39,8 @@ function computeWorkoutCascadedOptions(
 }
 
 /**
- * Custom hook to fetch and manage workout history with filtering
+ * Custom hook for workout history with offset-based pagination
+ * and exercise/equipment filters.
  */
 export function useWorkoutHistory() {
   const { session } = useSession();
@@ -48,107 +48,149 @@ export function useWorkoutHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const [filters, setFilters] = useState<WorkoutFilters>({});
   const [filterOptions, setFilterOptions] = useState<WorkoutFilterOptions | null>(null);
   const [relationships, setRelationships] = useState<WorkoutFilterRelationship[]>([]);
+  const [sortAscending, setSortAscending] = useState(false);
 
-  const fetchWorkoutsRef = useRef<() => Promise<void> | undefined>(undefined);
+  const [refetchKey, setRefetchKey] = useState(0);
 
-  const hasActiveFilters = useCallback(() => {
-    return !!(
-      (filters.exercise_kinds && filters.exercise_kinds.length > 0) ||
-      (filters.equipment && filters.equipment.length > 0) ||
-      filters.dateTo
-    );
-  }, [filters]);
+  const loadingMoreRef = useRef(false);
 
-  const fetchWorkouts = useCallback(async () => {
-    if (!session?.user.id) return;
+  const hasActiveFilters = useMemo(() =>
+    !!(filters.exercise_kinds?.length || filters.equipment?.length),
+    [filters]
+  );
 
-    try {
+  // Full refetch whenever filters, sort order, or refetchKey change
+  useEffect(() => {
+    if (!session?.user.id) {
+      setWorkouts(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchInitial = async () => {
       setLoading(true);
       setError(null);
+      setPage(0);
 
-      let data: Workout[];
-      if (hasActiveFilters()) {
-        data = await filterUserWorkouts(filters);
-      } else {
-        data = await getUserWorkouts();
+      try {
+        if (hasActiveFilters) {
+          const data = await filterUserWorkouts(filters, sortAscending);
+          const parsed = WorkoutsArraySchema.parse(data);
+          if (!cancelled) {
+            setWorkouts(parsed);
+            setHasMore(false);
+          }
+        } else {
+          const data = await getUserWorkouts(0, sortAscending);
+          const parsed = WorkoutsArraySchema.parse(data);
+          if (!cancelled) {
+            setWorkouts(parsed);
+            setHasMore(parsed.length >= PAGE_SIZE);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Error fetching workouts:", err);
+          setError(err as Error);
+          setWorkouts(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    };
 
-      setWorkouts(WorkoutsArraySchema.parse(data));
-    } catch (err) {
-      console.error("Error fetching workouts:", err);
-      setError(err as Error);
-      setWorkouts(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.user.id, filters, hasActiveFilters]);
-
-  // Fetch relationships once on mount
-  const fetchRelationships = useCallback(async () => {
-    if (!session?.user.id) return;
-
-    try {
-      const data = await getWorkoutFilterRelationships();
-      setRelationships(data);
-
-      // Compute initial options from relationships
-      const options = computeWorkoutCascadedOptions(data);
-      setFilterOptions(options);
-    } catch (err) {
-      console.error("Error fetching filter relationships:", err);
-    }
-  }, [session?.user.id]);
-
-  fetchWorkoutsRef.current = fetchWorkouts;
+    fetchInitial();
+    return () => { cancelled = true; };
+  }, [session?.user.id, filters, sortAscending, refetchKey]);
 
   // Fetch relationships once on mount
   useEffect(() => {
-    if (session) {
-      fetchRelationships();
-    }
-  }, [session, fetchRelationships]);
+    if (!session?.user.id) return;
+
+    const fetchMeta = async () => {
+      try {
+        const rels = await getWorkoutFilterRelationships();
+        setRelationships(rels);
+        setFilterOptions(computeWorkoutCascadedOptions(rels));
+      } catch (err) {
+        console.error("Error fetching filter metadata:", err);
+      }
+    };
+
+    fetchMeta();
+  }, [session?.user.id]);
 
   // Compute cascaded options when filters change (no API call)
   useEffect(() => {
     if (relationships.length === 0) return;
-
-    const options = computeWorkoutCascadedOptions(
+    setFilterOptions(computeWorkoutCascadedOptions(
       relationships,
       filters.exercise_kinds,
       filters.equipment
-    );
-    setFilterOptions(options);
+    ));
   }, [relationships, filters.exercise_kinds, filters.equipment]);
 
-  useEffect(() => {
-    if (session) {
-      fetchWorkouts();
-    } else {
-      setWorkouts(null);
-      setLoading(false);
-    }
-  }, [session, fetchWorkouts]);
+  const loadMore = useCallback(async () => {
+    if (!session?.user.id || loadingMoreRef.current || !hasMore || hasActiveFilters) return;
 
-  const stableRefetch = useCallback(() => {
-    return fetchWorkoutsRef.current?.() ?? Promise.resolve();
-  }, []);
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+
+    try {
+      const nextPage = page + 1;
+      const data = await getUserWorkouts(nextPage, sortAscending);
+      const parsed = WorkoutsArraySchema.parse(data);
+
+      if (parsed.length > 0) {
+        setWorkouts(prev => prev ? [...prev, ...parsed] : parsed);
+        setPage(nextPage);
+        setHasMore(parsed.length >= PAGE_SIZE);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Error loading more workouts:", err);
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [session?.user.id, hasMore, hasActiveFilters, page, sortAscending]);
 
   const clearFilters = useCallback(() => {
     setFilters({});
+  }, []);
+
+  const toggleSortOrder = useCallback(() => {
+    setSortAscending(prev => !prev);
+  }, []);
+
+  const refetch = useCallback(() => {
+    setRefetchKey(k => k + 1);
   }, []);
 
   return {
     workouts,
     loading,
     error,
-    refetch: stableRefetch,
+    refetch,
     filters,
     setFilters,
     filterOptions,
     clearFilters,
-    hasActiveFilters: hasActiveFilters(),
+    hasActiveFilters,
+    hasMore,
+    loadMore,
+    loadingMore,
+    sortAscending,
+    toggleSortOrder,
   };
 }

@@ -19,16 +19,19 @@ export interface WorkoutFilterRelationship {
 export interface WorkoutFilters {
   exercise_kinds?: string[];
   equipment?: string[];
-  dateTo?: Date;
 }
 
+export const PAGE_SIZE = 20;
+
 /**
- * Get all workouts for the authenticated user
- * Automatically uses the authenticated user's ID (auth.uid())
- * @returns Array of workout summaries
+ * Get paginated workouts for the authenticated user
  */
-export async function getUserWorkouts() {
-  const { data, error } = await supabase.rpc("get_user_workouts");
+export async function getUserWorkouts(page = 0, ascending = false): Promise<Workout[]> {
+  const { data, error } = await supabase.rpc("get_user_workouts", {
+    p_limit: PAGE_SIZE,
+    p_offset: page * PAGE_SIZE,
+    p_ascending: ascending,
+  });
 
   if (error) {
     console.error("Error fetching user workouts:", error);
@@ -88,14 +91,19 @@ export async function getWorkoutFilterRelationships(): Promise<WorkoutFilterRela
 }
 
 /**
- * Get filtered workouts for the authenticated user
+ * Get filtered workouts for the authenticated user (returns all matches)
  */
-export async function filterUserWorkouts(filters: WorkoutFilters): Promise<Workout[]> {
+export async function filterUserWorkouts(
+  filters: WorkoutFilters,
+  ascending = false,
+): Promise<Workout[]> {
   const { data, error } = await supabase.rpc("filter_user_workouts", {
     p_exercise_kinds: filters.exercise_kinds?.length ? filters.exercise_kinds : null,
     p_equipment: filters.equipment?.length ? filters.equipment : null,
     p_date_from: null,
-    p_date_to: filters.dateTo?.toISOString() ?? null,
+    p_date_to: null,
+    p_ascending: ascending,
+    p_limit: null,
   });
 
   if (error) {

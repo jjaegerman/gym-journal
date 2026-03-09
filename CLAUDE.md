@@ -193,10 +193,10 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 
 #### Data Retrieval
 
-**get_user_workouts()** → TABLE
-- Returns all workouts for authenticated user
+**get_user_workouts(p_limit, p_offset, p_ascending)** → TABLE
+- Returns paginated workouts for authenticated user (all params have defaults; `p_limit NULL` = no cap)
 - Columns: `id`, `datetime`, `exerciseCount`, `setCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3 exercise_kinds), `totalVolume`, `totalDistance`, `distanceUnit`, `durationMinutes`
-- Ordered by datetime DESC
+- Ordered by datetime DESC (or ASC when `p_ascending = true`)
 
 **get_workout_details(p_workout_id)** → JSONB
 - Returns full workout with exercises and nested sets
@@ -216,8 +216,9 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 
 #### Filtering
 
-**filter_user_workouts(p_exercise_kinds, p_equipment, p_date_from, p_date_to)** → TABLE
-- Returns workouts matching exercise_kind/equipment/date filters
+**filter_user_workouts(p_exercise_kinds, p_equipment, p_date_from, p_date_to, p_ascending, p_limit)** → TABLE
+- Returns workouts matching exercise_kind/equipment/date filters (all params optional/nullable)
+- Frontend always passes `p_limit: null` (returns all matches); date params unused by current UI
 - Same column shape as `get_user_workouts`
 
 **get_workout_filter_options()** → TABLE
@@ -240,7 +241,21 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 - Once applied to remote, migrations are **immutable** - create new migration to modify
 - Use `supabase db pull` to sync remote changes before creating new migrations
 - Use `supabase db push` to apply local migrations to remote
-- Test locally with `supabase migration up` before pushing
+- **Always test locally before pushing**:
+
+```bash
+# Apply and verify
+supabase migration up
+# psql is not in PATH — use Docker
+docker exec supabase_db_gym-journal psql -U postgres \
+  -c "SELECT proname, pronargs, pg_get_function_arguments(oid) FROM pg_proc WHERE proname = 'fn_name';"
+
+# Test edge functions locally
+supabase functions serve --env-file ./supabase/.env.local --no-verify-jwt --debug
+curl -X POST http://127.0.0.1:54321/functions/v1/openai \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"text","text":"10 squats at 135 lbs"}'
+```
 
 ## Common Gotchas
 
