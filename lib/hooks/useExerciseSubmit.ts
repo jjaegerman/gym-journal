@@ -11,7 +11,7 @@ const SPINNER_DURATION_MS = 1000;
  * Custom hook for submitting exercise data via audio or text
  * Uses optimistic UI: shows spinner for 1s, then processes in background
  */
-export function useExerciseSubmit(onSuccess?: () => void) {
+export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
 
@@ -32,7 +32,8 @@ export function useExerciseSubmit(onSuccess?: () => void) {
           base64: base64Audio,
         },
         undefined,
-        context
+        context,
+        workoutId
       );
     })()
       .then(() => {
@@ -61,7 +62,7 @@ export function useExerciseSubmit(onSuccess?: () => void) {
     setLoading(true);
 
     // Start API call and attach handlers immediately to prevent unhandled rejection
-    invokeOpenAI(undefined, text, context)
+    invokeOpenAI(undefined, text, context, workoutId)
       .then(() => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         toast.show('Exercise logged!', {

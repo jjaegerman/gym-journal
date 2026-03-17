@@ -30,6 +30,7 @@ interface OpenAIRequestBody {
   };
   query?: string;
   context?: ExerciseContext;
+  workout_id?: string;
 }
 
 interface OpenAIResponse {
@@ -50,7 +51,8 @@ export async function invokeOpenAI(
     fileName: string;
   },
   query?: string,
-  context?: ExerciseContext
+  context?: ExerciseContext,
+  workoutId?: string
 ): Promise<OpenAIResponse> {
   // Require either audioData or query
   if (!audioData && !query) {
@@ -69,6 +71,10 @@ export async function invokeOpenAI(
 
   if (context) {
     body.context = context;
+  }
+
+  if (workoutId) {
+    body.workout_id = workoutId;
   }
 
   const { data, error } = await supabase.functions.invoke('openai', {

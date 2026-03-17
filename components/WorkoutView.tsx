@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { H5, YStack } from "tamagui";
+import { Button, H5, XStack, YStack } from "tamagui";
+import { Plus } from "@tamagui/lucide-icons";
 import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
 import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
 import { ExerciseList } from "./shared/ExerciseList";
+import { AddSetsSheet } from "./features/workout/AddSetsSheet";
 
 export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
+  const [addSetsOpen, setAddSetsOpen] = useState(false);
 
   const fetchWorkout = async () => {
     try {
@@ -44,10 +47,35 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
           </>
         )}
       </H5>
+      {workout && (
+        <XStack justify="flex-end" paddingInline="$3">
+          <Button
+            size="$3"
+            icon={Plus}
+            onPress={() => setAddSetsOpen(true)}
+            variant="outlined"
+            borderColor="$color5"
+            borderWidth={0.5}
+          >
+            Add Sets
+          </Button>
+        </XStack>
+      )}
       <ExerciseList
         exercises={workout?.exercises ?? []}
         onLogDeleted={fetchWorkout}
       />
+      {workout && (
+        <AddSetsSheet
+          workoutId={workoutId}
+          workoutDatetime={workout.datetime}
+          workoutEndTime={workout.endTime}
+          exercises={workout.exercises}
+          open={addSetsOpen}
+          onClose={() => setAddSetsOpen(false)}
+          onSetsAdded={fetchWorkout}
+        />
+      )}
     </YStack>
   );
 };

@@ -28,6 +28,7 @@ export { getExerciseIcon, getExerciseIconColor } from "./exerciseIcons";
 export {
   formatExerciseGrouping,
   getExerciseGroupingKey,
+  buildExerciseContext,
 } from "./exerciseDisplay";
 
 // Exercise summary utilities

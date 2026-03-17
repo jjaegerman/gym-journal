@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       },
     );
 
-    const { query, audio, context } = await req.json();
+    const { query, audio, context, workout_id } = await req.json();
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     const openai = new OpenAI({
       apiKey: apiKey,
@@ -163,17 +163,30 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
     }
 
     // Create submission + all sets in a single transaction
+    const rpcName = workout_id ? "add_submission_to_workout" : "add_submission_with_sets";
+    const rpcParams = workout_id
+      ? {
+          p_workout_id: workout_id,
+          p_raw_text: textLog,
+          p_submission_type: query ? "text" : "audio",
+          p_ai_response: structured.output_text,
+          p_logs: logsForDb,
+          p_model_version: "gpt-4.1",
+          p_prompt_version: "v2.0",
+          p_audio_duration_seconds: null,
+        }
+      : {
+          p_raw_text: textLog,
+          p_submission_type: query ? "text" : "audio",
+          p_ai_response: structured.output_text,
+          p_logs: logsForDb,
+          p_model_version: "gpt-4.1",
+          p_prompt_version: "v2.0",
+          p_audio_duration_seconds: null,
+        };
     const { data: submissionId, error: submissionError } = await supabase.rpc(
-      "add_submission_with_sets",
-      {
-        p_raw_text: textLog,
-        p_submission_type: query ? "text" : "audio",
-        p_ai_response: structured.output_text,
-        p_logs: logsForDb,
-        p_model_version: "gpt-4.1",
-        p_prompt_version: "v2.0",
-        p_audio_duration_seconds: null,
-      },
+      rpcName,
+      rpcParams,
     );
 
     if (submissionError) {

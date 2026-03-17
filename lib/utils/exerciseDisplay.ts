@@ -8,6 +8,39 @@
  * - equipment: Equipment used
  */
 
+import { Exercise } from "@/types/exercise";
+import { ExerciseContext } from "@/lib/api/supabase/functions";
+import { capitalizeEachWord } from "./string";
+
+export function buildExerciseContext(exercise: Exercise): ExerciseContext {
+  const lastSet = exercise.sets[exercise.sets.length - 1];
+  const exerciseName = capitalizeEachWord(
+    formatExerciseGrouping({
+      modifiers: exercise.modifiers,
+      equipment: exercise.equipment,
+      exercise_kind: exercise.exercise_kind,
+    })
+  );
+  return {
+    exerciseName,
+    exercise_kind: exercise.exercise_kind,
+    modifiers: exercise.modifiers ?? undefined,
+    equipment: exercise.equipment ?? null,
+    lastSet: lastSet
+      ? {
+          weight: lastSet.weight ?? null,
+          weightUnit: lastSet.weightUnit ?? null,
+          repetitions: lastSet.repetitions ?? null,
+          distance: lastSet.distance ?? null,
+          distanceUnit: lastSet.distanceUnit ?? null,
+          duration: lastSet.duration ?? null,
+          resistanceLevel: lastSet.resistanceLevel ?? null,
+          effort: lastSet.effort ?? null,
+        }
+      : undefined,
+  };
+}
+
 /**
  * Format exercise for display using structured fields
  * Format: {modifiers} {category} ({equipment})

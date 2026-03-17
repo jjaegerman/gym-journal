@@ -8,3 +8,4 @@ export { WorkoutCard } from './WorkoutCard';
 export { WorkoutHistoryList } from './WorkoutHistoryList';
 export { WorkoutEmptyState } from './WorkoutEmptyState';
 export { WorkoutFilters } from './WorkoutFilters';
+export { AddSetsSheet } from './AddSetsSheet';
