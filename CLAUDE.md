@@ -91,8 +91,9 @@ All sizes and spacing must use `$N` tokens — never raw pixel values.
   - `stats.ts` - Exercise statistics aggregation
 - `lib/hooks/` - React hooks for auth, workouts, sessions
   - `useWorkoutHistory` - Workout list with filtering support
-  - `useFilteredExerciseStats` - Exercise stats with filter parameters
+  - `useFilteredExerciseStats` - Exercise stats with filter parameters; injects unit preferences automatically
   - `useCurrentWorkout` - Active/most-recent workout state
+  - `useUnitPreferences` - Re-exports from `lib/context/UnitPreferencesContext`; backed by a single shared context instance — all consumers see the same state
 - `lib/storage/` - Local persistence (inputMode) via AsyncStorage
 - `lib/utils/` - Utility functions (date formatting, string manipulation)
   - `lib/utils/filterCascade.ts` - Cascading filter option computation from relationship data
@@ -123,9 +124,10 @@ All sizes and spacing must use `$N` tokens — never raw pixel values.
 - `exercise_kind` (TEXT, NOT NULL) - Structured category enum (e.g. "Squat", "Running")
 - `modifiers` (JSONB, default `[]`) - Variant descriptors (e.g., `["Incline", "Close Grip"]`)
 - `equipment` (TEXT) - Equipment used
-- Strength: `weight`, `weight_unit`, `repetitions`
-- Cardio: `distance`, `distance_unit`, `duration` (ISO 8601), `resistance_level`
+- Strength: `weight`, `weight_unit` (TEXT, NOT NULL, DEFAULT 'lbs'), `repetitions`
+- Cardio: `distance`, `distance_unit` (TEXT, NOT NULL, DEFAULT 'miles'), `duration` (ISO 8601), `resistance_level`
 - `effort`, `datetime`
+- Unit defaulting is the **edge function's responsibility** — it always sends `weight_unit`/`distance_unit` using the user's preference as fallback. The DB DEFAULT is a last-resort safety net only.
 
 **log_submissions** - Immutable audit trail for raw input
 - `id`, `user_id`, `workout_id`, `submission_type` (audio/text)
@@ -135,6 +137,8 @@ All sizes and spacing must use `$N` tokens — never raw pixel values.
 
 **profiles** - User profile data
 - `id` (FK to auth.users), `username`, `full_name`, `avatar_url`
+- `preferred_weight_unit` (TEXT, NOT NULL, DEFAULT 'lbs') - 'kg' or 'lbs'
+- `preferred_distance_unit` (TEXT, NOT NULL, DEFAULT 'miles') - 'km' or 'miles'
 
 #### Key Design Patterns
 
@@ -227,10 +231,12 @@ PostgreSQL functions in `supabase/migrations/` follow these conventions:
 **get_exercise_filter_options()** → TABLE
 - Returns available exercise_kinds, modifiers, and equipment for the authenticated user's exercises
 
-**get_filtered_exercise_stats(p_exercise_kinds, p_modifiers, p_equipment, p_time_range)** → TABLE
+**get_filtered_exercise_stats(p_exercise_kinds, p_modifiers, p_equipment, p_time_range, p_preferred_weight_unit, p_preferred_distance_unit)** → TABLE
 - Returns filtered exercise stats with PRs and progress trends
 - Supports time range filtering (e.g., 4 weeks, 12 weeks, all-time)
 - Auto-selects most recent exercise if no filters passed
+- Converts each set's weight/distance to the preferred unit **before** aggregation — never aggregate mixed-unit values post-hoc
+- Returns `weight_unit`/`distance_unit` equal to the preferred unit params (not a mode of stored values)
 
 **get_filter_relationships()** → TABLE
 - Returns exercise_kind/equipment/modifiers combinations present in user data
@@ -325,3 +331,8 @@ curl -X POST http://127.0.0.1:54321/functions/v1/openai \
    - Auth is enforced at `components/Provider.tsx` — children only render when a valid session exists
    - Components should call `lib/api/supabase/` functions directly (e.g., `getWorkoutDetails`, `getUserWorkouts`) — never call `supabase.rpc()` directly
    - No `useEffect + onAuthStateChange` boilerplate needed inside screens or components
+
+13. **Unit preferences are context-backed — don't use local state**:
+   - `useUnitPreferences()` reads from `UnitPreferencesProvider` (mounted in `Provider.tsx` inside the session guard)
+   - All callers share one instance — updating prefs in the settings sheet instantly propagates to stats hooks and any other consumer
+   - Never create a local `useState` for unit preferences; always use the hook
