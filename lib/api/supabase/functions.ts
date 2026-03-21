@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { UnitPreferences } from './profile';
 
 /**
  * Supabase Edge Functions API
@@ -31,6 +32,7 @@ interface OpenAIRequestBody {
   query?: string;
   context?: ExerciseContext;
   workout_id?: string;
+  unitPreferences?: UnitPreferences;
 }
 
 interface OpenAIResponse {
@@ -52,7 +54,8 @@ export async function invokeOpenAI(
   },
   query?: string,
   context?: ExerciseContext,
-  workoutId?: string
+  workoutId?: string,
+  unitPreferences?: UnitPreferences
 ): Promise<OpenAIResponse> {
   // Require either audioData or query
   if (!audioData && !query) {
@@ -75,6 +78,10 @@ export async function invokeOpenAI(
 
   if (workoutId) {
     body.workout_id = workoutId;
+  }
+
+  if (unitPreferences) {
+    body.unitPreferences = unitPreferences;
   }
 
   const { data, error } = await supabase.functions.invoke('openai', {

@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       },
     );
 
-    const { query, audio, context, workout_id } = await req.json();
+    const { query, audio, context, workout_id, unitPreferences } = await req.json();
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     const openai = new OpenAI({
       apiKey: apiKey,
@@ -111,6 +111,7 @@ FIELD RULES:
 - equipment: Main equipment used (use schema enum values)
 - resistanceLevel: For treadmill incline (%), bike resistance, or rower damper
 - duration: ISO 8601 format
+- weightUnit / distanceUnit: Only set if explicitly stated by the user. Leave null if not specified.
 
 LOGIC:
 If repetitions not specified but sets are, assume repetitions equal sets and sets equals 1.
@@ -135,6 +136,9 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
 
     const exerciseLogs = structured.output_parsed?.items ?? [];
 
+    const defaultWeightUnit = unitPreferences?.weightUnit ?? 'lbs';
+    const defaultDistanceUnit = unitPreferences?.distanceUnit ?? 'miles';
+
     // Transform logs into format expected by batch function
     const logsForDb = exerciseLogs.map((log: any) => {
       return {
@@ -143,12 +147,12 @@ If both specified, repeat item with same repetitions for each set.${context ? bu
         modifiers: log.modifiers ?? [],
         equipment: log.equipment ? String(log.equipment) : null,
         weight: log.weight ? Number(log.weight) : null,
-        weight_unit: log.weightUnit ? String(log.weightUnit) : null,
+        weight_unit: String(log.weightUnit ?? defaultWeightUnit),
         repetitions: log.repetitions ? parseInt(log.repetitions) : null,
         duration: log.duration ? String(log.duration) : null,
         effort: log.effort ? String(log.effort) : null,
         distance: log.distance ? Number(log.distance) : null,
-        distance_unit: log.distanceUnit ? String(log.distanceUnit) : null,
+        distance_unit: String(log.distanceUnit ?? defaultDistanceUnit),
         resistance_level: log.resistanceLevel
           ? parseInt(log.resistanceLevel)
           : null,

@@ -16,6 +16,7 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 import { View } from "tamagui";
 import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
+import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -66,7 +67,7 @@ export function Provider({
         <View bg="$background" flex={1}>
           <TabProvider>
             {loading ? null : session?.user ? ( // Or a loading spinner?
-              children
+              <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
             ) : (
               <Auth />
             )}

@@ -55,8 +55,8 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
   const hasDurationData = stats.totalDurationSeconds > 0;
   const hasPaceData = stats.bestPace !== null;
   const hasResistanceData = stats.maxResistanceLevel !== null;
-  const weightUnit = stats.weightUnit ?? "lbs";
-  const distanceUnit = stats.distanceUnit ?? "mi";
+  const weightUnit = stats.weightUnit ?? 'lbs';
+  const distanceUnit = stats.distanceUnit ?? 'miles';
 
   return (
     <YStack gap="$3" width="100%">

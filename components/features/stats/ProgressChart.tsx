@@ -78,8 +78,8 @@ function ProgressChartContent({
   const tooltipValueColor = theme.color12.val;
   const tooltipDateColor = theme.color10.val;
 
-  const wUnit = weightUnit ?? "lbs";
-  const dUnit = distanceUnit ?? "mi";
+  const wUnit = weightUnit ?? 'lbs';
+  const dUnit = distanceUnit ?? 'miles';
 
   const availableMetrics = useMemo<MetricType[]>(() => {
     const metrics: MetricType[] = [];

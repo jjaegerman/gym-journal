@@ -83,7 +83,7 @@ export function PersonalRecords({ weightPr, repsPr, weightUnit, onPRPress }: Per
           <PRCard
             title="Weight PR"
             pr={weightPr}
-            unit={weightUnit ?? "lbs"}
+            unit={weightUnit ?? 'lbs'}
             onPress={weightPr?.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
           />
           <PRCard

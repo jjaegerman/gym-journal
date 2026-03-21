@@ -4,6 +4,7 @@ import { audioFileToBase64 } from '@/lib/utils';
 import { invokeOpenAI, ExerciseContext } from '@/lib/api/supabase/functions';
 import { useToastController } from '@tamagui/toast';
 import * as Haptics from 'expo-haptics';
+import { useUnitPreferences } from './useUnitPreferences';
 
 const SPINNER_DURATION_MS = 1000;
 
@@ -14,6 +15,7 @@ const SPINNER_DURATION_MS = 1000;
 export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
+  const { prefs } = useUnitPreferences();
 
   const submitAudio = async (audioUri: string, context?: ExerciseContext) => {
     setLoading(true);
@@ -33,7 +35,8 @@ export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
         },
         undefined,
         context,
-        workoutId
+        workoutId,
+        prefs
       );
     })()
       .then(() => {
@@ -62,7 +65,7 @@ export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
     setLoading(true);
 
     // Start API call and attach handlers immediately to prevent unhandled rejection
-    invokeOpenAI(undefined, text, context, workoutId)
+    invokeOpenAI(undefined, text, context, workoutId, prefs)
       .then(() => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         toast.show('Exercise logged!', {

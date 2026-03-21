@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/supabase/stats';
 import { computeCascadedOptions } from '@/lib/utils/filterCascade';
 import { useSession } from './useSession';
+import { useUnitPreferences } from './useUnitPreferences';
 
 export type { ExerciseFilterOptions, ExerciseFilters, FilteredExerciseStats, AppliedFilters };
 
@@ -18,6 +19,7 @@ export type { ExerciseFilterOptions, ExerciseFilters, FilteredExerciseStats, App
  */
 export function useFilteredExerciseStats() {
   const { session } = useSession();
+  const { prefs } = useUnitPreferences();
   const [filters, setFilters] = useState<ExerciseFilters>({
     timeRange: 'all_time',
   });
@@ -45,7 +47,11 @@ export function useFilteredExerciseStats() {
       setLoading(true);
       setError(null);
 
-      const data = await getFilteredExerciseStats(filters);
+      const data = await getFilteredExerciseStats({
+        ...filters,
+        preferredWeightUnit: prefs.weightUnit,
+        preferredDistanceUnit: prefs.distanceUnit,
+      });
 
       if (fetchGenerationRef.current !== generation) return;
 
@@ -69,7 +75,7 @@ export function useFilteredExerciseStats() {
     } finally {
       if (fetchGenerationRef.current === generation) setLoading(false);
     }
-  }, [session?.user.id, filters]);
+  }, [session?.user.id, filters, prefs.weightUnit, prefs.distanceUnit]);
 
   // Fetch relationships once on mount
   const fetchRelationships = useCallback(async () => {

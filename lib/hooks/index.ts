@@ -12,3 +12,4 @@ export { useExerciseSubmit } from './useExerciseSubmit';
 export { useProfileStats } from './useProfileStats';
 export { useFilteredExerciseStats } from './useFilteredExerciseStats';
 export { useCurrentWorkout } from './useCurrentWorkout';
+export { useUnitPreferences } from './useUnitPreferences';

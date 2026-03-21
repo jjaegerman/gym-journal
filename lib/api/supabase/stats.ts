@@ -77,6 +77,8 @@ export interface ExerciseFilters {
   modifiers?: string[];
   equipment?: string[];
   timeRange?: 'all_time' | '1_year' | '3_months' | '1_month';
+  preferredWeightUnit?: string;
+  preferredDistanceUnit?: string;
 }
 
 export interface AppliedFilters {
@@ -144,6 +146,8 @@ export async function getFilteredExerciseStats(
     p_modifiers: filters?.modifiers?.length ? filters.modifiers : null,
     p_equipment: filters?.equipment?.length ? filters.equipment : null,
     p_time_range: filters?.timeRange ?? 'all_time',
+    p_preferred_weight_unit: filters?.preferredWeightUnit ?? 'lbs',
+    p_preferred_distance_unit: filters?.preferredDistanceUnit ?? 'miles',
   });
 
   if (error) {

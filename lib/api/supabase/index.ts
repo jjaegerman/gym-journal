@@ -24,3 +24,6 @@ export * from './workouts';
 
 // Edge functions
 export * from './functions';
+
+// Profile operations
+export * from './profile';
