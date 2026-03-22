@@ -13,7 +13,8 @@ import { AppState } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
-import { View } from "tamagui";
+import { Image } from "react-native";
+import { View, YStack } from "tamagui";
 import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
 import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
@@ -66,7 +67,15 @@ export function Provider({
       >
         <View bg="$background" flex={1}>
           <TabProvider>
-            {loading ? null : session?.user ? ( // Or a loading spinner?
+            {loading ? (
+              <YStack flex={1} ai="center" jc="center">
+                <Image
+                  source={require("../assets/images/icon.png")}
+                  style={{ width: 200, height: 200, borderRadius: 44, overflow: "hidden" }}
+                  resizeMode="contain"
+                />
+              </YStack>
+            ) : session?.user ? (
               <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
             ) : (
               <Auth />
