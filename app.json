@@ -7,11 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "com.supabase.gym-journal",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0f0f10"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -67,7 +62,15 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0f0f10"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
