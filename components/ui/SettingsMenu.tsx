@@ -23,7 +23,7 @@ export function SettingsMenu() {
       <Popover.Trigger asChild>
         <Button chromeless mr="$3" icon={<Settings size={22} />} />
       </Popover.Trigger>
-      <Popover.Content bordered elevate p={0} overflow="hidden">
+      <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14">
         <YGroup width="100%" separator={<Separator />}>
           <YGroup.Item>
             <ListItem

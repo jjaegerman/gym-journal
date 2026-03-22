@@ -46,293 +46,58 @@ yarn upgrade:tamagui:canary    # Upgrade to canary
 yarn check:tamagui             # Validate Tamagui config
 ```
 
-## Tamagui Guidelines
+## Dev Best Practices
 
-### Use Tamagui components and props first
-Before writing custom styled layout, check if a Tamagui component already handles it. Common examples:
-- Use `ListItem` for interactive rows (has built-in `hoverTheme`, `pressTheme`)
-- Use `Popover` for small contextual menus (3–5 items); reserve `Sheet` for full panel content
-- Prefer built-in component props (`hoverTheme`, `pressTheme`, `bordered`, `elevate`) over equivalent custom styles — they are theme-aware and consistent by default
-- `Sheet.Overlay` requires explicit `opacity` (e.g. `opacity={0.5}`) — default renders fully opaque black
+- **No magic numbers** — use Tamagui `$N` size tokens for all sizing/spacing, never raw pixel values
+- **Tamagui components first** — check if a built-in component handles it before writing custom layout (e.g. `ListItem`, `Popover`, `Sheet`)
+- **Theme variables over custom styles** — use built-in props (`hoverTheme`, `pressTheme`, `bordered`, `elevate`) instead of inline styles
+- **Use `@/*` path aliases** for all imports
+- **Zod schemas must match across boundaries** — `supabase/functions/_shared/types.ts`, `types/exercise.ts`, and DB columns must stay in sync. DB uses snake_case; JSONB from RPCs uses camelCase.
+- **Don't call `supabase.rpc()` directly in components** — use `lib/api/supabase/` wrapper functions
+- **Don't add auth/session logic in components** — auth is enforced in `Provider.tsx`
+- **Unit preferences via `useUnitPreferences()` hook only** — never local `useState`
+- **Token reference**: `node -e "const c=require('.tamagui/tamagui.config.cjs'); console.log(c.config.tokens.size)"`
 
-### No magic numbers; use the token system
-All sizes and spacing must use `$N` tokens — never raw pixel values.
-- Size tokens: `$1`=20, `$2`=28, `$4`=44, `$6`=64, `$8`=84, `$10`=104, `$12`=144, `$14`=184, `$16`=224
-- Use tokens in: `p`, `m`, `gap`, `py`, `px`, `minWidth`, `width`, `size`, etc.
-- To look up token values: `node -e "const c=require('.tamagui/tamagui.config.cjs'); console.log(c.config.tokens.size)"`
+## Key Design Patterns
 
-## Architecture
-
-### File-Based Routing (Expo Router)
-- `app/` - Route screens using file system convention
-  - `app/_layout.tsx` - Root layout with auth providers
-  - `app/(tabs)/` - Tab navigation (index = record, history, stats, profile)
-  - `app/(tabs)/history.tsx` - Workout history with filtering
-  - `app/(tabs)/stats.tsx` - Exercise statistics with filtering
-  - `app/workout.tsx` - Workout details screen
-  - `app/reset-password.tsx` - Password reset flow
-
-### Component Organization
-- `components/` - Presentational components
-  - `components/features/` - Feature-specific components (auth, recording, profile, workout, stats)
-  - `components/features/stats/` - ProgressChart, PersonalRecords, RecentSessions, StatsFilters
-  - `components/features/workout/WorkoutFilters.tsx` - Workout history filter controls
-  - `components/ui/` - Reusable UI primitives (buttons, dialogs, form inputs)
-  - `components/ui/filters/` - FilterChip, FilterSheet, MoreFiltersSheet, DateRangePicker
-  - `components/shared/` - Cross-feature shared components
-  - `components/Provider.tsx` - Wraps app with Tamagui, Toast providers
-  - `components/WorkoutView.tsx` - Detailed workout display with exercise summaries
-  - `components/ExerciseLogs.tsx` - Dialog showing all sets for an exercise
-
-### Data Layer
-- `lib/api/supabase/` - Supabase API client and data fetching functions
-  - `client.ts` - Configured Supabase client with AsyncStorage session persistence
-  - `workouts.ts` - Workout CRUD operations
-  - `stats.ts` - Exercise statistics aggregation
-- `lib/hooks/` - React hooks for auth, workouts, sessions
-  - `useWorkoutHistory` - Workout list with filtering support
-  - `useFilteredExerciseStats` - Exercise stats with filter parameters; injects unit preferences automatically
-  - `useCurrentWorkout` - Active/most-recent workout state
-  - `useUnitPreferences` - Re-exports from `lib/context/UnitPreferencesContext`; backed by a single shared context instance — all consumers see the same state
-- `lib/storage/` - Local persistence (inputMode) via AsyncStorage
-- `lib/utils/` - Utility functions (date formatting, string manipulation)
-  - `lib/utils/filterCascade.ts` - Cascading filter option computation from relationship data
-
-### Type Safety
-- `types/` - Zod schemas and TypeScript types
-  - `types/exercise.ts` - Core domain types (Exercise, Set, Workout, WorkoutDetails)
-  - All database responses validated through Zod schemas with `.parse()`
-
-### Supabase Backend
-- `supabase/migrations/` - Database schema migrations (timestamp-ordered, immutable once applied)
-- `supabase/functions/` - Edge functions (Deno runtime)
-  - `supabase/functions/_shared/types.ts` - Shared Zod schemas for OpenAI structured output
-  - `supabase/functions/openai/` - Audio transcription + structured extraction endpoint
-
-## Key Architectural Patterns
-
-### Database Schema
-
-#### Core Tables
-
-**workouts** - Workout sessions (auto-created via 1-hour gap detection)
-- `id`, `user_id`, `datetime`, `started_at`, `ended_at`
-
-**sets** - Individual performance sets (event sourcing model)
-- `id`, `workout_id`, `submission_id` (audit trail)
-- `input` (TEXT, NOT NULL) - Raw spoken/typed exercise (source of truth)
-- `exercise_kind` (TEXT, NOT NULL) - Structured category enum (e.g. "Squat", "Running")
-- `modifiers` (JSONB, default `[]`) - Variant descriptors (e.g., `["Incline", "Close Grip"]`)
-- `equipment` (TEXT) - Equipment used
-- Strength: `weight`, `weight_unit` (TEXT, NOT NULL, DEFAULT 'lbs'), `repetitions`
-- Cardio: `distance`, `distance_unit` (TEXT, NOT NULL, DEFAULT 'miles'), `duration` (ISO 8601), `resistance_level`
-- `effort`, `datetime`
-- Unit defaulting is the **edge function's responsibility** — it always sends `weight_unit`/`distance_unit` using the user's preference as fallback. The DB DEFAULT is a last-resort safety net only.
-
-**log_submissions** - Immutable audit trail for raw input
-- `id`, `user_id`, `workout_id`, `submission_type` (audio/text)
-- `raw_text` - Original transcription (immutable)
-- `ai_response` (JSONB) - Full OpenAI structured output
-- `model_version`, `prompt_version`, `audio_duration_seconds`, `created_at`
-
-**profiles** - User profile data
-- `id` (FK to auth.users), `username`, `full_name`, `avatar_url`
-- `preferred_weight_unit` (TEXT, NOT NULL, DEFAULT 'lbs') - 'kg' or 'lbs'
-- `preferred_distance_unit` (TEXT, NOT NULL, DEFAULT 'miles') - 'km' or 'miles'
-
-#### Key Design Patterns
-
-- **Event Sourcing**: Raw input stored in `log_submissions` (immutable), sets derived with extracted metadata
-- **Workout Grouping**: 1-hour gap between sets = new workout (implemented in RPC functions)
-- **Stats Aggregation**: Groups by `{exercise_kind, modifiers, equipment}` for trend analysis
+- **Event Sourcing**: Raw input stored in `log_submissions` (immutable), `sets` derived with extracted metadata
+- **Workout Grouping**: 1-hour gap between sets = new workout (in RPC functions)
+- **Stats Aggregation**: Groups by `{exercise_kind, modifiers, equipment}` for trends
 - **RLS**: Direct table access revoked; all reads via SECURITY DEFINER functions using `auth.uid()`
-- **Empty Workout Cleanup**: `delete_set` auto-deletes workouts with 0 remaining sets; `get_user_workouts` uses INNER JOIN as defense-in-depth
+- **Empty Workout Cleanup**: `delete_set` auto-deletes workouts with 0 remaining sets
+- **Unit defaulting**: Edge function's responsibility — always sends `weight_unit`/`distance_unit` using user preference as fallback. DB DEFAULT is last-resort safety net only.
+- **Duration**: Stored as ISO 8601 text (e.g., "PT30M"). Use `parse_iso8601_duration_to_seconds()` for calculations.
 
-### OpenAI Integration Flow
-1. User records audio via Expo Audio (native iOS module fallback for better control)
-2. Audio sent to `supabase/functions/openai/index.ts`
-3. OpenAI transcribes with `gpt-4o-transcribe`, then extracts structured data via `responses.parse()` with Zod schema using `gpt-4.1`
-4. Edge function calls `add_submission_with_sets()` RPC to insert submission + sets transactionally
-5. Frontend refetches workout data
+## OpenAI Integration
 
-**Schema Definition**: `supabase/functions/_shared/types.ts` defines `OpenAILogDetails` schema with:
-- `input`: Exercise exactly as spoken (source of truth)
-- `exercise_kind`: Enum (ExerciseCategory) - broad category (e.g. "Squat", "Running")
-- `modifiers`: Array of applicable modifiers (Back, Incline, Pause, etc.)
-- `equipment`: Optional enum (Equipment) - ~30 equipment types
-- Strength metrics: weight, weightUnit, repetitions
-- Cardio metrics: distance, distanceUnit, duration, resistanceLevel
-- General: effort level
+1. User records audio → sent to `supabase/functions/openai/index.ts`
+2. `gpt-4o-transcribe` transcribes → `gpt-4.1` extracts structured data via `responses.parse()` with Zod schema
+3. Edge function calls `add_submission_with_sets()` RPC (atomic insert)
+4. Frontend refetches workout data
 
-**OpenAI API Requirements:**
-- Use `.nullable().optional()` instead of `.optional()` for optional fields
-- Enum values passed via schema, don't enumerate in prompt (token efficiency)
-- Prompts should be concise (target <100 tokens)
+**API Requirements:**
+- Use `.nullable().optional()` not just `.optional()` for optional fields
+- Enum values passed via schema — don't enumerate in prompt
+- Keep system prompts concise (<100 tokens)
 
-### Database Function Patterns
-PostgreSQL functions in `supabase/migrations/` follow these conventions:
+## Supabase Migrations
 
-1. **Function Signature Changes Require DROP**: Cannot use `CREATE OR REPLACE` when changing return types or parameters - must `DROP FUNCTION IF EXISTS` first
-2. **Function Overloading**: Multiple functions with same name but different parameter counts can conflict - drop old signatures explicitly
-3. **RPC Naming**: Functions called via `supabase.rpc('function_name', params)` from frontend
-4. **Return Types**: Use `RETURNS TABLE(...)` for result sets, `RETURNS void` for mutations
-
-### RPC Functions Reference
-
-#### Data Mutation
-
-**add_submission_with_sets(p_raw_text, p_submission_type, p_ai_response, p_logs, p_model_version, p_prompt_version, p_audio_duration_seconds)** → UUID
-- Primary function called by OpenAI edge function
-- Creates submission + all sets atomically in one transaction
-- Auto-groups into existing workout (if last set < 1 hour ago) or creates new workout
-- Skips sets missing required `input` or `exercise_kind` fields
-
-**add_set(p_submission_id, p_input, p_exercise_kind, p_modifiers, p_equipment, p_weight, p_weight_unit, p_repetitions, p_duration, p_effort, p_distance, p_distance_unit, p_resistance_level)** → UUID
-- Creates individual set entry linked to submission
-- Validates submission belongs to current user
-
-**delete_set(p_set_id)** → BOOLEAN
-- Deletes a set belonging to the authenticated user
-- Auto-deletes the parent workout if it has 0 remaining sets
-
-#### Data Retrieval
-
-**get_user_workouts(p_limit, p_offset, p_ascending)** → TABLE
-- Returns paginated workouts for authenticated user (all params have defaults; `p_limit NULL` = no cap)
-- Columns: `id`, `datetime`, `exerciseCount`, `setCount`, `mostRecentLog`, `exercisePreview` (JSONB, top 3 exercise_kinds), `totalVolume`, `totalDistance`, `distanceUnit`, `durationMinutes`
-- Ordered by datetime DESC (or ASC when `p_ascending = true`)
-
-**get_workout_details(p_workout_id)** → JSONB
-- Returns full workout with exercises and nested sets
-- Groups sets by `{exercise_kind, modifiers, equipment}`
-- Structure: `{ id, datetime, endTime, exercises: [{ id, exercise_kind, modifiers, equipment, sets: [{ id, input, weight, weightUnit, repetitions, ... }] }] }`
-
-**get_user_profile_stats()** → JSONB
-- Returns profile dashboard statistics
-- Keys: `total_workouts`, `total_hours`, `current_streak_days`, `longest_streak_days`
-- Recent/prev 4-week comparisons for trends
-
-#### Helper Functions
-
-**calculate_current_streak()** → INTEGER - Consecutive workout days (1-day grace period)
-**calculate_longest_streak()** → INTEGER - Longest consecutive streak in history
-**parse_iso8601_duration_to_seconds(duration_str)** → NUMERIC - Converts "PT30M" to seconds
-
-#### Filtering
-
-**filter_user_workouts(p_exercise_kinds, p_equipment, p_date_from, p_date_to, p_ascending, p_limit)** → TABLE
-- Returns workouts matching exercise_kind/equipment/date filters (all params optional/nullable)
-- Frontend always passes `p_limit: null` (returns all matches); date params unused by current UI
-- Same column shape as `get_user_workouts`
-
-**get_workout_filter_options()** → TABLE
-- Returns available exercise_kinds and equipment for the authenticated user's workouts
-
-**get_exercise_filter_options()** → TABLE
-- Returns available exercise_kinds, modifiers, and equipment for the authenticated user's exercises
-
-**get_filtered_exercise_stats(p_exercise_kinds, p_modifiers, p_equipment, p_time_range, p_preferred_weight_unit, p_preferred_distance_unit)** → TABLE
-- Returns filtered exercise stats with PRs and progress trends
-- Supports time range filtering (e.g., 4 weeks, 12 weeks, all-time)
-- Auto-selects most recent exercise if no filters passed
-- Converts each set's weight/distance to the preferred unit **before** aggregation — never aggregate mixed-unit values post-hoc
-- Returns `weight_unit`/`distance_unit` equal to the preferred unit params (not a mode of stored values)
-
-**get_filter_relationships()** → TABLE
-- Returns exercise_kind/equipment/modifiers combinations present in user data
-- Used for cascading filter UIs (selecting an exercise_kind narrows available equipment/modifiers)
-
-### Supabase Migration Workflow
-- Migrations are **timestamp-ordered** (YYYYMMDDHHmmss_description.sql)
-- Once applied to remote, migrations are **immutable** - create new migration to modify
-- Use `supabase db pull` to sync remote changes before creating new migrations
-- Use `supabase db push` to apply local migrations to remote
-- **Always test locally before pushing**:
-
-```bash
-# Apply and verify
-supabase migration up
-# psql is not in PATH — use Docker
-docker exec supabase_db_gym-journal psql -U postgres \
-  -c "SELECT proname, pronargs, pg_get_function_arguments(oid) FROM pg_proc WHERE proname = 'fn_name';"
-
-# Test edge functions locally
-supabase functions serve --env-file ./supabase/.env.local --no-verify-jwt --debug
-curl -X POST http://127.0.0.1:54321/functions/v1/openai \
-  -H 'Content-Type: application/json' \
-  -d '{"type":"text","text":"10 squats at 135 lbs"}'
-```
+- Timestamp-ordered, immutable once applied to remote
+- Changing function return types/params requires `DROP FUNCTION IF EXISTS` first
+- Always `GRANT EXECUTE ON FUNCTION ... TO authenticated` after creation
+- Test locally before pushing: `supabase migration up`
+- psql not in PATH — use: `docker exec supabase_db_gym-journal psql -U postgres -c "..."`
 
 ## Common Gotchas
 
-1. **Zod Schemas Must Match Across Boundaries**:
-   - `supabase/functions/_shared/types.ts` (OpenAI schema)
-   - `types/exercise.ts` (Frontend types)
-   - DB uses snake_case columns; JSONB returned from RPCs uses camelCase (e.g. `weightUnit`, `distanceUnit`, `resistanceLevel`)
+1. **Tamagui Sheet Ghost Press**: Closing sheets fire phantom touch events. Fix with `committedRef` guard — see `DateRangePicker.tsx`, `FilterSheet.tsx`, `MoreFiltersSheet.tsx` for reference. Also: don't attach handlers to both input callback AND `XStack.onPress` (double-fires).
 
-2. **PostgreSQL Function Updates**:
-   - Changing return columns or parameter types requires `DROP FUNCTION` first
-   - Function overloading conflicts resolved by dropping old signatures
-   - Always grant permissions after function creation: `GRANT EXECUTE ON FUNCTION ... TO authenticated`
+2. **Two `formatDuration` functions**: `lib/utils/date.ts` takes minutes (re-exported from barrel); `lib/utils/formatters.ts` takes seconds (direct import only). Don't mix them.
 
-3. **AsyncStorage Session Persistence**:
-   - Supabase client configured with AsyncStorage for session persistence
-   - Auth state persists across app restarts
+3. **Audio Recording**: iOS uses native module (`audio-session-manager`); Android/Web falls back to Expo Audio. Check `Platform.OS === "ios" && AudioSessionManager?.startRecording`.
 
-4. **OpenAI Structured Outputs**:
-   - Optional fields must use `.nullable().optional()` not just `.optional()`
-   - Enums automatically visible to model via schema - don't duplicate in prompt
-   - Keep system prompts concise to minimize token usage
+4. **`Sheet.Overlay`** requires explicit `opacity` (e.g. `opacity={0.5}`) — default renders fully opaque black.
 
-5. **Expo Router Navigation**:
-   - File-based routing - create files in `app/` to add routes
-   - Use `router.push()` from `expo-router` for navigation
-   - Typed routes enabled in `app.json` - use autocomplete for route names
+5. **`Popover` vs `Sheet`**: Use `Popover` for small contextual menus (3–5 items); reserve `Sheet` for full panel content.
 
-6. **Audio Recording Dual Strategy**:
-   - iOS: Custom native module (`audio-session-manager`) for better control
-   - Android/Web: Falls back to Expo Audio API
-   - Check `Platform.OS === "ios" && AudioSessionManager?.startRecording` for native path
-
-7. **TypeScript Path Aliases**:
-   - All imports use `@/*` prefix (configured in `tsconfig.base.json`)
-   - Example: `import { supabase } from "@/lib/api/supabase/client"`
-
-8. **Required Set Fields**:
-   - `input` and `exercise_kind` are NOT NULL in database
-   - `add_submission_with_sets` silently skips sets missing these fields
-   - `add_set` raises exception if these are NULL or empty
-
-9. **Duration Storage**:
-   - Stored as TEXT in ISO 8601 format (e.g., "PT30M", "PT1H15M30S")
-   - OpenAI returns ISO 8601 directly; stored without conversion
-   - Use `parse_iso8601_duration_to_seconds()` for calculations
-
-10. **Tamagui Sheet Ghost Press Pattern**:
-    - When a Tamagui `<Sheet>` closes, its dismiss animation fires phantom touch events at the original tap coordinates. These ghost presses land on whatever content is now under that position and can re-trigger handlers.
-    - Fix with a `committedRef = useRef(false)` guard in any interactive sheet:
-      - Set `committedRef.current = true` at the start of the selection handler
-      - Guard the handler: `if (committedRef.current) return`
-      - Reset **only when the sheet opens** (`useEffect` on `open` prop, trigger only when `open === true`)
-      - **Do NOT reset when `open` goes to `false`** — ghost presses fire during the close animation, after `open` is already `false`, so resetting on close lets them through
-      - For options that keep the sheet open (e.g. "Custom" date range): reset via `setTimeout(..., 400)` instead so the user can still change their selection within the same session
-    - Also avoid attaching the same handler to both an input component's change callback AND `XStack.onPress` — both fire on a single tap, causing double invocation. Affected pairs:
-      - `RadioGroup.onValueChange` + `XStack.onPress` → use only `XStack.onPress`
-      - `Checkbox.onCheckedChange` + `XStack.onPress` → use only `XStack.onPress`
-    - See `components/ui/filters/DateRangePicker.tsx`, `components/ui/filters/FilterSheet.tsx`, and `components/ui/filters/MoreFiltersSheet.tsx` for reference implementations.
-
-11. **Two `formatDuration` functions — different units, don't mix them**:
-   - `lib/utils/date.ts` exports `formatDuration(minutes: number)` — this is re-exported from the barrel (`lib/utils/index.ts`)
-   - `lib/utils/formatters.ts` exports `formatDurationSeconds(seconds: number)` — direct import only
-   - Never import `formatDurationSeconds` via the barrel (it isn't there); always import directly from `@/lib/utils/formatters`
-   - Consumers: `ProgressChart.tsx`, `StatsSummary.tsx`
-
-12. **Don't add session management inside components**:
-   - Auth is enforced at `components/Provider.tsx` — children only render when a valid session exists
-   - Components should call `lib/api/supabase/` functions directly (e.g., `getWorkoutDetails`, `getUserWorkouts`) — never call `supabase.rpc()` directly
-   - No `useEffect + onAuthStateChange` boilerplate needed inside screens or components
-
-13. **Unit preferences are context-backed — don't use local state**:
-   - `useUnitPreferences()` reads from `UnitPreferencesProvider` (mounted in `Provider.tsx` inside the session guard)
-   - All callers share one instance — updating prefs in the settings sheet instantly propagates to stats hooks and any other consumer
-   - Never create a local `useState` for unit preferences; always use the hook
+6. **`input` and `exercise_kind` are NOT NULL**: `add_submission_with_sets` silently skips sets missing these; `add_set` raises exception.
