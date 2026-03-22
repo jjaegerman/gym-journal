@@ -1,4 +1,5 @@
-import { useColorScheme } from "react-native";
+import { useEffect } from "react";
+import { useColorScheme, AppState } from "react-native";
 import { TamaguiProvider, type TamaguiProviderProps } from "tamagui";
 import { ToastProvider, ToastViewport } from "@tamagui/toast";
 import { CurrentToast } from "@/components/ui/feedback";
@@ -9,12 +10,11 @@ import {
   setSession as setSupabaseSession,
 } from "@/lib/api/supabase/auth";
 import { Auth } from "@/components/features/auth";
-import { AppState } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
-import { Image, StyleSheet, View as RNView } from "react-native";
 import { View } from "tamagui";
+import { SplashScreen } from "expo-router";
 import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
 import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
@@ -43,20 +43,6 @@ const createSessionFromUrl = async (url: string) => {
   return data.session;
 };
 
-const styles = StyleSheet.create({
-  loading: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#0f0f10",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logo: {
-    width: 200,
-    height: 200,
-    borderRadius: 44,
-    overflow: "hidden",
-  },
-});
 
 export function Provider({
   children,
@@ -64,6 +50,10 @@ export function Provider({
 }: Omit<TamaguiProviderProps, "config">) {
   const colorScheme = useColorScheme();
   const { session, loading } = useSession();
+
+  useEffect(() => {
+    if (!loading) SplashScreen.hideAsync();
+  }, [loading]);
 
   const url = Linking.useLinkingURL();
   if (url) createSessionFromUrl(url);
@@ -82,15 +72,7 @@ export function Provider({
       >
         <View bg="$background" flex={1}>
           <TabProvider>
-            {loading ? (
-              <RNView style={styles.loading}>
-                <Image
-                  source={require("../assets/images/icon.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </RNView>
-            ) : session?.user ? (
+            {loading ? null : session?.user ? (
               <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
             ) : (
               <Auth />
