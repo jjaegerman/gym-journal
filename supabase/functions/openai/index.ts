@@ -98,10 +98,10 @@ Deno.serve(async (req) => {
     const systemContent = `Extract structured workout data from user's transcribed audio.
 
 FIELD RULES:
-- input: The exercise exactly as spoken (source of truth). Examples:
-  - "back squat"
-  - "incline dumbbell press"
-  - "Romanian deadlift"
+- input: The full exercise entry exactly as spoken, including reps, weight, and all details. Examples:
+  - "8 reps of back squat at 225 pounds"
+  - "incline dumbbell press 3 sets of 10 at 50 lbs"
+  - "Romanian deadlift 185 for 12"
 - exercise_kind: Best matching category from schema enum
 - modifiers: Array of applicable modifiers from schema enum. Examples:
   - "back squat" → ["Back"]
@@ -115,7 +115,8 @@ FIELD RULES:
 
 LOGIC:
 If repetitions not specified but sets are, assume repetitions equal sets and sets equals 1.
-If both specified, repeat item with same repetitions for each set.${context ? buildContextBlock(context) : ""}`;
+If both specified, repeat item with same repetitions for each set.
+When expanding sets, each item's input should describe that single set (e.g. "3 sets of 10 bench press at 185 lbs" → each item's input is "10 reps bench press at 185 lbs").${context ? buildContextBlock(context) : ""}`;
 
     const structured = await openai.responses.parse({
       model: "gpt-4.1",
