@@ -165,16 +165,11 @@ export function RecordingScreen() {
           // Active workout layout: scrollable exercise list + pinned input
           <>
             <ScrollView
-              contentContainerStyle={{
-                paddingTop: 16,
-                paddingBottom: 16,
-                paddingHorizontal: 16,
-              }}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
               style={{ flex: 1 }}
             >
-              <View maxW={600} width="100%" mx="auto">
+              <View pt="$8" pb="$4" px="$4" maxW={600} width="100%" mx="auto">
                 <H5 paddingInline="$3" mb="$3" opacity={0.7} fontWeight="600">
                   Current Workout{workoutDuration ? `  ·  ${workoutDuration}` : ""}
                 </H5>
