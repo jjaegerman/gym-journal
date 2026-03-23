@@ -108,7 +108,7 @@ FIELD RULES:
   - "pause front squat" → ["Front", "Pause"]
   - "incline close grip bench" → ["Incline", "Close Grip"]
   DO NOT include equipment in modifiers
-- equipment: Main equipment used (use schema enum values)
+- equipment: Only set if explicitly stated by the user. Leave null if not specified.
 - resistanceLevel: For treadmill incline (%), bike resistance, or rower damper
 - duration: ISO 8601 format
 - weightUnit / distanceUnit: Only set if explicitly stated by the user. Leave null if not specified.
