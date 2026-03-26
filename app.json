@@ -22,7 +22,7 @@
             ]
           }
         ],
-        "UIBackgroundModes": ["audio", "voip"]
+
       }
     },
     "android": {

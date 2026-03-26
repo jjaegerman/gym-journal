@@ -2,10 +2,7 @@ import { useState } from "react";
 import { Platform, Image, TouchableOpacity } from "react-native";
 import { supabase } from "@/lib/api/supabase/client";
 import { useToastController } from "@tamagui/toast";
-import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import * as Crypto from "expo-crypto";
-import Constants from "expo-constants";
 
 WebBrowser.maybeCompleteAuthSession();
 
