@@ -47,6 +47,7 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
   return (
     <ListItem
       size="$4"
+      $gtXs={{ size: "$6" }}
       hoverTheme
       pressTheme
       title={formattedDate}

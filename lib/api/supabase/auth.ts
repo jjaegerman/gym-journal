@@ -34,6 +34,13 @@ export async function signOut() {
 }
 
 /**
+ * Permanently delete the current user's account and all associated data
+ */
+export async function deleteAccount() {
+  return supabase.functions.invoke("delete-account");
+}
+
+/**
  * Update the current user's password
  */
 export async function updatePassword(newPassword: string) {

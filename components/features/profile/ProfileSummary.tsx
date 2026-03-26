@@ -75,7 +75,7 @@ export function ProfileSummary() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <YStack p="$4" gap="$4" maxW={800} width="100%" self="center">
+      <YStack p="$4" gap="$4" maxW={800} $gtXs={{ maxW: 1000 }} width="100%" self="center">
         {/* Section 1: All-Time */}
         <YStack gap="$3">
           <H3>All-Time</H3>
@@ -92,9 +92,6 @@ export function ProfileSummary() {
             value={`${stats.total_hours}h`}
             icon={<Clock size={24} />}
           />
-        </XStack>
-
-        <XStack gap="$3" flexWrap="wrap">
           <StatCard
             title="Current Streak"
             value={`${stats.current_streak_days} days`}
@@ -141,9 +138,6 @@ export function ProfileSummary() {
               />
             }
           />
-        </XStack>
-
-        <XStack gap="$3" flexWrap="wrap">
           <StatCard
             title="Avg Duration"
             value={`${Math.round(stats.recent_avg_duration_minutes)} min`}

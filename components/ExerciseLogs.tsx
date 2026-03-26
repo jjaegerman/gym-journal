@@ -135,6 +135,7 @@ export const ExerciseLogs = ({
                         iconAfter={
                           <Button
                             size="$1.5"
+                            $gtXs={{ size: "$3" }}
                             circular
                             chromeless
                             color="$red9"
@@ -156,6 +157,7 @@ export const ExerciseLogs = ({
                     t="$2.5"
                     position="absolute"
                     size="$2"
+                    $gtXs={{ size: "$3" }}
                     circular
                     icon={X}
                   />

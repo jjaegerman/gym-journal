@@ -14,7 +14,7 @@ import {
 
 function ContentWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <YStack maxW={600} width="90%" mx="auto">
+    <YStack maxW={600} $gtXs={{ maxW: 860 }} width="90%" mx="auto">
       {children}
     </YStack>
   );
@@ -160,7 +160,7 @@ export function WorkoutHistoryList({
       renderSectionHeader={({ section }) => (
         <YStack bg="$background">
           <ContentWrapper>
-            <H4 py="$2" px="$3" fontWeight="700">
+            <H4 py="$2" px="$3" fontWeight="700" $gtXs={{ fontSize: "$9" }}>
               {section.title}
             </H4>
           </ContentWrapper>
@@ -174,7 +174,7 @@ export function WorkoutHistoryList({
           <ContentWrapper>
             <YStack pb="$3">
               {showWeekLabel && (
-                <H6 px="$3" py="$1" opacity={0.6} fontWeight="500">
+                <H6 px="$3" py="$1" opacity={0.6} fontWeight="500" $gtXs={{ fontSize: "$6" }}>
                   {weekGroup.weekLabel}
                 </H6>
               )}

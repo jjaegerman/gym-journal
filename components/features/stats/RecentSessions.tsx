@@ -35,6 +35,7 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
                 title={session.summary}
                 subTitle={formattedDate}
                 size="$4"
+                $gtXs={{ size: "$6" }}
                 paddingBlock="$3"
                 iconAfter={ChevronRight}
                 hoverTheme

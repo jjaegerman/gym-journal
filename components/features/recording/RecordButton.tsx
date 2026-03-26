@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { selectionAsync } from "expo-haptics";
 import { useToastController } from "@tamagui/toast";
-import { View, useTheme, Button, Text } from "tamagui";
+import { View, useTheme, Button, Text, useMedia, getTokenValue } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
 import Animated, {
   Extrapolation,
@@ -14,8 +14,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { formatStopwatch } from "@/lib/utils/date";
 
-const RECORD_BUTTON_SIZE = 60;
-const RECORD_BUTTON_BACKGROUND_SIZE = RECORD_BUTTON_SIZE + 16;
 const RECORDING_INDICATOR_SCALE = 0.5;
 const SPRING_SHORT_CONFIG: WithSpringConfig = {
   stiffness: 120,
@@ -39,6 +37,11 @@ export const RecordButton = ({
 }) => {
   const theme = useTheme();
   const toast = useToastController();
+  const media = useMedia();
+  const buttonSize = getTokenValue(media.gtXs ? "$8" : "$6", "size");
+  const bgSize = buttonSize + getTokenValue("$1", "size");
+  const timerHeight = getTokenValue("$3", "size");
+  const cancelHeight = getTokenValue("$3", "size");
 
   const recordBorderColor = theme.color.val;
   const recordIndicatorColor = theme.accent9.val;
@@ -56,7 +59,7 @@ export const RecordButton = ({
     borderRadius: interpolate(
       scale.value,
       [1, RECORDING_INDICATOR_SCALE],
-      [RECORD_BUTTON_SIZE / 2, 8],
+      [buttonSize / 2, 8],
       Extrapolation.CLAMP,
     ),
     transform: [{ scale: scale.value }],
@@ -90,11 +93,12 @@ export const RecordButton = ({
     <View style={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
       {/* Timer positioned above button - always takes up space */}
       <View
-        style={{ height: 32, alignItems: "center", justifyContent: "center" }}
+        style={{ height: timerHeight, alignItems: "center", justifyContent: "center" }}
       >
         {isRecording && (
           <Text
             fontSize="$8"
+            $gtXs={{ fontSize: "$10" }}
             fontWeight="bold"
             color="$color"
             animation="quick"
@@ -111,15 +115,22 @@ export const RecordButton = ({
       {/* Button container with fixed positioning */}
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <View
-          style={[
-            styles.recordButtonBackground,
-            { borderColor: recordBorderColor },
-          ]}
+          style={{
+            height: bgSize,
+            width: bgSize,
+            borderRadius: bgSize / 2,
+            borderWidth: 2,
+            borderColor: recordBorderColor,
+          }}
         />
         <Pressable style={styles.recordButton} onPress={handlePress}>
           <Animated.View
             style={[
-              styles.recordIndicator,
+              {
+                height: buttonSize,
+                width: buttonSize,
+                borderRadius: buttonSize / 2,
+              },
               { backgroundColor: recordIndicatorColor },
               recordIndicatorAnimation,
             ]}
@@ -129,12 +140,13 @@ export const RecordButton = ({
 
       {/* Cancel button - always takes up space */}
       <View
-        style={{ height: 36, alignItems: "center", justifyContent: "center" }}
+        style={{ height: cancelHeight, alignItems: "center", justifyContent: "center" }}
       >
         {isRecording && cancelCallback && (
           <Button
             icon={X}
             size="$2"
+            $gtXs={{ size: "$3" }}
             circular
             onPress={handleCancel}
             chromeless
@@ -152,19 +164,6 @@ export const RecordButton = ({
 };
 
 const styles = StyleSheet.create({
-  recordIndicator: {
-    borderRadius: RECORD_BUTTON_SIZE / 2,
-    height: RECORD_BUTTON_SIZE,
-    width: RECORD_BUTTON_SIZE,
-  },
-
-  recordButtonBackground: {
-    borderRadius: RECORD_BUTTON_BACKGROUND_SIZE / 2,
-    height: RECORD_BUTTON_BACKGROUND_SIZE,
-    width: RECORD_BUTTON_BACKGROUND_SIZE,
-    borderWidth: 2,
-  },
-
   recordButton: {
     position: "absolute",
   },

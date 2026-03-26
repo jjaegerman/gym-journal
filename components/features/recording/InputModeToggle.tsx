@@ -1,4 +1,4 @@
-import { Button } from "tamagui";
+import { Button, useMedia, getTokenValue } from "tamagui";
 import { Mic, Keyboard } from "@tamagui/lucide-icons";
 import type { InputMode } from "@/lib/storage/inputMode";
 
@@ -13,6 +13,8 @@ export function InputModeToggle({
   onModeChange,
   disabled,
 }: InputModeToggleProps) {
+  const media = useMedia();
+  const iconSize = getTokenValue(media.gtXs ? "$2" : "$1.5", "size");
   const handleToggle = () => {
     onModeChange(mode === "voice" ? "text" : "voice");
   };
@@ -20,6 +22,7 @@ export function InputModeToggle({
   return (
     <Button
       size="$4"
+      $gtXs={{ size: "$6" }}
       circular
       variant="outlined"
       borderColor="$color5"
@@ -27,7 +30,7 @@ export function InputModeToggle({
       onPress={handleToggle}
       disabled={disabled}
       opacity={disabled ? 0.5 : 1}
-      icon={mode === "voice" ? <Keyboard size={24} /> : <Mic size={24} />}
+      icon={mode === "voice" ? <Keyboard size={iconSize} /> : <Mic size={iconSize} />}
     />
   );
 }

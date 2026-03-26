@@ -1,4 +1,4 @@
-import { YStack, Text, Separator, H5 } from "tamagui";
+import { YStack, Text, Separator, H5, useMedia, getTokenValue } from "tamagui";
 import { Dumbbell } from "@tamagui/lucide-icons";
 import { FilteredExerciseStats } from "@/lib/hooks/useFilteredExerciseStats";
 import { StatsSummary } from "./StatsSummary";
@@ -21,12 +21,14 @@ export function StatsDetailView({
 }: StatsDetailViewProps) {
   const hasData = stats.totalWorkouts > 0;
   const showEmptyPrompt = !hasData && stats.displayName === "No exercises";
+  const media = useMedia();
+  const emptyIconSize = getTokenValue(media.gtXs ? "$7" : "$5", "size");
 
   return (
     <YStack gap="$4">
       {hasData ? (
         <>
-          <H5 opacity={0.7} fontWeight="600">
+          <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
             Summary
           </H5>
           <StatsSummary stats={stats} />
@@ -35,7 +37,7 @@ export function StatsDetailView({
             <>
               <Separator />
               <YStack gap="$2">
-                <H5 opacity={0.7} fontWeight="600">
+                <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
                   Progress
                 </H5>
                 <ProgressChart
@@ -71,7 +73,7 @@ export function StatsDetailView({
         </>
       ) : showEmptyPrompt ? (
         <YStack items="center" justify="center" py="$8" gap="$4">
-          <Dumbbell size={48} color="$gray8" />
+          <Dumbbell size={emptyIconSize} color="$gray8" />
           <YStack items="center" gap="$2">
             <Text fontSize="$5" fontWeight="600" color="$gray11">
               No exercises found

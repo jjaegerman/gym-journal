@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, ListItem, YGroup, Separator, Button } from "tamagui";
+import { View, ListItem, YGroup, Separator, Button, useMedia, getTokenValue } from "tamagui";
 import { Expand } from "@tamagui/lucide-icons";
 import { Exercise } from "@/types/exercise";
 import {
@@ -27,6 +27,8 @@ export function ExerciseList({
 }: ExerciseListProps) {
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const media = useMedia();
+  const exerciseIconSize = getTokenValue(media.gtXs ? "$2" : "$1.5", "size");
 
   return (
     <>
@@ -57,6 +59,7 @@ export function ExerciseList({
                 title={title}
                 subTitle={description}
                 size="$4"
+                $gtXs={{ size: "$6" }}
                 paddingBlock="$3"
                 hoverTheme
                 pressTheme
@@ -64,7 +67,7 @@ export function ExerciseList({
                 borderColor={isSelected ? "$blue7" : undefined}
                 icon={
                   <View>
-                    {getExerciseIcon(exercise.exercise_kind, 24, isSelected ? "$blue9" : iconColor)}
+                    {getExerciseIcon(exercise.exercise_kind, exerciseIconSize, isSelected ? "$blue9" : iconColor)}
                   </View>
                 }
                 iconAfter={

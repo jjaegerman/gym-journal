@@ -157,7 +157,7 @@ function ProgressChartContent({
   const DOT_RADIUS = 4;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
   const Y_LABEL_WIDTH = 40;
-  const outerWidth = Math.min(screenWidth * 0.9, 600);
+  const outerWidth = screenWidth * 0.9;
   const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
   const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
@@ -195,6 +195,7 @@ function ProgressChartContent({
             <Button
               key={m}
               size="$2"
+              $gtXs={{ size: "$5" }}
               chromeless={metric !== m}
               bg={metric === m ? "$color3" : "$gray3"}
               onPress={() => setMetric(m)}
@@ -203,6 +204,7 @@ function ProgressChartContent({
             >
               <Text
                 fontSize="$2"
+                $gtXs={{ fontSize: "$4" }}
                 fontWeight={metric === m ? "600" : "400"}
                 color={metric === m ? "$color11" : "$gray11"}
               >

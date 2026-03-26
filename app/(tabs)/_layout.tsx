@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { useWindowDimensions } from "react-native";
 import { useTheme } from "tamagui";
 import { BarChart3, List, Plus, User } from "@tamagui/lucide-icons";
 import { useTabContext } from "@/lib/context/TabContext";
@@ -7,6 +8,8 @@ import { SettingsMenu } from "@/components/ui/SettingsMenu";
 export default function TabLayout() {
   const theme = useTheme();
   const { tabsDisabled } = useTabContext();
+  const { width } = useWindowDimensions();
+  const isWide = width > 660;
 
   return (
     <Tabs
@@ -19,6 +22,8 @@ export default function TabLayout() {
           backgroundColor: theme.color2.val,
           borderTopColor: theme.color8.val,
         },
+        tabBarLabelStyle: { fontSize: isWide ? 14 : 10, marginTop: isWide ? 2 : 0 },
+        tabBarIconStyle: { marginBottom: isWide ? -4 : 0 },
         headerStyle: {
           backgroundColor: theme.color2.val,
           borderBottomColor: theme.color8.val,

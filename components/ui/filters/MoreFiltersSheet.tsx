@@ -8,6 +8,8 @@ import {
   Checkbox,
   ScrollView,
   Separator,
+  useMedia,
+  getTokenValue,
 } from "tamagui";
 import { Check } from "@tamagui/lucide-icons";
 
@@ -33,6 +35,8 @@ export function MoreFiltersSheet({
   onOpenChange,
 }: MoreFiltersSheetProps) {
   const committedRef = useRef(false);
+  const media = useMedia();
+  const checkIconSize = getTokenValue(media.gtXs ? "$1.5" : "$1", "size");
 
   useEffect(() => {
     if (open) committedRef.current = false;
@@ -105,7 +109,7 @@ export function MoreFiltersSheet({
                           size="$4"
                         >
                           <Checkbox.Indicator>
-                            <Check size={16} />
+                            <Check size={checkIconSize} />
                           </Checkbox.Indicator>
                         </Checkbox>
                         <Text fontSize="$4">{option}</Text>
