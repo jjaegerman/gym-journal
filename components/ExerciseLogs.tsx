@@ -4,6 +4,7 @@ import {
   Button,
   Dialog,
   ListItem,
+  Paragraph,
   Separator,
   Spinner,
   Unspaced,
@@ -109,6 +110,8 @@ export const ExerciseLogs = ({
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
               position="absolute"
               t="$10"
+              l="$4"
+              r="$4"
             >
               <View gap="$4" p="$4">
                 <Dialog.Title>
@@ -130,8 +133,13 @@ export const ExerciseLogs = ({
                     <YGroup.Item key={set.id}>
                       <ListItem
                         title={setDescription(set)}
-                        subTitle={set.input ? `"${set.input}"` : undefined}
-                        subTitleProps={{ fontStyle: "italic", color: "$color9" }}
+                        subTitle={
+                          set.input ? (
+                            <Paragraph size="$2" fontStyle="italic" color="$color9">
+                              "{set.input}"
+                            </Paragraph>
+                          ) : undefined
+                        }
                         iconAfter={
                           <Button
                             size="$1.5"
