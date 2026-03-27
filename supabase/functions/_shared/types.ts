@@ -32,6 +32,7 @@ export const ExerciseKind = z.enum([
   // Isolation - Lower
   "Leg Extension",
   "Leg Curl",
+  "Leg Press",
   "Calf Raise",
   "Hip Adduction",
   "Hip Abduction",
