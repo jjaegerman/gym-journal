@@ -1,5 +1,5 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { ListItem } from "tamagui";
+import { ListItem, ListItemSubtitle } from "tamagui";
 import { Workout } from "@/types/exercise";
 import { formatRelativeDate, formatDuration } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
   // Show up to 3 exercises with a visual separator
   if (workout.exercisePreview && workout.exercisePreview.length > 0) {
     const previewText = workout.exercisePreview.slice(0, 3).join(", ");
-    secondLineParts.push(`• ${previewText}`);
+    secondLineParts.push(previewText);
   }
 
   // Add distance if present
@@ -41,8 +41,11 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
 
   const secondLine = secondLineParts.join(" • ");
 
-  const subtitle =
-    secondLine.length > 0 ? `${firstLine}\n${secondLine}` : firstLine;
+  const subtitle = (
+    <ListItemSubtitle ellipse={false} numberOfLines={0}>
+      {secondLine.length > 0 ? `${firstLine}\n${secondLine}` : firstLine}
+    </ListItemSubtitle>
+  );
 
   return (
     <ListItem
