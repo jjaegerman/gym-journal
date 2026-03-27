@@ -5,16 +5,23 @@ import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
 import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
 import { ExerciseList } from "./shared/ExerciseList";
 import { AddSetsSheet } from "./features/workout/AddSetsSheet";
+import { LoadingState } from "./ui/feedback/LoadingState";
 
 export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
+  const [loading, setLoading] = useState(true);
   const [addSetsOpen, setAddSetsOpen] = useState(false);
 
   const fetchWorkout = async () => {
     try {
+      setLoading(true);
       const data = await getWorkoutDetails(workoutId);
       setWorkout(WorkoutDetailsSchema.parse(data));
-    } catch {}
+    } catch (err) {
+      console.error("Failed to load workout", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -25,6 +32,10 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   const workoutStart = workout?.datetime;
   const showEndTime =
     endTime && workoutStart && endTime.getTime() !== workoutStart.getTime();
+
+  if (loading) {
+    return <LoadingState />;
+  }
 
   return (
     <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
