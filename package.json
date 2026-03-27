@@ -70,6 +70,7 @@
     "@babel/core": "^7.24.6",
     "@expo/metro-config": "^54.0.9",
     "@expo/metro-runtime": "^6.1.2",
+    "@react-native-community/cli": "latest",
     "@tamagui/babel-plugin": "^1.135.7",
     "@tamagui/cli": "^1.135.7",
     "@tamagui/metro-plugin": "^1.135.7",

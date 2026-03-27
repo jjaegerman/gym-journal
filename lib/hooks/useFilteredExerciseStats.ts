@@ -69,7 +69,7 @@ export function useFilteredExerciseStats() {
       }
     } catch (err) {
       if (fetchGenerationRef.current !== generation) return;
-      console.error("Error fetching filtered exercise stats:", err);
+      console.error('Error fetching filtered exercise stats:', err);
       setError(err as Error);
       setStats(null);
     } finally {
@@ -93,18 +93,20 @@ export function useFilteredExerciseStats() {
         equipment: options.equipment,
       });
     } catch (err) {
-      console.error("Error fetching filter relationships:", err);
+      console.error('Error fetching filter relationships:', err);
     }
   }, [session?.user.id]);
 
   fetchStatsRef.current = fetchStats;
 
+  const userId = session?.user.id;
+
   // Fetch relationships once on mount
   useEffect(() => {
-    if (session) {
+    if (userId) {
       fetchRelationships();
     }
-  }, [session, fetchRelationships]);
+  }, [userId, fetchRelationships]);
 
   // Compute cascaded options when filters change (no API call)
   useEffect(() => {
@@ -124,13 +126,13 @@ export function useFilteredExerciseStats() {
   }, [relationships, filters.exercise_kinds, filters.equipment, filters.modifiers]);
 
   useEffect(() => {
-    if (session) {
+    if (userId) {
       fetchStats();
     } else {
       setStats(null);
       setLoading(false);
     }
-  }, [session, fetchStats]);
+  }, [userId, fetchStats]);
 
   const stableRefetch = useCallback(() => {
     return fetchStatsRef.current?.() ?? Promise.resolve();

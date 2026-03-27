@@ -15,7 +15,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_n6I0jso31I6gt3P2z0KqzQ_4Ld2L8DU";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: Platform.OS === 'web' ? undefined : AsyncStorage, // Use default localStorage on web
-    autoRefreshToken: true,
+    autoRefreshToken: false,
     persistSession: true,
     detectSessionInUrl: Platform.OS === 'web', // Enable OAuth callback detection on web
   },

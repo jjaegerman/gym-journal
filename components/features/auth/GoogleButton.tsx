@@ -46,8 +46,6 @@ export default function GoogleButton({ height }: { height: number }) {
     setLoading(true);
 
     try {
-      console.log("Can use native Google Sign-In:", canUseNativeGoogleSignIn);
-
       if (canUseNativeGoogleSignIn) {
         // Native Google Sign-In SDK (dev build only)
         await GoogleSignin.hasPlayServices();
@@ -89,8 +87,6 @@ export default function GoogleButton({ height }: { height: number }) {
         // Use custom scheme for stable redirect
         const redirectTo = "com.supabase.gym-journal://";
 
-        console.log("Native redirect URI:", redirectTo);
-
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
@@ -108,15 +104,11 @@ export default function GoogleButton({ height }: { height: number }) {
           return;
         }
 
-        console.log("OAuth URL:", data.url);
-
         // Open the OAuth URL in an in-app browser
         const result = await WebBrowser.openAuthSessionAsync(
           data.url,
-          redirectTo
+          redirectTo,
         );
-
-        console.log("WebBrowser result:", result);
 
         if (result.type !== "success") {
           setLoading(false);
@@ -156,35 +148,22 @@ export default function GoogleButton({ height }: { height: number }) {
         setLoading(false);
       }
     } catch (error: any) {
-      console.error("Sign-in error caught:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      console.error("Full error:", JSON.stringify(error, null, 2));
-
       let errorMessage = "An error occurred during sign in";
 
-      // Handle native SDK errors if applicable
       if (canUseNativeGoogleSignIn && statusCodes) {
-        console.log("Checking status codes...", statusCodes);
         if (error.code === statusCodes.IN_PROGRESS) {
           errorMessage = "Sign in already in progress";
         } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
           errorMessage = "Google Play Services not available";
         } else if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-          // User cancelled, don't show error
-          console.log("User cancelled sign-in");
           setLoading(false);
           return;
         } else {
-          errorMessage = `Sign in failed: ${
-            error.message || error.code || "Unknown error"
-          }`;
+          errorMessage = `Sign in failed: ${error.message || error.code || "Unknown error"}`;
         }
       } else {
         errorMessage = error.message || errorMessage;
       }
-
-      console.error("Showing error toast:", errorMessage);
 
       toast.show(errorMessage, {
         duration: 5000,

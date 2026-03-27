@@ -1,14 +1,10 @@
 import { useEffect } from "react";
-import { useColorScheme, AppState } from "react-native";
+import { useColorScheme } from "react-native";
 import { TamaguiProvider, type TamaguiProviderProps } from "tamagui";
 import { ToastProvider, ToastViewport } from "@tamagui/toast";
 import { CurrentToast } from "@/components/ui/feedback";
 import { config } from "../tamagui.config";
-import {
-  startAutoRefresh,
-  stopAutoRefresh,
-  setSession as setSupabaseSession,
-} from "@/lib/api/supabase/auth";
+import { setSession as setSupabaseSession } from "@/lib/api/supabase/auth";
 import { Auth } from "@/components/features/auth";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
@@ -18,18 +14,7 @@ import { SplashScreen } from "expo-router";
 import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
 import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
-
-// Tells Supabase Auth to continuously refresh the session automatically if
-// the app is in the foreground. When this is added, you will continue to receive
-// `onAuthStateChange` events with the `TOKEN_REFRESHED` or `SIGNED_OUT` event
-// if the user's session is terminated. This should only be registered once.
-AppState.addEventListener("change", (state) => {
-  if (state === "active") {
-    startAutoRefresh();
-  } else {
-    stopAutoRefresh();
-  }
-});
+import { SessionProvider } from "@/lib/context/SessionContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -44,11 +29,7 @@ const createSessionFromUrl = async (url: string) => {
 };
 
 
-export function Provider({
-  children,
-  ...rest
-}: Omit<TamaguiProviderProps, "config">) {
-  const colorScheme = useColorScheme();
+function AppContent({ children }: { children: React.ReactNode }) {
   const { session, loading } = useSession();
 
   useEffect(() => {
@@ -57,6 +38,25 @@ export function Provider({
 
   const url = Linking.useLinkingURL();
   if (url) createSessionFromUrl(url);
+
+  return (
+    <View bg="$background" flex={1}>
+      <TabProvider>
+        {loading ? null : session?.user ? (
+          <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
+        ) : (
+          <Auth />
+        )}
+      </TabProvider>
+    </View>
+  );
+}
+
+export function Provider({
+  children,
+  ...rest
+}: Omit<TamaguiProviderProps, "config">) {
+  const colorScheme = useColorScheme();
 
   return (
     <TamaguiProvider config={config} defaultTheme={"dark"} {...rest}>
@@ -70,15 +70,9 @@ export function Provider({
           ]
         }
       >
-        <View bg="$background" flex={1}>
-          <TabProvider>
-            {loading ? null : session?.user ? (
-              <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
-            ) : (
-              <Auth />
-            )}
-          </TabProvider>
-        </View>
+        <SessionProvider>
+          <AppContent>{children}</AppContent>
+        </SessionProvider>
         <CurrentToast />
         <ToastViewport top="$8" left={0} right={0} />
       </ToastProvider>
