@@ -27,7 +27,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
     endTime && workoutStart && endTime.getTime() !== workoutStart.getTime();
 
   return (
-    <YStack width="90%" maxW={600} $gtXs={{ maxW: 860 }} gap="$4" mx="auto" pb="$4" pt="$4">
+    <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
       <H5 paddingInline="$3" opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
         {workout?.datetime.toLocaleString(undefined, {
           month: "long",

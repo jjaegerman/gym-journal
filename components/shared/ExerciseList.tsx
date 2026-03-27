@@ -73,9 +73,10 @@ export function ExerciseList({
                 iconAfter={
                   <Button
                     size="$2"
+                    $gtXs={{ size: "$4" }}
                     chromeless
                     circular
-                    icon={Expand}
+                    icon={<Expand size="$1.5" $gtXs={{ size: "$2" }} />}
                     onPress={() => {
                       setFocusedExerciseIdx(i);
                       setDialogOpen(true);

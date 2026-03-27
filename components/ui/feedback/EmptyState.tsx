@@ -19,7 +19,7 @@ export function EmptyState({ title, description, icon }: EmptyStateProps) {
         {title}
       </Text>
       {description && (
-        <Text fontSize="$3" opacity={0.5} text="center" maxW={300}>
+        <Text fontSize="$3" opacity={0.5} text="center" width="80%">
           {description}
         </Text>
       )}

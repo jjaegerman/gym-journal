@@ -56,16 +56,18 @@ export function SettingsMenu() {
       <Popover.Trigger asChild>
         <Button chromeless mr="$3" icon={<Settings size={22} />} />
       </Popover.Trigger>
-      <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14">
+      <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14" $gtXs={{ minWidth: "$16" }}>
         <YGroup width="100%" separator={<Separator />}>
           <YGroup.Item>
             <ListItem
               hoverTheme
               pressTheme
               cursor="pointer"
-              icon={Ruler}
+              icon={<Ruler size="$1.5" $gtXs={{ size: "$2" }} />}
               title="Unit Preferences"
-
+              size="$4"
+              $gtXs={{ size: "$5" }}
+              px="$4"
               onPress={() => handleAction(() => setUnitSheetOpen(true))}
             />
           </YGroup.Item>
@@ -74,9 +76,11 @@ export function SettingsMenu() {
               hoverTheme
               pressTheme
               cursor="pointer"
-              icon={MessageSquare}
+              icon={<MessageSquare size="$1.5" $gtXs={{ size: "$2" }} />}
               title="Give Feedback"
-
+              size="$4"
+              $gtXs={{ size: "$5" }}
+              px="$4"
               onPress={() =>
                 handleAction(() => {
                   if (FEEDBACK_URL) Linking.openURL(FEEDBACK_URL);
@@ -89,9 +93,11 @@ export function SettingsMenu() {
               hoverTheme
               pressTheme
               cursor="pointer"
-              icon={HelpCircle}
+              icon={<HelpCircle size="$1.5" $gtXs={{ size: "$2" }} />}
               title="Get Help"
-
+              size="$4"
+              $gtXs={{ size: "$5" }}
+              px="$4"
               onPress={() =>
                 handleAction(() => {
                   if (HELP_URL) Linking.openURL(HELP_URL);
@@ -104,11 +110,13 @@ export function SettingsMenu() {
               hoverTheme
               pressTheme
               cursor="pointer"
-              icon={LogOut}
+              icon={<LogOut size="$1.5" $gtXs={{ size: "$2" }} />}
               title="Sign Out"
               color="$red10"
               iconAfter={undefined}
-
+              size="$4"
+              $gtXs={{ size: "$5" }}
+              px="$4"
               onPress={() => handleAction(() => signOut())}
             />
           </YGroup.Item>
@@ -117,11 +125,13 @@ export function SettingsMenu() {
               hoverTheme
               pressTheme
               cursor="pointer"
-              icon={Trash2}
+              icon={<Trash2 size="$1.5" $gtXs={{ size: "$2" }} />}
               title="Delete Account"
               color="$red10"
               iconAfter={undefined}
-
+              size="$4"
+              $gtXs={{ size: "$5" }}
+              px="$4"
               onPress={handleDeleteAccountPress}
             />
           </YGroup.Item>
@@ -149,7 +159,7 @@ export function SettingsMenu() {
           animation="quicker"
           enterStyle={{ x: 0, y: 20, opacity: 0 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          maxWidth={340}
+          width="90%" $gtXs={{ width: "50%" }}
         >
           <YStack gap="$4" p="$4">
             <Dialog.Title color="$red10">Delete Account?</Dialog.Title>

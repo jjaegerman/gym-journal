@@ -14,7 +14,7 @@ import {
 
 function ContentWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <YStack maxW={600} $gtXs={{ maxW: 860 }} width="90%" mx="auto">
+    <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto">
       {children}
     </YStack>
   );

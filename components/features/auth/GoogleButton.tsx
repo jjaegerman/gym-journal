@@ -38,7 +38,7 @@ if (canUseNativeGoogleSignIn && GoogleSignin) {
   });
 }
 
-export default function GoogleButton() {
+export default function GoogleButton({ height }: { height: number }) {
   const [loading, setLoading] = useState(false);
   const toast = useToastController();
 
@@ -210,7 +210,7 @@ export default function GoogleButton() {
         source={require("@/assets/images/google-signin-button.png")}
         style={{
           width: "100%",
-          height: 44,
+          height,
         }}
         resizeMode="contain"
       />

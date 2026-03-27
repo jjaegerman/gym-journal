@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View, LayoutChangeEvent } from "react-native";
 import { YStack, XStack, Text, Button, useTheme, Theme } from "tamagui";
 import { LineChart } from "react-native-gifted-charts";
 import { formatDurationSeconds, formatPace } from "@/lib/utils/formatters";
@@ -70,6 +70,8 @@ function ProgressChartContent({
   distanceUnit,
 }: ProgressChartProps & { gridColor: string; labelColor: string }) {
   const { width: screenWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(screenWidth * 0.9);
+  const handleLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
   const theme = useTheme();
 
   const lineColor = theme.color10.val;
@@ -157,7 +159,7 @@ function ProgressChartContent({
   const DOT_RADIUS = 4;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
   const Y_LABEL_WIDTH = 40;
-  const outerWidth = screenWidth * 0.9;
+  const outerWidth = containerWidth;
   const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
   const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
@@ -188,7 +190,7 @@ function ProgressChartContent({
         ).filter((v, i, arr) => arr.indexOf(v) === i);
 
   return (
-    <YStack gap="$3" width={outerWidth} alignSelf="center">
+    <YStack gap="$3" width="100%" onLayout={handleLayout}>
       {availableMetrics.length > 0 && (
         <XStack gap="$2" justify="center" flexWrap="wrap">
           {availableMetrics.map((m) => (

@@ -135,19 +135,22 @@ export const ExerciseLogs = ({
                         title={setDescription(set)}
                         subTitle={
                           set.input ? (
-                            <Paragraph size="$2" fontStyle="italic" color="$color9">
+                            <Paragraph size="$2" $gtXs={{ size: "$4" }} fontStyle="italic" color="$color9">
                               "{set.input}"
                             </Paragraph>
                           ) : undefined
                         }
+                        size="$4"
+                        $gtXs={{ size: "$6" }}
+                        paddingBlock="$3"
                         iconAfter={
                           <Button
                             size="$1.5"
-                            $gtXs={{ size: "$3" }}
+                            $gtXs={{ size: "$4" }}
                             circular
                             chromeless
                             color="$red9"
-                            icon={Trash2}
+                            icon={<Trash2 size="$1" $gtXs={{ size: "$1.5" }} />}
                             onPress={() => handleDeletePress(set)}
                           />
                         }
@@ -165,9 +168,9 @@ export const ExerciseLogs = ({
                     t="$2.5"
                     position="absolute"
                     size="$2"
-                    $gtXs={{ size: "$3" }}
+                    $gtXs={{ size: "$4" }}
                     circular
-                    icon={X}
+                    icon={<X size="$1" $gtXs={{ size: "$1.5" }} />}
                   />
                 </Dialog.Close>
               </Unspaced>

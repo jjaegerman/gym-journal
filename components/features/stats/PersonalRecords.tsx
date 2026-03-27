@@ -1,6 +1,5 @@
 import { XStack, YStack, Text, Card, H5, Theme } from "tamagui";
 import { Trophy, ChevronRight } from "@tamagui/lucide-icons";
-import { Platform } from "react-native";
 
 interface PRData {
   value: number;
@@ -46,7 +45,7 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
       <XStack items="center" justify="space-between">
         <YStack gap="$2" flex={1}>
           <XStack items="center" gap="$2">
-            <Trophy size={Platform.isPad ? 22 : 16} color="$color10" />
+            <Trophy size="$1.5" $gtXs={{ size: "$2" }} color="$color10" />
             <Text fontSize="$2" $gtXs={{ fontSize: "$4" }} color="$color11" fontWeight="600">
               {title}
             </Text>
@@ -63,7 +62,7 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
             {formattedDate}
           </Text>
         </YStack>
-        {onPress && <ChevronRight size={Platform.isPad ? 22 : 16} color="$color10" />}
+        {onPress && <ChevronRight size="$1.5" $gtXs={{ size: "$2" }} color="$color10" />}
       </XStack>
     </Card>
   );

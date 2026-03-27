@@ -21,8 +21,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: theme.color2.val,
           borderTopColor: theme.color8.val,
+          paddingTop: 0,
         },
-        tabBarLabelStyle: { fontSize: isWide ? 14 : 10, marginTop: isWide ? 2 : 0 },
+        tabBarLabelStyle: { fontSize: isWide ? 14 : 10, marginTop: isWide ? 5 : 0 },
         tabBarIconStyle: { marginBottom: isWide ? -4 : 0 },
         headerStyle: {
           backgroundColor: theme.color2.val,

@@ -9,7 +9,6 @@ import {
   ScrollView,
   Separator,
   useMedia,
-  getTokenValue,
 } from "tamagui";
 import { Check } from "@tamagui/lucide-icons";
 
@@ -36,7 +35,6 @@ export function MoreFiltersSheet({
 }: MoreFiltersSheetProps) {
   const committedRef = useRef(false);
   const media = useMedia();
-  const checkIconSize = getTokenValue(media.gtXs ? "$1.5" : "$1", "size");
 
   useEffect(() => {
     if (open) committedRef.current = false;
@@ -70,12 +68,12 @@ export function MoreFiltersSheet({
       <Sheet.Frame>
         <YStack flex={1} p="$4" gap="$4">
           <XStack justify="space-between" items="center">
-            <Text fontSize="$6" fontWeight="600">
+            <Text fontSize="$6" $gtXs={{ fontSize: "$8" }} fontWeight="600">
               Filter
             </Text>
             {totalSelected > 0 && (
-              <Button size="$3" chromeless onPress={onClear}>
-                <Text color="$blue10">Clear</Text>
+              <Button size="$3" $gtXs={{ size: "$5" }} chromeless onPress={onClear}>
+                <Text color="$blue10" fontSize="$3" $gtXs={{ fontSize: "$5" }}>Clear</Text>
               </Button>
             )}
           </XStack>
@@ -86,7 +84,7 @@ export function MoreFiltersSheet({
             <YStack gap="$4">
               {sections.map((section, sectionIndex) => (
                 <YStack key={section.title} gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color="$gray11" px="$2">
+                  <Text fontSize="$4" $gtXs={{ fontSize: "$6" }} fontWeight="600" color="$gray11" px="$2">
                     {section.title}
                   </Text>
                   {section.options.map((option) => {
@@ -107,12 +105,13 @@ export function MoreFiltersSheet({
                         <Checkbox
                           checked={isSelected}
                           size="$4"
+                          $gtXs={{ size: "$6" }}
                         >
                           <Checkbox.Indicator>
-                            <Check size={checkIconSize} />
+                            <Check size="$1" $gtXs={{ size: "$2" }} />
                           </Checkbox.Indicator>
                         </Checkbox>
-                        <Text fontSize="$4">{option}</Text>
+                        <Text fontSize="$4" $gtXs={{ fontSize: "$6" }}>{option}</Text>
                       </XStack>
                     );
                   })}

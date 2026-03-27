@@ -1,5 +1,6 @@
 import { YStack, Paragraph, View, Button, XStack, Text } from "tamagui";
 import { ArrowDownUp } from "@tamagui/lucide-icons";
+import { Platform } from "react-native";
 import { WorkoutHistoryList, WorkoutFilters } from "@/components/features/workout";
 import { useWorkoutHistory } from "@/lib/hooks/useWorkoutHistory";
 import { useFocusEffect } from "expo-router";
@@ -50,7 +51,7 @@ export default function TabThreeScreen() {
 
   return (
     <View flex={1} bg="$background">
-      <XStack maxW={600} width="90%" mx="auto" items="center">
+      <XStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto" items="center">
         <YStack flex={1}>
           <WorkoutFilters
             filters={filters}
@@ -62,13 +63,14 @@ export default function TabThreeScreen() {
         </YStack>
         <Button
           size="$3"
+          $gtXs={{ size: "$5" }}
           chromeless
           onPress={toggleSortOrder}
           borderRadius="$10"
           px="$2"
-          icon={<ArrowDownUp size={14} color="$gray11" />}
+          icon={<ArrowDownUp size={Platform.isPad ? 20 : 14} color="$gray11" />}
         >
-          <Text fontSize="$2" color="$gray11">
+          <Text fontSize="$3" $gtXs={{ fontSize: "$5" }} color="$gray11">
             {sortAscending ? "Oldest" : "Newest"}
           </Text>
         </Button>

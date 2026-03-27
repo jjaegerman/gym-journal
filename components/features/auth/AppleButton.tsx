@@ -15,7 +15,7 @@ if (Platform.OS !== "web") {
   }
 }
 
-export default function AppleButton() {
+export default function AppleButton({ height }: { height: number }) {
   const toast = useToastController();
 
   // Only render on iOS
@@ -78,7 +78,7 @@ export default function AppleButton() {
         source={require("@/assets/images/apple-signin-button.png")}
         style={{
           width: "100%",
-          height: 44,
+          height,
         }}
         resizeMode="contain"
       />

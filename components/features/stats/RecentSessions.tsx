@@ -37,7 +37,7 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
                 size="$4"
                 $gtXs={{ size: "$6" }}
                 paddingBlock="$3"
-                iconAfter={ChevronRight}
+                iconAfter={<ChevronRight size="$1.5" $gtXs={{ size: "$2" }} />}
                 hoverTheme
                 pressTheme
                 onPress={() => onSessionPress(session.workoutId)}

@@ -68,7 +68,7 @@ export function ExerciseStats() {
 
   return (
     <View flex={1} bg="$background">
-      <YStack maxW={600} $gtXs={{ maxW: 860 }} width="90%" mx="auto">
+      <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto">
         <StatsFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -83,7 +83,7 @@ export function ExerciseStats() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        <YStack gap="$1" pb="$4" pt="$2" maxW={600} $gtXs={{ maxW: 860 }} width="90%" mx="auto">
+        <YStack gap="$1" pb="$4" pt="$2" width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto">
           {stats ? (
             <StatsDetailView
               stats={stats}

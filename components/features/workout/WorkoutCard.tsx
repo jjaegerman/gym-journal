@@ -52,7 +52,7 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
       pressTheme
       title={formattedDate}
       subTitle={subtitle}
-      iconAfter={ChevronRight}
+      iconAfter={<ChevronRight size="$1.5" $gtXs={{ size: "$2" }} />}
       onPress={onPress}
       paddingBlock="$3"
     />

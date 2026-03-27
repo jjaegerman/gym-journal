@@ -1,6 +1,5 @@
 import { Button, XStack, Text } from "tamagui";
 import { ChevronDown } from "@tamagui/lucide-icons";
-import { Platform } from "react-native";
 
 interface FilterChipProps {
   label: string;
@@ -34,7 +33,7 @@ export function FilterChip({ label, selectedCount = 0, active, onPress }: Filter
           {displayText}
         </Text>
         <ChevronDown
-          size={Platform.isPad ? 20 : 14}
+          size="$1" $gtXs={{ size: "$1.5" }}
           color={isActive ? "$blue11" : "$gray11"}
         />
       </XStack>
