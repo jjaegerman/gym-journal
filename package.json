@@ -8,6 +8,7 @@
     "upgrade:tamagui": "yarn up '*tamagui*'@latest '@tamagui/*'@latest",
     "upgrade:tamagui:canary": "yarn up '*tamagui*'@canary '@tamagui/*'@canary",
     "check:tamagui": "tamagui check",
+    "prebuild": "expo prebuild --clean && cp ~/.gym-journal/debug.keystore android/app/debug.keystore",
     "start": "expo start -c",
     "android": "expo run:android",
     "ios": "expo run:ios",

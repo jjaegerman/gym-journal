@@ -12,7 +12,6 @@ dist/
 .expo/
 
 /android
-!/android/app/debug.keystore
 /ios
 
 tsconfig.tsbuildinfo
