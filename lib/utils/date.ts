@@ -7,59 +7,14 @@
  * @param date - Date to format
  * @returns Formatted date string
  * @example
- * formatRelativeDate(new Date()) // "Today, 2:30 PM"
- * formatRelativeDate(yesterday) // "Yesterday, 10:15 AM"
- * formatRelativeDate(lastWeek) // "Mon, Jan 15"
+ * formatRelativeDate(new Date()) // "Sat 28, 2:30 PM"
+ * formatRelativeDate(lastWeek) // "Wed 22, 2:30 PM"
  */
 export function formatRelativeDate(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  const timeStr = date.toLocaleString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  // Today
-  if (date.toDateString() === now.toDateString()) {
-    return `Today, ${timeStr}`;
-  }
-
-  // Yesterday
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) {
-    return `Yesterday, ${timeStr}`;
-  }
-
-  // This week (within 7 days)
-  if (diffDays < 7) {
-    return date.toLocaleString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  // This year
-  if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  // Older
-  return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
+  const day = date.getDate();
+  const time = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return `${weekday} ${day}, ${time}`;
 }
 
 /**
@@ -154,20 +109,13 @@ function getWeekStart(date: Date): Date {
 /**
  * Get week range label for grouping workouts
  * @param date - Any date within the week
- * @returns Week range string (e.g., "Jan 20–26" or "Jan 27 – Feb 2")
+ * @returns Week range string (e.g., "20–26")
  */
 export function getWeekRange(date: Date): string {
   const weekStart = getWeekStart(date);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
-
-  const startMonth = weekStart.toLocaleDateString(undefined, { month: "short" });
-  const endMonth = weekEnd.toLocaleDateString(undefined, { month: "short" });
-
-  if (startMonth === endMonth) {
-    return `${startMonth} ${weekStart.getDate()}–${weekEnd.getDate()}`;
-  }
-  return `${startMonth} ${weekStart.getDate()} – ${endMonth} ${weekEnd.getDate()}`;
+  return `Week ${weekStart.getDate()}–${weekEnd.getDate()}`;
 }
 
 /**

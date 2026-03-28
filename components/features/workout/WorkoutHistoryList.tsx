@@ -66,7 +66,6 @@ function groupWorkoutsIntoSections(workouts: Workout[], sortAscending: boolean):
       }
       specialSections.get(specialLabel)!.data[0].workouts.push(workout);
     } else {
-      const monthLabel = getMonthLabel(workout.datetime);
       const monthKey = `${workout.datetime.getFullYear()}-${workout.datetime.getMonth()}`;
       const weekKey = getWeekKey(workout.datetime);
       const weekLabel = getWeekRange(workout.datetime);

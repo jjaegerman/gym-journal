@@ -50,7 +50,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: "Workouts",
+          title: "History",
           tabBarIcon: ({ color }) => <List color={color as any} />,
         }}
         listeners={{

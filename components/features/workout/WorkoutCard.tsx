@@ -1,5 +1,5 @@
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { ListItem, ListItemSubtitle } from "tamagui";
+import { ListItem, ListItemSubtitle, YStack } from "tamagui";
 import { Workout } from "@/types/exercise";
 import { formatRelativeDate, formatDuration } from "@/lib/utils";
 
@@ -24,27 +24,22 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
 
   const firstLine = `${exerciseText} • ${formatDuration(workout.durationMinutes)}`;
 
-  // Build second line: exercise preview and stats
-  const secondLineParts: string[] = [];
-
-  // Show up to 3 exercises with a visual separator
-  if (workout.exercisePreview && workout.exercisePreview.length > 0) {
-    const previewText = workout.exercisePreview.slice(0, 3).join(", ");
-    secondLineParts.push(previewText);
-  }
-
-  // Add distance if present
-  if (workout.totalDistance && workout.totalDistance > 0) {
-    const unit = workout.distanceUnit || "mi";
-    secondLineParts.push(`${workout.totalDistance.toFixed(1)} ${unit}`);
-  }
-
-  const secondLine = secondLineParts.join(" • ");
+  const secondLine =
+    workout.exercisePreview && workout.exercisePreview.length > 0
+      ? workout.exercisePreview.slice(0, 3).join(", ")
+      : "";
 
   const subtitle = (
-    <ListItemSubtitle ellipse={false} numberOfLines={0}>
-      {secondLine.length > 0 ? `${firstLine}\n${secondLine}` : firstLine}
-    </ListItemSubtitle>
+    <YStack>
+      <ListItemSubtitle ellipse={false} numberOfLines={0}>
+        {firstLine}
+      </ListItemSubtitle>
+      {secondLine.length > 0 && (
+        <ListItemSubtitle ellipse={false} numberOfLines={0}>
+          {secondLine}
+        </ListItemSubtitle>
+      )}
+    </YStack>
   );
 
   return (

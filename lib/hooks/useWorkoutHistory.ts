@@ -53,7 +53,6 @@ export function useWorkoutHistory() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const [filters, setFilters] = useState<WorkoutFilters>({});
-  const [filterOptions, setFilterOptions] = useState<WorkoutFilterOptions | null>(null);
   const [relationships, setRelationships] = useState<WorkoutFilterRelationship[]>([]);
   const [sortAscending, setSortAscending] = useState(false);
 
@@ -64,6 +63,13 @@ export function useWorkoutHistory() {
   const hasActiveFilters = useMemo(() =>
     !!(filters.exercise_kinds?.length || filters.equipment?.length),
     [filters]
+  );
+
+  const filterOptions = useMemo(() =>
+    relationships.length === 0
+      ? null
+      : computeWorkoutCascadedOptions(relationships, filters.exercise_kinds, filters.equipment),
+    [relationships, filters.exercise_kinds, filters.equipment]
   );
 
   // Full refetch whenever filters, sort order, or refetchKey change
@@ -120,7 +126,6 @@ export function useWorkoutHistory() {
       try {
         const rels = await getWorkoutFilterRelationships();
         setRelationships(rels);
-        setFilterOptions(computeWorkoutCascadedOptions(rels));
       } catch (err) {
         console.error("Error fetching filter metadata:", err);
       }
@@ -128,16 +133,6 @@ export function useWorkoutHistory() {
 
     fetchMeta();
   }, [session?.user.id]);
-
-  // Compute cascaded options when filters change (no API call)
-  useEffect(() => {
-    if (relationships.length === 0) return;
-    setFilterOptions(computeWorkoutCascadedOptions(
-      relationships,
-      filters.exercise_kinds,
-      filters.equipment
-    ));
-  }, [relationships, filters.exercise_kinds, filters.equipment]);
 
   const loadMore = useCallback(async () => {
     if (!session?.user.id || loadingMoreRef.current || !hasMore || hasActiveFilters) return;

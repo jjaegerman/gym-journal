@@ -38,7 +38,7 @@ export default function TabThreeScreen() {
         return;
       }
       refetch();
-    }, [])
+    }, [refetch])
   );
 
   const onRefresh = useCallback(async () => {
