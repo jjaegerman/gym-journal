@@ -10,6 +10,13 @@ const FEEDBACK_URL = "https://forms.gle/twrXS5ZPS8GNcugA7";
 const HELP_URL = "https://forms.gle/twrXS5ZPS8GNcugA7";
 const DELETE_CONFIRMATION = "DELETE";
 
+type MenuItem = {
+  icon: any;
+  title: string;
+  onPress: () => void;
+  destructive?: boolean;
+};
+
 export function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [unitSheetOpen, setUnitSheetOpen] = useState(false);
@@ -32,6 +39,14 @@ export function SettingsMenu() {
     setDeleteDialogOpen(false);
     setDeleteInput("");
   }
+
+  const menuItems: MenuItem[] = [
+    { icon: Ruler, title: "Unit Preferences", onPress: () => handleAction(() => setUnitSheetOpen(true)) },
+    { icon: MessageSquare, title: "Give Feedback", onPress: () => handleAction(() => Linking.openURL(FEEDBACK_URL)) },
+    { icon: HelpCircle, title: "Get Help", onPress: () => handleAction(() => Linking.openURL(HELP_URL)) },
+    { icon: LogOut, title: "Sign Out", onPress: () => handleAction(() => signOut()), destructive: true },
+    { icon: Trash2, title: "Delete Account", onPress: handleDeleteAccountPress, destructive: true },
+  ];
 
   async function handleConfirmDelete() {
     setIsDeleting(true);
@@ -58,83 +73,20 @@ export function SettingsMenu() {
       </Popover.Trigger>
       <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14" $gtXs={{ minWidth: "$16" }}>
         <YGroup width="100%" separator={<Separator />}>
-          <YGroup.Item>
-            <ListItem
-              hoverTheme
-              pressTheme
-              cursor="pointer"
-              icon={<Ruler size="$1.5" $gtXs={{ size: "$2" }} />}
-              title="Unit Preferences"
-              size="$4"
-              $gtXs={{ size: "$5" }}
-              px="$4"
-              onPress={() => handleAction(() => setUnitSheetOpen(true))}
-            />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem
-              hoverTheme
-              pressTheme
-              cursor="pointer"
-              icon={<MessageSquare size="$1.5" $gtXs={{ size: "$2" }} />}
-              title="Give Feedback"
-              size="$4"
-              $gtXs={{ size: "$5" }}
-              px="$4"
-              onPress={() =>
-                handleAction(() => {
-                  if (FEEDBACK_URL) Linking.openURL(FEEDBACK_URL);
-                })
-              }
-            />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem
-              hoverTheme
-              pressTheme
-              cursor="pointer"
-              icon={<HelpCircle size="$1.5" $gtXs={{ size: "$2" }} />}
-              title="Get Help"
-              size="$4"
-              $gtXs={{ size: "$5" }}
-              px="$4"
-              onPress={() =>
-                handleAction(() => {
-                  if (HELP_URL) Linking.openURL(HELP_URL);
-                })
-              }
-            />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem
-              hoverTheme
-              pressTheme
-              cursor="pointer"
-              icon={<LogOut size="$1.5" $gtXs={{ size: "$2" }} />}
-              title="Sign Out"
-              color="$red10"
-              iconAfter={undefined}
-              size="$4"
-              $gtXs={{ size: "$5" }}
-              px="$4"
-              onPress={() => handleAction(() => signOut())}
-            />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem
-              hoverTheme
-              pressTheme
-              cursor="pointer"
-              icon={<Trash2 size="$1.5" $gtXs={{ size: "$2" }} />}
-              title="Delete Account"
-              color="$red10"
-              iconAfter={undefined}
-              size="$4"
-              $gtXs={{ size: "$5" }}
-              px="$4"
-              onPress={handleDeleteAccountPress}
-            />
-          </YGroup.Item>
+          {menuItems.map(({ icon, title, onPress, destructive }) => (
+            <YGroup.Item key={title}>
+              <ListItem
+                hoverTheme
+                pressTheme
+                cursor="pointer"
+                icon={icon}
+                title={title}
+                $gtXs={{ size: "$5" }}
+                color={destructive ? "$red10" : undefined}
+                onPress={onPress}
+              />
+            </YGroup.Item>
+          ))}
         </YGroup>
       </Popover.Content>
     </Popover>
