@@ -116,6 +116,7 @@ FIELD RULES:
 - weightUnit / distanceUnit: Only set if explicitly stated by the user. Leave null if not specified.
 
 LOGIC:
+If neither repetitions nor sets are specified, leave repetitions null.
 If repetitions not specified but sets are, assume repetitions equal sets and sets equals 1.
 If both specified, repeat item with same repetitions for each set.
 When expanding sets, each item's input should describe that single set (e.g. "3 sets of 10 bench press at 185 lbs" → each item's input is "10 reps bench press at 185 lbs").${context ? buildContextBlock(context) : ""}`;
