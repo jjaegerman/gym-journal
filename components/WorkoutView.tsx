@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, H5, XStack, YStack } from "tamagui";
+import { Button, H5, Paragraph, XStack, YStack } from "tamagui";
 import { Plus } from "@tamagui/lucide-icons";
 import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
 import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
@@ -39,25 +39,30 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
 
   return (
     <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
-      <H5 paddingInline="$3" opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
-        {workout?.datetime.toLocaleString(undefined, {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-        {showEndTime && (
-          <>
-            {" "}
-            to{" "}
-            {endTime.toLocaleString(undefined, {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </>
-        )}
-      </H5>
+      <YStack paddingInline="$3" gap="$1">
+        <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
+          {workout?.datetime.toLocaleDateString(undefined, {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </H5>
+        <Paragraph opacity={0.5} $gtXs={{ fontSize: "$6" }}>
+          {workout?.datetime.toLocaleTimeString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+          {showEndTime && (
+            <>
+              {" to "}
+              {endTime.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </>
+          )}
+        </Paragraph>
+      </YStack>
       {workout && (
         <XStack justify="flex-end" paddingInline="$3">
           <Button

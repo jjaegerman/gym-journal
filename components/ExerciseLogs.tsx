@@ -7,6 +7,7 @@ import {
   Paragraph,
   Separator,
   Spinner,
+  Theme,
   Unspaced,
   View,
   XStack,
@@ -208,14 +209,16 @@ export const ExerciseLogs = ({
                 <Button onPress={handleCancelDelete} disabled={isDeleting}>
                   Cancel
                 </Button>
-                <Button
-                  color="$red10"
-                  onPress={handleConfirmDelete}
-                  disabled={isDeleting}
-                  icon={isDeleting ? <Spinner size="small" /> : undefined}
-                >
-                  Delete
-                </Button>
+                <Theme name="accent">
+                  <Button
+                    variant="active"
+                    onPress={handleConfirmDelete}
+                    disabled={isDeleting}
+                    icon={isDeleting ? <Spinner size="small" /> : undefined}
+                  >
+                    Delete
+                  </Button>
+                </Theme>
               </XStack>
             </View>
           </Dialog.Content>

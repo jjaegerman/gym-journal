@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Linking } from "react-native";
-import { Popover, Button, YGroup, ListItem, Separator, Dialog, Input, XStack, YStack, Spinner, Text } from "tamagui";
+import { Popover, Button, YGroup, ListItem, Separator, Dialog, Input, XStack, YStack, Spinner, Text, Theme } from "tamagui";
 import { Settings, MessageSquare, HelpCircle, LogOut, Ruler, Trash2 } from "@tamagui/lucide-icons";
 import { useToastController } from "@tamagui/toast";
 import { signOut, deleteAccount } from "@/lib/api/supabase/auth";
@@ -135,14 +135,16 @@ export function SettingsMenu() {
               <Button onPress={handleCancelDelete} disabled={isDeleting}>
                 Cancel
               </Button>
-              <Button
-                color="$red10"
-                onPress={handleConfirmDelete}
-                disabled={deleteInput !== DELETE_CONFIRMATION || isDeleting}
-                icon={isDeleting ? <Spinner size="small" /> : undefined}
-              >
-                Delete
-              </Button>
+              <Theme name="accent">
+                <Button
+                  variant="active"
+                  onPress={handleConfirmDelete}
+                  disabled={deleteInput !== DELETE_CONFIRMATION || isDeleting}
+                  icon={isDeleting ? <Spinner size="small" /> : undefined}
+                >
+                  Delete
+                </Button>
+              </Theme>
             </XStack>
           </YStack>
         </Dialog.Content>
