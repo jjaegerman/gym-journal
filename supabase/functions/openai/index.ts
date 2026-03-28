@@ -103,8 +103,10 @@ FIELD RULES:
   - "incline dumbbell press 3 sets of 10 at 50 lbs"
   - "Romanian deadlift 185 for 12"
 - exercise_kind: Best matching category from schema enum
-- modifiers: Array of applicable modifiers from schema enum. Examples:
+- modifiers: Only include modifiers EXPLICITLY stated by the user — never infer. Examples:
+  - "squat" → []
   - "back squat" → ["Back"]
+  - "front squat" → ["Front"]
   - "pause front squat" → ["Front", "Pause"]
   - "incline close grip bench" → ["Incline", "Close Grip"]
   DO NOT include equipment in modifiers
@@ -177,7 +179,7 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
           p_ai_response: structured.output_text,
           p_logs: logsForDb,
           p_model_version: "gpt-4.1",
-          p_prompt_version: "v2.0",
+          p_prompt_version: "v2.1",
           p_audio_duration_seconds: null,
         }
       : {
@@ -186,7 +188,7 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
           p_ai_response: structured.output_text,
           p_logs: logsForDb,
           p_model_version: "gpt-4.1",
-          p_prompt_version: "v2.0",
+          p_prompt_version: "v2.1",
           p_audio_duration_seconds: null,
         };
     const { data: submissionId, error: submissionError } = await supabase.rpc(
