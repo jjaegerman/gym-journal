@@ -30,9 +30,9 @@ export function useAudioRecording() {
   const audioRecorder = useAudioRecorder(recordingOptions);
   const expoRecorderState = useAudioRecorderState(audioRecorder);
 
-  // Use native recording on iOS, expo-audio elsewhere
-  const useNativeRecording =
-    Platform.OS === "ios" && AudioSessionManager?.startRecording;
+  // Use expo-audio on all platforms (native module disabled for testing)
+  const useNativeRecording = Platform.OS === "ios" &&
+    AudioSessionManager?.startRecording;
 
   useEffect(() => {
     (async () => {
@@ -46,7 +46,9 @@ export function useAudioRecording() {
         await setAudioModeAsync({
           playsInSilentMode: true,
           allowsRecording: true,
-          interruptionMode: "mixWithOthers",
+          interruptionMode: "doNotMix",
+          interruptionModeAndroid: "doNotMix",
+          shouldRouteThroughEarpiece: true,
         });
       }
     })();
@@ -83,12 +85,12 @@ export function useAudioRecording() {
         } else {
           setState("idle");
           throw new Error(
-            "Could not access microphone. It may be in use by another app."
+            "Could not access microphone. It may be in use by another app.",
           );
         }
       } else {
         await audioRecorder.prepareToRecordAsync();
-        audioRecorder.record();
+        await audioRecorder.record();
         setState("recording");
       }
     } catch (error) {
@@ -142,10 +144,10 @@ export function useAudioRecording() {
   };
 
   // Derive booleans from state for consumers
-  const isRecording =
-    state === "starting" || state === "recording" || state === "stopping";
-  const isPending =
-    state === "starting" || state === "stopping" || state === "cancelling";
+  const isRecording = state === "starting" || state === "recording" ||
+    state === "stopping";
+  const isPending = state === "starting" || state === "stopping" ||
+    state === "cancelling";
 
   return {
     audioRecorder,
