@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { View, ListItem, YGroup, Separator, Button, useMedia, getTokenValue } from "tamagui";
 import { Expand } from "@tamagui/lucide-icons";
 import { Exercise } from "@/types/exercise";
@@ -19,7 +19,7 @@ interface ExerciseListProps {
   onContextChange?: (exercise: Exercise | null) => void;
 }
 
-export function ExerciseList({
+export const ExerciseList = memo(function ExerciseList({
   exercises,
   onLogDeleted,
   contextExerciseId,
@@ -101,4 +101,4 @@ export function ExerciseList({
       />
     </>
   );
-}
+});

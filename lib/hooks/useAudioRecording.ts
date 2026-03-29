@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AudioModule,
   RecordingPresets,
@@ -54,6 +54,10 @@ export function useAudioRecording() {
     })();
   }, [useNativeRecording]);
 
+  // Keep a ref to expo recorder state so the interval can read it without restarting
+  const expoRecorderStateRef = useRef(expoRecorderState);
+  expoRecorderStateRef.current = expoRecorderState;
+
   // Update duration while recording
   useEffect(() => {
     if (state !== "recording") return;
@@ -63,12 +67,12 @@ export function useAudioRecording() {
         const duration = AudioSessionManager.getRecordingDuration();
         setDurationMillis(duration * 1000);
       } else {
-        setDurationMillis(expoRecorderState.durationMillis);
+        setDurationMillis(expoRecorderStateRef.current.durationMillis);
       }
     }, 100);
 
     return () => clearInterval(interval);
-  }, [state, useNativeRecording, expoRecorderState.durationMillis]);
+  }, [state, useNativeRecording]);
 
   const startRecording = async () => {
     if (state !== "idle") return;

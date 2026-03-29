@@ -9,7 +9,7 @@ import {
   useCurrentWorkout,
 } from "@/lib/hooks";
 import { useTabContext } from "@/lib/context/TabContext";
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { BlurView } from "expo-blur";
 import { getRandomPrompts } from "@/lib/data/examplePrompts";
 import Animated, {
@@ -79,16 +79,17 @@ export function RecordingScreen() {
     intensity: blurIntensity.value,
   }));
 
-  const handleLogDeleted = () => {
+  const handleLogDeleted = useCallback(() => {
     refetch().then(() => {
-      if (selectedContext) {
+      setSelectedContext((prev) => {
+        if (!prev) return null;
         const stillExists = currentWorkout?.exercises.some(
-          (e) => e.id === selectedContext.id
+          (e) => e.id === prev.id
         );
-        if (!stillExists) setSelectedContext(null);
-      }
+        return stillExists ? prev : null;
+      });
     });
-  };
+  }, [refetch, currentWorkout?.exercises]);
 
   const handleStopRecording = async () => {
     const uri = await stopRecording();
@@ -107,6 +108,8 @@ export function RecordingScreen() {
     );
   };
 
+  const clearContext = useCallback(() => setSelectedContext(null), []);
+
   const handleModeChange = (mode: InputMode) => {
     setInputModeState(mode);
     setInputMode(mode);
@@ -118,7 +121,7 @@ export function RecordingScreen() {
         <View width="100%" mb="$2">
           <ContextChip
             exercise={selectedContext}
-            onClear={() => setSelectedContext(null)}
+            onClear={clearContext}
           />
         </View>
       )}

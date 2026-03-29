@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { X, Repeat } from "@tamagui/lucide-icons";
 import { Button, XStack, Text } from "tamagui";
 import { Exercise } from "@/types/exercise";
@@ -8,7 +9,7 @@ interface ContextChipProps {
   onClear: () => void;
 }
 
-export function ContextChip({ exercise, onClear }: ContextChipProps) {
+export const ContextChip = memo(function ContextChip({ exercise, onClear }: ContextChipProps) {
   const title = capitalizeEachWord(
     formatExerciseGrouping({
       modifiers: exercise.modifiers,
@@ -45,4 +46,4 @@ export function ContextChip({ exercise, onClear }: ContextChipProps) {
       />
     </XStack>
   );
-}
+});

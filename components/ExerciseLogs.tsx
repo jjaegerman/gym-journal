@@ -136,7 +136,12 @@ export const ExerciseLogs = ({
                         title={setDescription(set)}
                         subTitle={
                           set.input ? (
-                            <Paragraph size="$2" $gtXs={{ size: "$4" }} fontStyle="italic" color="$color9">
+                            <Paragraph
+                              size="$2"
+                              $gtXs={{ size: "$4" }}
+                              fontStyle="italic"
+                              color="$color9"
+                            >
                               "{set.input}"
                             </Paragraph>
                           ) : undefined
@@ -181,7 +186,11 @@ export const ExerciseLogs = ({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog modal open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <Dialog
+        modal
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+      >
         <Dialog.Portal>
           <Dialog.Overlay
             key="delete-overlay"
