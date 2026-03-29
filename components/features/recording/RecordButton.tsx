@@ -39,8 +39,8 @@ export const RecordButton = ({
   const toast = useToastController();
   const media = useMedia();
   const buttonSize = getTokenValue(media.gtXs ? "$8" : "$6", "size");
-  const bgSize = buttonSize + getTokenValue("$1", "size");
-  const timerHeight = getTokenValue("$3", "size");
+  const ringSize = buttonSize + getTokenValue("$1", "size");
+  const timerHeight = getTokenValue(media.gtXs ? "$5" : "$3", "size");
   const cancelHeight = getTokenValue("$3", "size");
 
   const recordBorderColor = theme.color.val;
@@ -116,9 +116,9 @@ export const RecordButton = ({
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <View
           style={{
-            height: bgSize,
-            width: bgSize,
-            borderRadius: bgSize / 2,
+            height: ringSize,
+            width: ringSize,
+            borderRadius: ringSize / 2,
             borderWidth: 2,
             borderColor: recordBorderColor,
           }}
@@ -145,8 +145,8 @@ export const RecordButton = ({
         {isRecording && cancelCallback && (
           <Button
             icon={X}
-            size="$2"
-            $gtXs={{ size: "$3" }}
+            size="$3"
+            $gtXs={{ size: "$4" }}
             circular
             onPress={handleCancel}
             chromeless
@@ -166,5 +166,11 @@ export const RecordButton = ({
 const styles = StyleSheet.create({
   recordButton: {
     position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
