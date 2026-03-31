@@ -2,7 +2,7 @@
   "expo": {
     "name": "Gym Journal",
     "slug": "expo-router-example",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "com.supabase.gym-journal",
