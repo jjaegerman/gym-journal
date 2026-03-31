@@ -66,6 +66,13 @@ export async function getSession() {
 }
 
 /**
+ * Refresh the current session (exchanges refresh token for new JWT)
+ */
+export async function refreshSession() {
+  return supabase.auth.refreshSession();
+}
+
+/**
  * Set session from access and refresh tokens
  */
 export async function setSession(accessToken: string, refreshToken: string) {

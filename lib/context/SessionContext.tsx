@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppState } from 'react-native';
 import { Session } from '@supabase/supabase-js';
-import { getSession, onAuthStateChange, startAutoRefresh, stopAutoRefresh } from '@/lib/api/supabase/auth';
+import { getSession, refreshSession, onAuthStateChange, startAutoRefresh, stopAutoRefresh } from '@/lib/api/supabase/auth';
 
 interface SessionContextValue {
   session: Session | null;
@@ -15,14 +15,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getSession().then(({ data: { session } }) => {
-      setSession(session);
+    refreshSession().then(({ data: { session }, error }) => {
+      if (error || !session) {
+        return getSession().then(({ data: { session } }) => session);
+      }
+      return session;
+    }).then((session) => {
+      setSession(session ?? null);
       setLoading(false);
     });
 
     const { data: { subscription } } = onAuthStateChange((_event, session) => {
       setSession(session);
     });
+
+    startAutoRefresh();
 
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
