@@ -68,12 +68,12 @@ export function MoreFiltersSheet({
       <Sheet.Frame>
         <YStack flex={1} p="$4" gap="$4">
           <XStack justify="space-between" items="center">
-            <Text fontSize="$6" $gtXs={{ fontSize: "$8" }} fontWeight="600">
+            <Text fontSize="$6" $sm={{ fontSize: "$8" }} fontWeight="600">
               Filter
             </Text>
             {totalSelected > 0 && (
-              <Button size="$3" $gtXs={{ size: "$5" }} chromeless onPress={onClear}>
-                <Text color="$blue10" fontSize="$3" $gtXs={{ fontSize: "$5" }}>Clear</Text>
+              <Button size="$3" $sm={{ size: "$5" }} chromeless onPress={onClear}>
+                <Text color="$blue10" fontSize="$3" $sm={{ fontSize: "$5" }}>Clear</Text>
               </Button>
             )}
           </XStack>
@@ -84,7 +84,7 @@ export function MoreFiltersSheet({
             <YStack gap="$4">
               {sections.map((section, sectionIndex) => (
                 <YStack key={section.title} gap="$2">
-                  <Text fontSize="$4" $gtXs={{ fontSize: "$6" }} fontWeight="600" color="$gray11" px="$2">
+                  <Text fontSize="$4" $sm={{ fontSize: "$6" }} fontWeight="600" color="$gray11" px="$2">
                     {section.title}
                   </Text>
                   {section.options.map((option) => {
@@ -105,13 +105,13 @@ export function MoreFiltersSheet({
                         <Checkbox
                           checked={isSelected}
                           size="$4"
-                          $gtXs={{ size: "$6" }}
+                          $sm={{ size: "$6" }}
                         >
                           <Checkbox.Indicator>
-                            <Check size="$1" $gtXs={{ size: "$2" }} />
+                            <Check size="$1" $sm={{ size: "$2" }} />
                           </Checkbox.Indicator>
                         </Checkbox>
-                        <Text fontSize="$4" $gtXs={{ fontSize: "$6" }}>{option}</Text>
+                        <Text fontSize="$4" $sm={{ fontSize: "$6" }}>{option}</Text>
                       </XStack>
                     );
                   })}

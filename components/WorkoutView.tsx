@@ -38,16 +38,16 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   }
 
   return (
-    <YStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
+    <YStack width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
       <YStack paddingInline="$3" gap="$1">
-        <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
+        <H5 opacity={0.7} fontWeight="600" $sm={{ fontSize: "$8" }}>
           {workout?.datetime.toLocaleDateString(undefined, {
             month: "long",
             day: "numeric",
             year: "numeric",
           })}
         </H5>
-        <Paragraph opacity={0.5} $gtXs={{ fontSize: "$6" }}>
+        <Paragraph opacity={0.5} $sm={{ fontSize: "$6" }}>
           {workout?.datetime.toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
@@ -67,7 +67,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
         <XStack justify="flex-end" paddingInline="$3">
           <Button
             size="$3"
-            $gtXs={{ size: "$5" }}
+            $sm={{ size: "$5" }}
             icon={Plus}
             onPress={() => setAddSetsOpen(true)}
             variant="outlined"

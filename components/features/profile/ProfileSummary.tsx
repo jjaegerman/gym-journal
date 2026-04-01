@@ -75,7 +75,7 @@ export function ProfileSummary() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <YStack p="$4" gap="$4" width="90%" $gtXs={{ width: "80%" }} $gtMd={{ width: "75%" }} self="center">
+      <YStack p="$4" gap="$4" width="90%" $sm={{ width: "80%" }} $md={{ width: "75%" }} self="center">
         {/* Section 1: All-Time */}
         <YStack gap="$3">
           <H3>All-Time</H3>

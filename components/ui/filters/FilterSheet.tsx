@@ -63,12 +63,12 @@ const handleClear = () => {
       <Sheet.Frame>
         <YStack flex={1} p="$4" gap="$4">
           <XStack justify="space-between" items="center">
-            <Text fontSize="$6" $gtXs={{ fontSize: "$8" }} fontWeight="600">
+            <Text fontSize="$6" $sm={{ fontSize: "$8" }} fontWeight="600">
               {title}
             </Text>
             {!singleSelect && (
-              <Button size="$3" $gtXs={{ size: "$5" }} chromeless onPress={handleClear}>
-                <Text color="$blue10" fontSize="$3" $gtXs={{ fontSize: "$5" }}>Clear</Text>
+              <Button size="$3" $sm={{ size: "$5" }} chromeless onPress={handleClear}>
+                <Text color="$blue10" fontSize="$3" $sm={{ fontSize: "$5" }}>Clear</Text>
               </Button>
             )}
           </XStack>
@@ -107,10 +107,10 @@ const handleClear = () => {
                         borderRadius="$3"
                         hoverStyle={{ bg: "$gray3" }}
                       >
-                        <RadioGroup.Item value={option} id={id} size="$4" $gtXs={{ size: "$6" }}>
+                        <RadioGroup.Item value={option} id={id} size="$4" $sm={{ size: "$6" }}>
                           <RadioGroup.Indicator />
                         </RadioGroup.Item>
-                        <Text fontSize="$4" $gtXs={{ fontSize: "$6" }}>{option}</Text>
+                        <Text fontSize="$4" $sm={{ fontSize: "$6" }}>{option}</Text>
                       </XStack>
                     );
                   })}
@@ -137,13 +137,13 @@ const handleClear = () => {
                         checked={isSelected}
                         onCheckedChange={() => handleToggle(option)}
                         size="$4"
-                        $gtXs={{ size: "$6" }}
+                        $sm={{ size: "$6" }}
                       >
                         <Checkbox.Indicator>
-                          <Check size="$1" $gtXs={{ size: "$2" }} />
+                          <Check size="$1" $sm={{ size: "$2" }} />
                         </Checkbox.Indicator>
                       </Checkbox>
-                      <Text fontSize="$4" $gtXs={{ fontSize: "$6" }}>{option}</Text>
+                      <Text fontSize="$4" $sm={{ fontSize: "$6" }}>{option}</Text>
                     </XStack>
                   );
                 })}

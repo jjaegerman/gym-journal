@@ -16,15 +16,15 @@ function MetricCard({ label, value, unit }: MetricCardProps) {
   return (
     <Card flex={1} flexBasis={0} p="$3" bg="$gray3" borderRadius="$4" bordered>
       <YStack gap="$1">
-        <Text fontSize="$2" $gtXs={{ fontSize: "$4" }} color="$gray11" fontWeight="500">
+        <Text fontSize="$2" $sm={{ fontSize: "$4" }} color="$gray11" fontWeight="500">
           {label}
         </Text>
         <XStack items="baseline" gap="$1">
-          <Text fontSize="$6" $gtXs={{ fontSize: "$8" }} fontWeight="700">
+          <Text fontSize="$6" $sm={{ fontSize: "$8" }} fontWeight="700">
             {value}
           </Text>
           {unit && (
-            <Text fontSize="$2" $gtXs={{ fontSize: "$4" }} color="$gray11">
+            <Text fontSize="$2" $sm={{ fontSize: "$4" }} color="$gray11">
               {unit}
             </Text>
           )}

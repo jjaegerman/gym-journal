@@ -71,7 +71,7 @@ export function SettingsMenu() {
       <Popover.Trigger asChild>
         <Button chromeless mr="$3" icon={<Settings size={22} />} />
       </Popover.Trigger>
-      <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14" $gtXs={{ minWidth: "$16" }}>
+      <Popover.Content bordered elevate p={0} overflow="hidden" minWidth="$14" $sm={{ minWidth: "$16" }}>
         <YGroup width="100%" separator={<Separator />}>
           {menuItems.map(({ icon, title, onPress, destructive }) => (
             <YGroup.Item key={title}>
@@ -81,7 +81,7 @@ export function SettingsMenu() {
                 cursor="pointer"
                 icon={icon}
                 title={title}
-                $gtXs={{ size: "$5" }}
+                $sm={{ size: "$5" }}
                 color={destructive ? "$red10" : undefined}
                 onPress={onPress}
               />
@@ -111,7 +111,7 @@ export function SettingsMenu() {
           animation="quicker"
           enterStyle={{ x: 0, y: 20, opacity: 0 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          width="90%" $gtXs={{ width: "50%" }}
+          width="90%" $sm={{ width: "50%" }}
         >
           <YStack gap="$4" p="$4">
             <Dialog.Title color="$red10">Delete Account?</Dialog.Title>

@@ -28,7 +28,7 @@ export const ExerciseList = memo(function ExerciseList({
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const media = useMedia();
-  const exerciseIconSize = getTokenValue(media.gtXs ? "$2" : "$1.5", "size");
+  const exerciseIconSize = getTokenValue(media.sm ? "$2" : "$1.5", "size");
 
   return (
     <>
@@ -59,7 +59,7 @@ export const ExerciseList = memo(function ExerciseList({
                 title={title}
                 subTitle={description}
                 size="$4"
-                $gtXs={{ size: "$6" }}
+                $sm={{ size: "$6" }}
                 paddingBlock="$3"
                 hoverTheme
                 pressTheme
@@ -73,10 +73,10 @@ export const ExerciseList = memo(function ExerciseList({
                 iconAfter={
                   <Button
                     size="$2"
-                    $gtXs={{ size: "$4" }}
+                    $sm={{ size: "$4" }}
                     chromeless
                     circular
-                    icon={<Expand size="$1.5" $gtXs={{ size: "$2" }} />}
+                    icon={<Expand size="$1.5" $sm={{ size: "$2" }} />}
                     onPress={() => {
                       setFocusedExerciseIdx(i);
                       setDialogOpen(true);

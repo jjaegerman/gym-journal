@@ -45,12 +45,12 @@ export function WorkoutCard({ workout, onPress }: WorkoutCardProps) {
   return (
     <ListItem
       size="$4"
-      $gtXs={{ size: "$6" }}
+      $sm={{ size: "$6" }}
       hoverTheme
       pressTheme
       title={formattedDate}
       subTitle={subtitle}
-      iconAfter={<ChevronRight size="$1.5" $gtXs={{ size: "$2" }} />}
+      iconAfter={<ChevronRight size="$1.5" $sm={{ size: "$2" }} />}
       onPress={onPress}
       paddingBlock="$3"
     />

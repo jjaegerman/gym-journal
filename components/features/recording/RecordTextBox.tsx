@@ -29,7 +29,7 @@ export const RecordTextBox = ({
         placeholder="Type your workout log..."
         numberOfLines={4}
         size="$4"
-        $gtXs={{ size: "$6" }}
+        $sm={{ size: "$6" }}
         rounded="$4"
         paddingInlineEnd="$10"
         returnKeyType="done"
@@ -43,7 +43,7 @@ export const RecordTextBox = ({
         onPress={handleSubmit}
         icon={SendHorizontal}
         size="$3"
-        $gtXs={{ size: "$5" }}
+        $sm={{ size: "$5" }}
         disabled={loading || !text.trim()}
         circular
         chromeless={!text.trim()}

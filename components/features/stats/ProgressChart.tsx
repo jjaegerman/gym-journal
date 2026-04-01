@@ -197,7 +197,7 @@ function ProgressChartContent({
             <Button
               key={m}
               size="$2"
-              $gtXs={{ size: "$5" }}
+              $sm={{ size: "$5" }}
               chromeless={metric !== m}
               bg={metric === m ? "$color3" : "$gray3"}
               onPress={() => setMetric(m)}
@@ -206,7 +206,7 @@ function ProgressChartContent({
             >
               <Text
                 fontSize="$2"
-                $gtXs={{ fontSize: "$4" }}
+                $sm={{ fontSize: "$4" }}
                 fontWeight={metric === m ? "600" : "400"}
                 color={metric === m ? "$color11" : "$gray11"}
               >

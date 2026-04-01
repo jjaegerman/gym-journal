@@ -15,7 +15,7 @@ export function FilterChip({ label, selectedCount = 0, active, onPress }: Filter
   return (
     <Button
       size="$3"
-      $gtXs={{ size: "$5" }}
+      $sm={{ size: "$5" }}
       chromeless={!isActive}
       bg={isActive ? "$blue4" : "$gray4"}
       pressStyle={{ opacity: 0.8 }}
@@ -26,14 +26,14 @@ export function FilterChip({ label, selectedCount = 0, active, onPress }: Filter
       <XStack gap="$1" items="center">
         <Text
           fontSize="$3"
-          $gtXs={{ fontSize: "$5" }}
+          $sm={{ fontSize: "$5" }}
           fontWeight={isActive ? "600" : "400"}
           color={isActive ? "$blue11" : "$gray11"}
         >
           {displayText}
         </Text>
         <ChevronDown
-          size="$1" $gtXs={{ size: "$1.5" }}
+          size="$1" $sm={{ size: "$1.5" }}
           color={isActive ? "$blue11" : "$gray11"}
         />
       </XStack>

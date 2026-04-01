@@ -138,7 +138,7 @@ export const ExerciseLogs = ({
                           set.input ? (
                             <Paragraph
                               size="$2"
-                              $gtXs={{ size: "$4" }}
+                              $sm={{ size: "$4" }}
                               fontStyle="italic"
                               color="$color9"
                             >
@@ -147,16 +147,16 @@ export const ExerciseLogs = ({
                           ) : undefined
                         }
                         size="$4"
-                        $gtXs={{ size: "$6" }}
+                        $sm={{ size: "$6" }}
                         paddingBlock="$3"
                         iconAfter={
                           <Button
                             size="$1.5"
-                            $gtXs={{ size: "$4" }}
+                            $sm={{ size: "$4" }}
                             circular
                             chromeless
                             color="$red9"
-                            icon={<Trash2 size="$1" $gtXs={{ size: "$1.5" }} />}
+                            icon={<Trash2 size="$1" $sm={{ size: "$1.5" }} />}
                             onPress={() => handleDeletePress(set)}
                           />
                         }
@@ -174,9 +174,9 @@ export const ExerciseLogs = ({
                     t="$2.5"
                     position="absolute"
                     size="$2"
-                    $gtXs={{ size: "$4" }}
+                    $sm={{ size: "$4" }}
                     circular
-                    icon={<X size="$1" $gtXs={{ size: "$1.5" }} />}
+                    icon={<X size="$1" $sm={{ size: "$1.5" }} />}
                   />
                 </Dialog.Close>
               </Unspaced>

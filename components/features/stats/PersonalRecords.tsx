@@ -45,24 +45,24 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
       <XStack items="center" justify="space-between">
         <YStack gap="$2" flex={1}>
           <XStack items="center" gap="$2">
-            <Trophy size="$1.5" $gtXs={{ size: "$2" }} color="$color10" />
-            <Text fontSize="$2" $gtXs={{ fontSize: "$4" }} color="$color11" fontWeight="600">
+            <Trophy size="$1.5" $sm={{ size: "$2" }} color="$color10" />
+            <Text fontSize="$2" $sm={{ fontSize: "$4" }} color="$color11" fontWeight="600">
               {title}
             </Text>
           </XStack>
           <XStack items="baseline" gap="$1">
-            <Text fontSize="$7" $gtXs={{ fontSize: "$9" }} fontWeight="700" color="$color12">
+            <Text fontSize="$7" $sm={{ fontSize: "$9" }} fontWeight="700" color="$color12">
               {pr.value}
             </Text>
-            <Text fontSize="$3" $gtXs={{ fontSize: "$5" }} color="$color11">
+            <Text fontSize="$3" $sm={{ fontSize: "$5" }} color="$color11">
               {unit}
             </Text>
           </XStack>
-          <Text fontSize="$1" $gtXs={{ fontSize: "$4" }} color="$color10" numberOfLines={1}>
+          <Text fontSize="$1" $sm={{ fontSize: "$4" }} color="$color10" numberOfLines={1}>
             {formattedDate}
           </Text>
         </YStack>
-        {onPress && <ChevronRight size="$1.5" $gtXs={{ size: "$2" }} color="$color10" />}
+        {onPress && <ChevronRight size="$1.5" $sm={{ size: "$2" }} color="$color10" />}
       </XStack>
     </Card>
   );

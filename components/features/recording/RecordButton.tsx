@@ -38,9 +38,9 @@ export const RecordButton = ({
   const theme = useTheme();
   const toast = useToastController();
   const media = useMedia();
-  const buttonSize = getTokenValue(media.gtXs ? "$8" : "$6", "size");
+  const buttonSize = getTokenValue(media.sm ? "$8" : "$6", "size");
   const ringSize = buttonSize + getTokenValue("$1", "size");
-  const timerHeight = getTokenValue(media.gtXs ? "$5" : "$3", "size");
+  const timerHeight = getTokenValue(media.sm ? "$5" : "$3", "size");
   const cancelHeight = getTokenValue("$3", "size");
 
   const recordBorderColor = theme.color.val;
@@ -98,7 +98,7 @@ export const RecordButton = ({
         {isRecording && (
           <Text
             fontSize="$8"
-            $gtXs={{ fontSize: "$10" }}
+            $sm={{ fontSize: "$10" }}
             fontWeight="bold"
             color="$color"
             animation="quick"
@@ -146,7 +146,7 @@ export const RecordButton = ({
           <Button
             icon={X}
             size="$3"
-            $gtXs={{ size: "$4" }}
+            $sm={{ size: "$4" }}
             circular
             onPress={handleCancel}
             chromeless

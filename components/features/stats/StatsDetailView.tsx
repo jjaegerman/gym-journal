@@ -22,13 +22,13 @@ export function StatsDetailView({
   const hasData = stats.totalWorkouts > 0;
   const showEmptyPrompt = !hasData && stats.displayName === "No exercises";
   const media = useMedia();
-  const emptyIconSize = getTokenValue(media.gtXs ? "$7" : "$5", "size");
+  const emptyIconSize = getTokenValue(media.sm ? "$7" : "$5", "size");
 
   return (
     <YStack gap="$4">
       {hasData ? (
         <>
-          <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
+          <H5 opacity={0.7} fontWeight="600" $sm={{ fontSize: "$8" }}>
             Summary
           </H5>
           <StatsSummary stats={stats} />
@@ -37,7 +37,7 @@ export function StatsDetailView({
             <>
               <Separator />
               <YStack gap="$2">
-                <H5 opacity={0.7} fontWeight="600" $gtXs={{ fontSize: "$8" }}>
+                <H5 opacity={0.7} fontWeight="600" $sm={{ fontSize: "$8" }}>
                   Progress
                 </H5>
                 <ProgressChart

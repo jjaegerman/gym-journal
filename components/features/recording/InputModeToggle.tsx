@@ -20,7 +20,7 @@ export function InputModeToggle({
   return (
     <Button
       size="$4"
-      $gtXs={{ size: "$6" }}
+      $sm={{ size: "$6" }}
       circular
       variant="outlined"
       borderColor="$color5"
@@ -28,7 +28,7 @@ export function InputModeToggle({
       onPress={handleToggle}
       disabled={disabled}
       opacity={disabled ? 0.5 : 1}
-      icon={mode === "voice" ? <Keyboard size="$1.5" $gtXs={{ size: "$2" }} /> : <Mic size="$1.5" $gtXs={{ size: "$2" }} />}
+      icon={mode === "voice" ? <Keyboard size="$1.5" $sm={{ size: "$2" }} /> : <Mic size="$1.5" $sm={{ size: "$2" }} />}
     />
   );
 }

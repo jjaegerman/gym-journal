@@ -51,7 +51,7 @@ export default function TabThreeScreen() {
 
   return (
     <View flex={1} bg="$background">
-      <XStack width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto" items="center">
+      <XStack width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} mx="auto" items="center">
         <YStack flex={1}>
           <WorkoutFilters
             filters={filters}
@@ -63,14 +63,14 @@ export default function TabThreeScreen() {
         </YStack>
         <Button
           size="$3"
-          $gtXs={{ size: "$5" }}
+          $sm={{ size: "$5" }}
           chromeless
           onPress={toggleSortOrder}
           borderRadius="$10"
           px="$2"
           icon={<ArrowDownUp size={Platform.isPad ? 20 : 14} color="$gray11" />}
         >
-          <Text fontSize="$3" $gtXs={{ fontSize: "$5" }} color="$gray11">
+          <Text fontSize="$3" $sm={{ fontSize: "$5" }} color="$gray11">
             {sortAscending ? "Oldest" : "Newest"}
           </Text>
         </Button>

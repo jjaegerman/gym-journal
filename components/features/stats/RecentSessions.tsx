@@ -35,9 +35,9 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
                 title={session.summary}
                 subTitle={formattedDate}
                 size="$4"
-                $gtXs={{ size: "$6" }}
+                $sm={{ size: "$6" }}
                 paddingBlock="$3"
-                iconAfter={<ChevronRight size="$1.5" $gtXs={{ size: "$2" }} />}
+                iconAfter={<ChevronRight size="$1.5" $sm={{ size: "$2" }} />}
                 hoverTheme
                 pressTheme
                 onPress={() => onSessionPress(session.workoutId)}

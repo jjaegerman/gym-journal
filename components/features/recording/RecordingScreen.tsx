@@ -172,7 +172,7 @@ export function RecordingScreen() {
               keyboardShouldPersistTaps="handled"
               style={{ flex: 1 }}
             >
-              <View pt="$8" pb="$4" px="$4" width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto">
+              <View pt="$8" pb="$4" px="$4" width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} mx="auto">
                 <H5 paddingInline="$3" mb="$3" opacity={0.7} fontWeight="600">
                   Current Workout{workoutDuration ? `  ·  ${workoutDuration}` : ""}
                 </H5>
@@ -184,7 +184,7 @@ export function RecordingScreen() {
                 />
               </View>
             </ScrollView>
-            <View px="$4" pb="$4" pt="$2" width="90%" $gtXs={{ width: "75%" }} $gtMd={{ width: "65%" }} mx="auto" z={100}>
+            <View px="$4" pb="$4" pt="$2" width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} mx="auto" z={100}>
               {inputSection}
             </View>
             <AnimatedBlurView
@@ -206,13 +206,13 @@ export function RecordingScreen() {
         ) : (
           // Empty state: centered suggestions + input (original structure)
           <View flex={1} justify="center" items="center" px="$4">
-            <YStack gap="$6" width="90%" $gtXs={{ width: "70%" }} $gtMd={{ width: "60%" }}>
+            <YStack gap="$6" width="90%" $sm={{ width: "70%" }} $md={{ width: "60%" }}>
               <YStack gap="$2" items="center">
                 {examplePrompts.map((prompt) => (
                   <Paragraph
                     key={prompt}
                     size="$3"
-                    $gtXs={{ size: "$5" }}
+                    $sm={{ size: "$5" }}
                     opacity={0.5}
                     text="center"
                   >
