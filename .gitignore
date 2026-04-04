@@ -15,3 +15,5 @@ dist/
 /ios
 
 tsconfig.tsbuildinfo
+
+.env.local

@@ -2,9 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
-// TODO: Move these to environment variables
-const SUPABASE_URL = "https://jfbbrlekjmvoprswqzoc.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_n6I0jso31I6gt3P2z0KqzQ_4Ld2L8DU";
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "https://jfbbrlekjmvoprswqzoc.supabase.co";
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "sb_publishable_n6I0jso31I6gt3P2z0KqzQ_4Ld2L8DU";
 
 /**
  * Supabase client instance

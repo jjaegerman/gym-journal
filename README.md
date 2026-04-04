@@ -15,6 +15,18 @@ supabase migration up
 supabase functions serve --env-file ./supabase/.env.local --no-verify-jwt --debug
 ```
 
+run app against local supabase:
+```
+cp .env.local.example .env.local
+```
+then `yarn start` — app connects to local DB and edge functions. Delete `.env.local` to go back to prod.
+
+To seed local DB with prod data:
+```
+supabase db dump --data-only -f /tmp/prod_data.sql
+docker exec -i supabase_db_gym-journal psql -U postgres < /tmp/prod_data.sql
+```
+
 
 pull in remote schema changes to db
 ```
