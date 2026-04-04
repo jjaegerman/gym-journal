@@ -20,7 +20,7 @@ export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps)
         <Paragraph size="$2" $sm={{ size: "$4" }} color="$color11">
           {title}
         </Paragraph>
-        <H4 size="$8" fontWeight="bold">
+        <H4 size="$8" fontWeight="bold" numberOfLines={1} adjustsFontSizeToFit>
           {value}
         </H4>
         {trend && <YStack>{trend}</YStack>}
