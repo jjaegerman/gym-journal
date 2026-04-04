@@ -4,12 +4,13 @@ import { useTheme } from "tamagui";
 import { BarChart3, List, Plus, User } from "@tamagui/lucide-icons";
 import { useTabContext } from "@/lib/context/TabContext";
 import { SettingsMenu } from "@/components/ui/SettingsMenu";
+import { config } from "@/tamagui.config";
 
 export default function TabLayout() {
   const theme = useTheme();
   const { tabsDisabled } = useTabContext();
   const { width } = useWindowDimensions();
-  const isWide = width > 660;
+  const isWide = width >= config.media.md.minWidth;
 
   return (
     <Tabs
