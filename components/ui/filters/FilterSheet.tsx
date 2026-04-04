@@ -105,7 +105,7 @@ const handleClear = () => {
                         }}
                         cursor="pointer"
                         borderRadius="$3"
-                        hoverStyle={{ bg: "$gray3" }}
+                        hoverStyle={{ bg: "$color4" }}
                       >
                         <RadioGroup.Item value={option} id={id} size="$4" $sm={{ size: "$6" }}>
                           <RadioGroup.Indicator />
@@ -131,7 +131,7 @@ const handleClear = () => {
                       onPress={() => handleToggle(option)}
                       cursor="pointer"
                       borderRadius="$3"
-                      hoverStyle={{ bg: "$gray3" }}
+                      hoverStyle={{ bg: "$color4" }}
                     >
                       <Checkbox
                         checked={isSelected}

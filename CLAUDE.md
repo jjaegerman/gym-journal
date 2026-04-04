@@ -49,8 +49,23 @@ yarn check:tamagui             # Validate Tamagui config
 ## Dev Best Practices
 
 - **No magic numbers** — use Tamagui `$N` size tokens for all sizing/spacing, never raw pixel values
+- **No hardcoded colors** — never use hex values, `rgba()`, named CSS colors, or `opacity` for text emphasis in components. All colors come from theme tokens.
 - **Tamagui components first** — check if a built-in component handles it before writing custom layout (e.g. `ListItem`, `Popover`, `Sheet`)
 - **Theme variables over custom styles** — use built-in props (`hoverTheme`, `pressTheme`, `bordered`, `elevate`) instead of inline styles
+
+### Color Tokens (Radix 12-Step Scale)
+
+Use semantic `$colorN` tokens — they respond to theme changes. Raw tokens (`$gray5`, `$blue10`) only for intentionally fixed colors (errors, success, links, exercise category icons).
+
+| Steps | Role | Examples |
+|-------|------|----------|
+| 1–2 | Background | `$background`, tab/header bg |
+| 3–5 | UI surfaces | 3=cards/panels, 4=hover, 5=active/selected |
+| 6–8 | Borders | 6=subtle (most), 7=strong/focused, 8=hover only |
+| 9–12 | Foreground | 9=tertiary text, 10=metadata, 11=labels/headers, 12=primary text |
+
+- **Text emphasis via color steps, never opacity.** `$color11` for headers, `$color10` for descriptions, `$color9` for hints.
+- **Accent colors**: wrap with `<Theme name="accent">` and use the same `$colorN` tokens.
 - **Use `@/*` path aliases** for all imports
 - **Zod schemas must match across boundaries** — `supabase/functions/_shared/types.ts`, `types/exercise.ts`, and DB columns must stay in sync. DB uses snake_case; JSONB from RPCs uses camelCase.
 - **Don't call `supabase.rpc()` directly in components** — use `lib/api/supabase/` wrapper functions

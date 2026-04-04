@@ -173,7 +173,7 @@ export function WorkoutHistoryList({
           <ContentWrapper>
             <YStack pb="$3">
               {showWeekLabel && (
-                <H6 px="$3" py="$1" opacity={0.6} fontWeight="500" $sm={{ fontSize: "$6" }}>
+                <H6 px="$3" py="$1" color="$color10" fontWeight="500" $sm={{ fontSize: "$6" }}>
                   {weekGroup.weekLabel}
                 </H6>
               )}

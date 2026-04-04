@@ -20,7 +20,7 @@ export function ErrorState({
       <Text color="$red10" fontSize="$5">
         {title}
       </Text>
-      <Text fontSize="$3" opacity={0.6} text="center" width="80%">
+      <Text fontSize="$3" color="$color10" text="center" width="80%">
         {message}
       </Text>
       {onRetry && (

@@ -84,7 +84,7 @@ export function MoreFiltersSheet({
             <YStack gap="$4">
               {sections.map((section, sectionIndex) => (
                 <YStack key={section.title} gap="$2">
-                  <Text fontSize="$4" $sm={{ fontSize: "$6" }} fontWeight="600" color="$gray11" px="$2">
+                  <Text fontSize="$4" $sm={{ fontSize: "$6" }} fontWeight="600" color="$color11" px="$2">
                     {section.title}
                   </Text>
                   {section.options.map((option) => {
@@ -100,7 +100,7 @@ export function MoreFiltersSheet({
                         onPress={() => handleToggle(sectionIndex, option)}
                         cursor="pointer"
                         borderRadius="$3"
-                        hoverStyle={{ bg: "$gray3" }}
+                        hoverStyle={{ bg: "$color4" }}
                       >
                         <Checkbox
                           checked={isSelected}

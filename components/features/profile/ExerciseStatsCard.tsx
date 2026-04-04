@@ -40,7 +40,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
         {/* Row 1: Total Workouts | Workouts/Week */}
         <XStack gap="$4" flexWrap="wrap">
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               Total Workouts
             </Paragraph>
             <Paragraph size="$5" fontWeight="600">
@@ -49,7 +49,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
           </YStack>
 
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               Workouts/Week
             </Paragraph>
             <Paragraph size="$5" fontWeight="600">
@@ -66,7 +66,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
         {(isStrength || isCardio) && (
         <XStack gap="$4" flexWrap="wrap">
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               {isStrength ? "Total Volume" : "Total Distance"}
             </Paragraph>
             <Paragraph size="$5" fontWeight="600">
@@ -79,7 +79,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
           </YStack>
 
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               {isStrength ? "Volume/Week" : "Distance/Week"}
             </Paragraph>
             <Paragraph size="$5" fontWeight="600">
@@ -110,7 +110,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
         {/* Row 3: All-time Max | Recent Max */}
         <XStack gap="$4" flexWrap="wrap">
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               {isStrength
                 ? "Max Weight"
                 : isCardio
@@ -131,7 +131,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
           </YStack>
 
           <YStack flex={1} minW={150}>
-            <Paragraph size="$1" opacity={0.6}>
+            <Paragraph size="$1" color="$color10">
               {isStrength
                 ? "Recent Max"
                 : isCardio
@@ -179,7 +179,7 @@ export function ExerciseStatsCard({ exercise }: ExerciseStatsCardProps) {
 
         <Separator />
 
-        <Paragraph size="$2" opacity={0.5}>
+        <Paragraph size="$2" color="$color9">
           Last: {formatDate(exercise.last_logged)}
         </Paragraph>
       </YStack>

@@ -40,14 +40,14 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
   return (
     <YStack width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
       <YStack paddingInline="$3" gap="$1">
-        <H5 opacity={0.7} fontWeight="600" $sm={{ fontSize: "$8" }}>
+        <H5 color="$color11" fontWeight="600" $sm={{ fontSize: "$8" }}>
           {workout?.datetime.toLocaleDateString(undefined, {
             month: "long",
             day: "numeric",
             year: "numeric",
           })}
         </H5>
-        <Paragraph opacity={0.5} $sm={{ fontSize: "$6" }}>
+        <Paragraph color="$color10" $sm={{ fontSize: "$6" }}>
           {workout?.datetime.toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
@@ -71,7 +71,7 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
             icon={Plus}
             onPress={() => setAddSetsOpen(true)}
             variant="outlined"
-            borderColor="$color5"
+            borderColor="$color6"
             borderWidth={0.5}
           >
             Add Sets

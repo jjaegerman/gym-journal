@@ -20,14 +20,14 @@ export default function TabLayout() {
           : theme.color11.val,
         tabBarStyle: {
           backgroundColor: theme.color2.val,
-          borderTopColor: theme.color8.val,
+          borderTopColor: theme.color6.val,
           paddingTop: 0,
         },
         tabBarLabelStyle: { fontSize: isWide ? 14 : 10, marginTop: isWide ? 5 : 0 },
         tabBarIconStyle: { marginBottom: isWide ? -4 : 0 },
         headerStyle: {
           backgroundColor: theme.color2.val,
-          borderBottomColor: theme.color8.val,
+          borderBottomColor: theme.color6.val,
         },
         headerShown: true,
         headerRight: () => <SettingsMenu />,

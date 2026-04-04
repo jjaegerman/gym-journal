@@ -105,7 +105,7 @@ export function AddSetsSheet({
       <Sheet.Frame>
         <Sheet.Handle />
         <YStack px="$4" pt="$2" pb="$6" gap="$3" flex={1}>
-          <H5 opacity={0.7} fontWeight="600">
+          <H5 color="$color11" fontWeight="600">
             Add to {dateLabel}
           </H5>
           {exercises.length > 0 && (

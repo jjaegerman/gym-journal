@@ -19,7 +19,7 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
 
   return (
     <YStack gap="$2">
-      <H5 opacity={0.7} fontWeight="600">
+      <H5 color="$color11" fontWeight="600">
         Recent Sessions
       </H5>
       <YGroup bordered separator={<Separator />} rounded="$4" overflow="hidden">

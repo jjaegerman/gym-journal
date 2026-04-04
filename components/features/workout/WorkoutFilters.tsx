@@ -45,7 +45,7 @@ export function WorkoutFilters({
             onPress={onClear}
             borderRadius="$10"
             px="$2"
-            icon={<X size={14} color="$gray11" />}
+            icon={<X size={14} color="$color11" />}
           />
         )}
       </XStack>

@@ -24,7 +24,7 @@ export function TrendIndicator({
 
   if (diff === 0) {
     return (
-      <Text fontSize="$2" opacity={0.5}>
+      <Text fontSize="$2" color="$color9">
         —
       </Text>
     );

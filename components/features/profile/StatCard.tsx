@@ -17,7 +17,7 @@ export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps)
     <Card elevate size="$4" bordered p="$4" flex={1} minWidth={150}>
       <YStack gap="$2">
         {icon && <YStack>{icon}</YStack>}
-        <Paragraph size="$2" $sm={{ size: "$4" }} opacity={0.7}>
+        <Paragraph size="$2" $sm={{ size: "$4" }} color="$color11">
           {title}
         </Paragraph>
         <H4 size="$8" fontWeight="bold">
@@ -25,7 +25,7 @@ export function StatCard({ title, value, subtitle, icon, trend }: StatCardProps)
         </H4>
         {trend && <YStack>{trend}</YStack>}
         {subtitle && (
-          <Paragraph size="$1" $sm={{ size: "$3" }} opacity={0.5}>
+          <Paragraph size="$1" $sm={{ size: "$3" }} color="$color9">
             {subtitle}
           </Paragraph>
         )}

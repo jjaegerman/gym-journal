@@ -173,7 +173,7 @@ export function RecordingScreen() {
               style={{ flex: 1 }}
             >
               <View pt="$8" pb="$4" px="$4" width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} mx="auto">
-                <H5 paddingInline="$3" mb="$3" opacity={0.7} fontWeight="600">
+                <H5 paddingInline="$3" mb="$3" color="$color11" fontWeight="600">
                   Current Workout{workoutDuration ? `  ·  ${workoutDuration}` : ""}
                 </H5>
                 <ExerciseList
@@ -213,7 +213,7 @@ export function RecordingScreen() {
                     key={prompt}
                     size="$3"
                     $sm={{ size: "$5" }}
-                    opacity={0.5}
+                    color="$color10"
                     text="center"
                   >
                     "{prompt}"

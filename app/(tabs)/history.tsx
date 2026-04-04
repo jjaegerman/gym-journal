@@ -68,16 +68,16 @@ export default function TabThreeScreen() {
           onPress={toggleSortOrder}
           borderRadius="$10"
           px="$2"
-          icon={<ArrowDownUp size={Platform.isPad ? 20 : 14} color="$gray11" />}
+          icon={<ArrowDownUp size={Platform.isPad ? 20 : 14} color="$color11" />}
         >
-          <Text fontSize="$3" $sm={{ fontSize: "$5" }} color="$gray11">
+          <Text fontSize="$3" $sm={{ fontSize: "$5" }} color="$color11">
             {sortAscending ? "Oldest" : "Newest"}
           </Text>
         </Button>
       </XStack>
       {showEmptyFilterResult ? (
         <YStack py="$8" items="center">
-          <Paragraph opacity={0.6}>
+          <Paragraph color="$color10">
             No workouts match your filters
           </Paragraph>
         </YStack>

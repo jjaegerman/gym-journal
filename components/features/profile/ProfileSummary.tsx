@@ -109,7 +109,7 @@ export function ProfileSummary() {
         {/* Section 2: Recent (Last 4 Weeks) */}
         <YStack gap="$3">
           <H3>Recent</H3>
-          <Paragraph opacity={0.7} size="$2">
+          <Paragraph color="$color11" size="$2">
             Last 4 weeks vs previous 4 weeks
           </Paragraph>
         </YStack>

@@ -14,7 +14,7 @@ export function LoadingState({ message = "Loading...", size = "large" }: Loading
     <YStack flex={1} items="center" justify="center" p="$6" gap="$4">
       <Spinner size={size} />
       {message && (
-        <Text opacity={0.6}>
+        <Text color="$color10">
           {message}
         </Text>
       )}

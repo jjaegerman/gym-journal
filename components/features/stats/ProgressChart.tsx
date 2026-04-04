@@ -47,14 +47,18 @@ function getValue(d: ProgressDataPoint, metric: MetricType): number {
 
 export function ProgressChart({ data, weightUnit, distanceUnit }: ProgressChartProps) {
   const baseTheme = useTheme();
-  const gridColor = baseTheme.color5.val;
-  const labelColor = baseTheme.color9.val;
+  const gridColor = baseTheme.color6.val;
+  const labelColor = baseTheme.color11.val;
+  const inactiveBg = baseTheme.color3.val;
+  const inactiveText = baseTheme.color11.val;
   return (
     <Theme name="accent">
       <ProgressChartContent
         data={data}
         gridColor={gridColor}
         labelColor={labelColor}
+        inactiveBg={inactiveBg}
+        inactiveText={inactiveText}
         weightUnit={weightUnit}
         distanceUnit={distanceUnit}
       />
@@ -66,9 +70,11 @@ function ProgressChartContent({
   data,
   gridColor,
   labelColor,
+  inactiveBg,
+  inactiveText,
   weightUnit,
   distanceUnit,
-}: ProgressChartProps & { gridColor: string; labelColor: string }) {
+}: ProgressChartProps & { gridColor: string; labelColor: string; inactiveBg: string; inactiveText: string }) {
   const { width: screenWidth } = useWindowDimensions();
   const [containerWidth, setContainerWidth] = useState(screenWidth * 0.9);
   const handleLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
@@ -106,7 +112,7 @@ function ProgressChartContent({
   if (data.length === 0 || availableMetrics.length === 0) {
     return (
       <YStack p="$4" items="center" justify="center" height={200}>
-        <Text opacity={0.5}>No progress data available</Text>
+        <Text color="$color10">No progress data available</Text>
       </YStack>
     );
   }
@@ -199,7 +205,7 @@ function ProgressChartContent({
               size="$2"
               $sm={{ size: "$5" }}
               chromeless={metric !== m}
-              bg={metric === m ? "$color3" : "$gray3"}
+              bg={metric === m ? "$color3" : (inactiveBg as any)}
               onPress={() => setMetric(m)}
               borderRadius="$3"
               px="$3"
@@ -208,7 +214,7 @@ function ProgressChartContent({
                 fontSize="$2"
                 $sm={{ fontSize: "$4" }}
                 fontWeight={metric === m ? "600" : "400"}
-                color={metric === m ? "$color11" : "$gray11"}
+                color={metric === m ? "$color11" : (inactiveText as any)}
               >
                 {METRIC_LABELS[m]}
               </Text>

@@ -26,8 +26,8 @@ export function UnitPreferencesSheet({ open, onOpenChange }: UnitPreferencesShee
                 id="weight-switch"
                 size="$3"
                 p={0}
-                bg={prefs.weightUnit === "kg" ? "$color8" : "$color4"}
-                borderColor={prefs.weightUnit === "kg" ? "$color8" : "$color4"}
+                bg={prefs.weightUnit === "kg" ? "$color9" : "$color5"}
+                borderColor={prefs.weightUnit === "kg" ? "$color9" : "$color5"}
                 checked={prefs.weightUnit === "kg"}
                 onCheckedChange={(checked) =>
                   updatePrefs({ ...prefs, weightUnit: checked ? "kg" : "lbs" })
@@ -46,8 +46,8 @@ export function UnitPreferencesSheet({ open, onOpenChange }: UnitPreferencesShee
                 id="distance-switch"
                 size="$3"
                 p={0}
-                bg={prefs.distanceUnit === "km" ? "$color8" : "$color4"}
-                borderColor={prefs.distanceUnit === "km" ? "$color8" : "$color4"}
+                bg={prefs.distanceUnit === "km" ? "$color9" : "$color5"}
+                borderColor={prefs.distanceUnit === "km" ? "$color9" : "$color5"}
                 checked={prefs.distanceUnit === "km"}
                 onCheckedChange={(checked) =>
                   updatePrefs({ ...prefs, distanceUnit: checked ? "km" : "miles" })

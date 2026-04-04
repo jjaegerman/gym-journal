@@ -23,7 +23,7 @@ export function InputModeToggle({
       $sm={{ size: "$6" }}
       circular
       variant="outlined"
-      borderColor="$color5"
+      borderColor="$color6"
       borderWidth={1}
       onPress={handleToggle}
       disabled={disabled}

@@ -93,7 +93,7 @@ export function ExerciseStats() {
             />
           ) : (
             <YStack flex={1} items="center" justify="center" py="$8">
-              <Paragraph opacity={0.6}>No exercise data yet</Paragraph>
+              <Paragraph color="$color10">No exercise data yet</Paragraph>
             </YStack>
           )}
         </YStack>
