@@ -45,7 +45,7 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
       <XStack items="center" justify="space-between">
         <YStack gap="$2" flex={1}>
           <XStack items="center" gap="$2">
-            <Trophy size="$1.5" $sm={{ size: "$2" }} color="$color10" />
+            <Trophy size="$1.5" $sm={{ size: "$2" }} color="$color11" />
             <Text fontSize="$2" $sm={{ fontSize: "$4" }} color="$color11" fontWeight="600">
               {title}
             </Text>
@@ -58,11 +58,11 @@ function PRCard({ title, pr, unit, onPress }: PRCardProps) {
               {unit}
             </Text>
           </XStack>
-          <Text fontSize="$1" $sm={{ fontSize: "$4" }} color="$color10" numberOfLines={1}>
+          <Text fontSize="$1" $sm={{ fontSize: "$4" }} color="$color11" numberOfLines={1}>
             {formattedDate}
           </Text>
         </YStack>
-        {onPress && <ChevronRight size="$1.5" $sm={{ size: "$2" }} color="$color10" />}
+        {onPress && <ChevronRight size="$1.5" $sm={{ size: "$2" }} color="$color11" />}
       </XStack>
     </Card>
   );
