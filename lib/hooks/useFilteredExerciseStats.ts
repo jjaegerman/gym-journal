@@ -34,7 +34,8 @@ export function useFilteredExerciseStats() {
   const hasActiveFilters = useCallback(() => {
     return !!(
       (filters.modifiers && filters.modifiers.length > 0) ||
-      (filters.equipment && filters.equipment.length > 0)
+      (filters.equipment && filters.equipment.length > 0) ||
+      (filters.timeRange && filters.timeRange !== 'all_time')
     );
   }, [filters]);
 

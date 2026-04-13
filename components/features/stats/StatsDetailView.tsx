@@ -8,7 +8,11 @@ import { RecentSessions } from "./RecentSessions";
 
 interface StatsDetailViewProps {
   stats: FilteredExerciseStats;
-  onSessionPress: (workoutId: string) => void;
+  /**
+   * If omitted (e.g. on /share/stats where the workout modal is gated behind
+   * auth), PRs and recent sessions render non-interactively.
+   */
+  onSessionPress?: (workoutId: string) => void;
   onExerciseKindSelect?: (exercise_kind: string) => void;
   availableExerciseKinds?: string[];
 }

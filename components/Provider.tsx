@@ -10,7 +10,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import { View } from "tamagui";
-import { SplashScreen } from "expo-router";
+import { SplashScreen, useSegments } from "expo-router";
 import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
 import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
@@ -31,10 +31,16 @@ const createSessionFromUrl = async (url: string) => {
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { session, loading } = useSession();
+  const segments = useSegments();
+  // Public /share/* routes must render without an auth session and without
+  // UnitPreferencesProvider (which throws unless a session exists). Cast
+  // through string because the typed-routes codegen does not yet know about
+  // the /share group on first build.
+  const isShareRoute = (segments[0] as string) === "share";
 
   useEffect(() => {
-    if (!loading) SplashScreen.hideAsync();
-  }, [loading]);
+    if (!loading || isShareRoute) SplashScreen.hideAsync();
+  }, [loading, isShareRoute]);
 
   const url = Linking.useLinkingURL();
   if (url) createSessionFromUrl(url);
@@ -42,7 +48,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <View bg="$background" flex={1}>
       <TabProvider>
-        {loading ? null : session?.user ? (
+        {isShareRoute ? (
+          <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
+        ) : loading ? null : session?.user ? (
           <UnitPreferencesProvider>{children}</UnitPreferencesProvider>
         ) : (
           <Auth />

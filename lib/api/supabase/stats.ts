@@ -136,52 +136,38 @@ export async function getFilterRelationships(): Promise<FilterRelationship[]> {
 }
 
 /**
- * Get filtered exercise stats with progress data and PRs
+ * Empty result used when the RPC returns no rows. Separate from the normal
+ * mapping path so both the authenticated and public wrappers share it.
  */
-export async function getFilteredExerciseStats(
-  filters?: ExerciseFilters
-): Promise<FilteredExerciseStats> {
-  const { data, error } = await supabase.rpc("get_filtered_exercise_stats", {
-    p_exercise_kinds: filters?.exercise_kinds?.length ? filters.exercise_kinds : null,
-    p_modifiers: filters?.modifiers?.length ? filters.modifiers : null,
-    p_equipment: filters?.equipment?.length ? filters.equipment : null,
-    p_time_range: filters?.timeRange ?? 'all_time',
-    p_preferred_weight_unit: filters?.preferredWeightUnit ?? 'lbs',
-    p_preferred_distance_unit: filters?.preferredDistanceUnit ?? 'miles',
-  });
+export const EMPTY_FILTERED_EXERCISE_STATS: FilteredExerciseStats = {
+  matchedExercises: 0,
+  displayName: 'No exercises',
+  totalWorkouts: 0,
+  totalSets: 0,
+  totalVolume: 0,
+  totalDistance: 0,
+  maxWeight: null,
+  maxReps: null,
+  totalDurationSeconds: 0,
+  maxDurationSeconds: null,
+  bestPace: null,
+  maxResistanceLevel: null,
+  weightUnit: null,
+  distanceUnit: null,
+  weightPr: null,
+  repsPr: null,
+  progressData: [],
+  recentSessions: [],
+  firstLogged: null,
+  lastLogged: null,
+  appliedFilters: null,
+};
 
-  if (error) {
-    console.error("Error fetching filtered exercise stats:", error);
-    throw error;
-  }
-
-  const row = data?.[0];
-  if (!row) {
-    return {
-      matchedExercises: 0,
-      displayName: 'No exercises',
-      totalWorkouts: 0,
-      totalSets: 0,
-      totalVolume: 0,
-      totalDistance: 0,
-      maxWeight: null,
-      maxReps: null,
-      totalDurationSeconds: 0,
-      maxDurationSeconds: null,
-      bestPace: null,
-      maxResistanceLevel: null,
-      weightUnit: null,
-      distanceUnit: null,
-      weightPr: null,
-      repsPr: null,
-      progressData: [],
-      recentSessions: [],
-      firstLogged: null,
-      lastLogged: null,
-      appliedFilters: null,
-    };
-  }
-
+/**
+ * Map a single row returned by get_filtered_exercise_stats (or its public
+ * twin) to the frontend shape. Shared so the two wrappers never drift.
+ */
+export function mapFilteredStatsRow(row: any): FilteredExerciseStats {
   return {
     matchedExercises: row.matched_exercises ?? 0,
     displayName: row.display_name ?? 'No exercises',
@@ -205,4 +191,29 @@ export async function getFilteredExerciseStats(
     lastLogged: row.last_logged,
     appliedFilters: row.applied_filters ?? null,
   };
+}
+
+/**
+ * Get filtered exercise stats with progress data and PRs
+ */
+export async function getFilteredExerciseStats(
+  filters?: ExerciseFilters
+): Promise<FilteredExerciseStats> {
+  const { data, error } = await supabase.rpc("get_filtered_exercise_stats", {
+    p_exercise_kinds: filters?.exercise_kinds?.length ? filters.exercise_kinds : null,
+    p_modifiers: filters?.modifiers?.length ? filters.modifiers : null,
+    p_equipment: filters?.equipment?.length ? filters.equipment : null,
+    p_time_range: filters?.timeRange ?? 'all_time',
+    p_preferred_weight_unit: filters?.preferredWeightUnit ?? 'lbs',
+    p_preferred_distance_unit: filters?.preferredDistanceUnit ?? 'miles',
+  });
+
+  if (error) {
+    console.error("Error fetching filtered exercise stats:", error);
+    throw error;
+  }
+
+  const row = data?.[0];
+  if (!row) return EMPTY_FILTERED_EXERCISE_STATS;
+  return mapFilteredStatsRow(row);
 }

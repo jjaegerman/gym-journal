@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dacky.gymjournal",
+      "sha256_cert_fingerprints": [
+        "FF:EE:4A:75:D6:70:BC:76:5E:EF:F0:3A:E5:9A:01:84:DA:C3:F1:72:E4:06:F2:92:4D:79:22:28:0D:91:68:C4"
+      ]
+    }
+  }
+]

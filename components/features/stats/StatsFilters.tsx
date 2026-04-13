@@ -1,11 +1,16 @@
 import { useState, useMemo } from "react";
 import { XStack, Button } from "tamagui";
-import { X } from "@tamagui/lucide-icons";
+import { X, Share2 } from "@tamagui/lucide-icons";
+import * as Clipboard from "expo-clipboard";
+import { useToastController } from "@tamagui/toast";
 import { FilterChip, FilterSheet, MoreFiltersSheet } from "@/components/ui/filters";
 import {
   ExerciseFilters,
   ExerciseFilterOptions,
 } from "@/lib/hooks/useFilteredExerciseStats";
+import { useSession } from "@/lib/hooks/useSession";
+import { useUnitPreferences } from "@/lib/hooks/useUnitPreferences";
+import { buildStatsShareUrl } from "@/lib/share/links";
 
 type TimeRange = 'all_time' | '1_year' | '3_months' | '1_month';
 
@@ -34,6 +39,26 @@ export function StatsFilters({
   const [exerciseKindSheetOpen, setExerciseKindSheetOpen] = useState(false);
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [timeRangeSheetOpen, setTimeRangeSheetOpen] = useState(false);
+  const { session } = useSession();
+  const { prefs } = useUnitPreferences();
+  const toast = useToastController();
+
+  const handleShare = async () => {
+    const userId = session?.user.id;
+    if (!userId) return;
+    try {
+      const url = buildStatsShareUrl(userId, {
+        ...filters,
+        preferredWeightUnit: prefs.weightUnit,
+        preferredDistanceUnit: prefs.distanceUnit,
+      });
+      await Clipboard.setStringAsync(url);
+      toast.show("Link copied", { duration: 2000 });
+    } catch (err) {
+      console.error("Failed to copy stats share link", err);
+      toast.show("Failed to copy link", { duration: 2000 });
+    }
+  };
 
   const currentTimeRangeLabel =
     TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ?? "All time";
@@ -92,30 +117,48 @@ export function StatsFilters({
 
   return (
     <>
-      <XStack gap="$1.5" py="$2" flexWrap="wrap">
-        <FilterChip
-          label={filters.exercise_kinds?.[0] ?? "Category"}
-          active={!!filters.exercise_kinds?.length}
-          onPress={() => setExerciseKindSheetOpen(true)}
-        />
-        <FilterChip
-          label="Filter"
-          selectedCount={moreFiltersCount}
-          onPress={() => setMoreFiltersOpen(true)}
-        />
-        <FilterChip
-          label={currentTimeRangeLabel}
-          active={filters.timeRange !== "all_time"}
-          onPress={() => setTimeRangeSheetOpen(true)}
-        />
-        {hasActiveFilters && (
+      <XStack gap="$1.5" py="$2" items="center">
+        <XStack gap="$1.5" flex={1} flexWrap="wrap">
+          <FilterChip
+            label={filters.exercise_kinds?.[0] ?? "Category"}
+            active={!!filters.exercise_kinds?.length}
+            onPress={() => setExerciseKindSheetOpen(true)}
+          />
+          <FilterChip
+            label="Filter"
+            selectedCount={moreFiltersCount}
+            onPress={() => setMoreFiltersOpen(true)}
+          />
+          <FilterChip
+            label={currentTimeRangeLabel}
+            active={filters.timeRange !== "all_time"}
+            onPress={() => setTimeRangeSheetOpen(true)}
+          />
+          {hasActiveFilters && (
+            <Button
+              size="$3"
+              $sm={{ size: "$5" }}
+              chromeless
+              bg="$gray4"
+              pressStyle={{ opacity: 0.8 }}
+              onPress={onClear}
+              borderRadius="$10"
+              circular
+              icon={<X size="$1" $sm={{ size: "$1.5" }} color="$gray11" />}
+            />
+          )}
+        </XStack>
+        {session?.user.id && (
           <Button
             size="$3"
+            $sm={{ size: "$5" }}
             chromeless
-            onPress={onClear}
+            bg="$gray4"
+            pressStyle={{ opacity: 0.8 }}
+            onPress={handleShare}
             borderRadius="$10"
-            px="$2"
-            icon={<X size={14} color="$color11" />}
+            circular
+            icon={<Share2 size="$1" $sm={{ size: "$1.5" }} color="$gray11" />}
           />
         )}
       </XStack>

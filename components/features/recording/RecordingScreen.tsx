@@ -3,8 +3,8 @@ import { RecordTextBox } from "./RecordTextBox";
 import { InputModeToggle } from "./InputModeToggle";
 import { ContextChip } from "./ContextChip";
 import { H5, Paragraph, View, YStack, Spinner } from "tamagui";
+import { useAudioRecording } from "@/lib/hooks/useAudioRecording";
 import {
-  useAudioRecording,
   useExerciseSubmit,
   useCurrentWorkout,
 } from "@/lib/hooks";

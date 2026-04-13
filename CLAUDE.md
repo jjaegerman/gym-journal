@@ -71,6 +71,7 @@ Use semantic `$colorN` tokens — they respond to theme changes. Raw tokens (`$g
 - **Don't call `supabase.rpc()` directly in components** — use `lib/api/supabase/` wrapper functions
 - **Don't add auth/session logic in components** — auth is enforced in `Provider.tsx`
 - **Unit preferences via `useUnitPreferences()` hook only** — never local `useState`
+- **No heavy-import hooks in barrels** — `lib/hooks/index.ts` excludes `useAudioRecording` because re-exporting it loaded `expo-audio` on every page, triggering mic prompts on share routes. Import such hooks directly.
 - **Token reference**: `node -e "const c=require('.tamagui/tamagui.config.cjs'); console.log(c.config.tokens.size)"`
 
 ## Key Design Patterns
@@ -82,6 +83,9 @@ Use semantic `$colorN` tokens — they respond to theme changes. Raw tokens (`$g
 - **Empty Workout Cleanup**: `delete_set` auto-deletes workouts with 0 remaining sets
 - **Unit defaulting**: Edge function's responsibility — always sends `weight_unit`/`distance_unit` using user preference as fallback. DB DEFAULT is last-resort safety net only.
 - **Duration**: Stored as ISO 8601 text (e.g., "PT30M"). Use `parse_iso8601_duration_to_seconds()` for calculations.
+- **Public share routes**: `app/share/*` bypasses auth via `useSegments()` in `Provider.tsx`. Uses parallel `get_public_*` RPCs (granted to `anon`, take `p_user_id` param instead of `auth.uid()`). Components thread `readonly?: boolean` to hide mutation UI.
+- **Share URLs**: All built via `lib/share/links.ts` — never construct inline. `user_id` in stats URLs is temporary; swap for handles in that one file later.
+- **Universal/App Links**: `app.json` → `associatedDomains` + `intentFilters` for `gym-journal.com`. Backing files at `public/.well-known/*`.
 
 ## OpenAI Integration
 
@@ -109,7 +113,7 @@ Use semantic `$colorN` tokens — they respond to theme changes. Raw tokens (`$g
 
 2. **Two `formatDuration` functions**: `lib/utils/date.ts` takes minutes (re-exported from barrel); `lib/utils/formatters.ts` takes seconds (direct import only). Don't mix them.
 
-3. **Audio Recording**: iOS uses native module (`audio-session-manager`); Android/Web falls back to Expo Audio. Check `Platform.OS === "ios" && AudioSessionManager?.startRecording`.
+3. **Audio Recording**: iOS uses native module (`audio-session-manager`); Android/Web falls back to Expo Audio. Check `Platform.OS === "ios" && AudioSessionManager?.startRecording`. Permission setup is lazy on web (first record tap), eager on Android (mount) — via `ensureAudioSetup` in `useAudioRecording.ts`. Don't unconditionally call `requestRecordingPermissionsAsync()` on mount.
 
 4. **`Sheet.Overlay`** requires explicit `opacity` (e.g. `opacity={0.5}`) — default renders fully opaque black.
 

@@ -9,7 +9,11 @@ interface SessionData {
 
 interface RecentSessionsProps {
   sessions: SessionData[];
-  onSessionPress: (workoutId: string) => void;
+  /**
+   * If omitted, rows render non-interactively (no chevron, no press). Used
+   * by the /share/stats route since the workout modal is gated behind auth.
+   */
+  onSessionPress?: (workoutId: string) => void;
 }
 
 export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps) {
@@ -37,10 +41,18 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
                 size="$4"
                 $sm={{ size: "$6" }}
                 paddingBlock="$3"
-                iconAfter={<ChevronRight size="$1.5" $sm={{ size: "$2" }} />}
-                hoverTheme
-                pressTheme
-                onPress={() => onSessionPress(session.workoutId)}
+                iconAfter={
+                  onSessionPress ? (
+                    <ChevronRight size="$1.5" $sm={{ size: "$2" }} />
+                  ) : undefined
+                }
+                hoverTheme={!!onSessionPress}
+                pressTheme={!!onSessionPress}
+                onPress={
+                  onSessionPress
+                    ? () => onSessionPress(session.workoutId)
+                    : undefined
+                }
               />
             </YGroup.Item>
           );

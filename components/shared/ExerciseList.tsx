@@ -17,6 +17,11 @@ interface ExerciseListProps {
   onLogDeleted?: () => void;
   contextExerciseId?: string;
   onContextChange?: (exercise: Exercise | null) => void;
+  /**
+   * When true, set rows render without any mutation affordances (no delete
+   * button). Used by the /share/* routes where a non-owner is viewing.
+   */
+  readonly?: boolean;
 }
 
 export const ExerciseList = memo(function ExerciseList({
@@ -24,6 +29,7 @@ export const ExerciseList = memo(function ExerciseList({
   onLogDeleted,
   contextExerciseId,
   onContextChange,
+  readonly = false,
 }: ExerciseListProps) {
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -98,6 +104,7 @@ export const ExerciseList = memo(function ExerciseList({
         open={dialogOpen}
         setOpen={setDialogOpen}
         onLogDeleted={onLogDeleted}
+        readonly={readonly}
       />
     </>
   );

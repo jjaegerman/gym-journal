@@ -77,6 +77,13 @@ function RootLayoutNav() {
             },
           }}
         />
+
+        <Stack.Screen
+          name="share"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

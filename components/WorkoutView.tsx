@@ -1,26 +1,58 @@
 import { useEffect, useState } from "react";
 import { Button, H5, Paragraph, XStack, YStack } from "tamagui";
-import { Plus } from "@tamagui/lucide-icons";
+import { Plus, Share2 } from "@tamagui/lucide-icons";
+import * as Clipboard from "expo-clipboard";
+import { useToastController } from "@tamagui/toast";
 import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
 import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
+import { buildWorkoutShareUrl } from "@/lib/share/links";
 import { ExerciseList } from "./shared/ExerciseList";
 import { AddSetsSheet } from "./features/workout/AddSetsSheet";
 import { LoadingState } from "./ui/feedback/LoadingState";
 
-export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
+interface WorkoutViewProps {
+  workoutId: string;
+  /**
+   * When true, hides all mutation UI (Add Sets, delete set) and the share
+   * button. Used by `/share/workout/[id]` where a non-owner is viewing.
+   */
+  readonly?: boolean;
+  /**
+   * Override the fetch function. Defaults to the authenticated
+   * `getWorkoutDetails`; the share route passes `getPublicWorkoutDetails`.
+   */
+  fetchFn?: (id: string) => Promise<unknown>;
+}
+
+export const WorkoutView = ({
+  workoutId,
+  readonly = false,
+  fetchFn = getWorkoutDetails,
+}: WorkoutViewProps) => {
   const [workout, setWorkout] = useState<WorkoutDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [addSetsOpen, setAddSetsOpen] = useState(false);
+  const toast = useToastController();
 
   const fetchWorkout = async () => {
     try {
       setLoading(true);
-      const data = await getWorkoutDetails(workoutId);
+      const data = await fetchFn(workoutId);
       setWorkout(WorkoutDetailsSchema.parse(data));
     } catch (err) {
       console.error("Failed to load workout", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await Clipboard.setStringAsync(buildWorkoutShareUrl(workoutId));
+      toast.show("Link copied", { duration: 2000 });
+    } catch (err) {
+      console.error("Failed to copy share link", err);
+      toast.show("Failed to copy link", { duration: 2000 });
     }
   };
 
@@ -39,6 +71,29 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
 
   return (
     <YStack width="90%" $sm={{ width: "75%" }} $md={{ width: "65%" }} gap="$4" mx="auto" pb="$4" pt="$4">
+      {workout && !readonly && (
+        <XStack paddingInline="$3" justify="space-between" items="center">
+          <Button
+            size="$3"
+            $sm={{ size: "$5" }}
+            icon={Plus}
+            onPress={() => setAddSetsOpen(true)}
+            variant="outlined"
+            borderColor="$color6"
+            borderWidth={0.5}
+          >
+            Add Sets
+          </Button>
+          <Button
+            size="$3"
+            $sm={{ size: "$5" }}
+            chromeless
+            circular
+            onPress={handleShare}
+            icon={<Share2 size="$1" $sm={{ size: "$1.5" }} color="$color10" />}
+          />
+        </XStack>
+      )}
       <YStack paddingInline="$3" gap="$1">
         <H5 color="$color11" fontWeight="600" $sm={{ fontSize: "$8" }}>
           {workout?.datetime.toLocaleDateString(undefined, {
@@ -63,26 +118,12 @@ export const WorkoutView = ({ workoutId }: { workoutId: string }) => {
           )}
         </Paragraph>
       </YStack>
-      {workout && (
-        <XStack justify="flex-end" paddingInline="$3">
-          <Button
-            size="$3"
-            $sm={{ size: "$5" }}
-            icon={Plus}
-            onPress={() => setAddSetsOpen(true)}
-            variant="outlined"
-            borderColor="$color6"
-            borderWidth={0.5}
-          >
-            Add Sets
-          </Button>
-        </XStack>
-      )}
       <ExerciseList
         exercises={workout?.exercises ?? []}
-        onLogDeleted={fetchWorkout}
+        onLogDeleted={readonly ? undefined : fetchWorkout}
+        readonly={readonly}
       />
-      {workout && (
+      {workout && !readonly && (
         <AddSetsSheet
           workoutId={workoutId}
           workoutDatetime={workout.datetime}

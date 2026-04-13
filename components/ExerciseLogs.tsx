@@ -27,11 +27,13 @@ export const ExerciseLogs = ({
   open,
   setOpen,
   onLogDeleted,
+  readonly = false,
 }: {
   exercise: Exercise;
   open: boolean;
   setOpen: (open: boolean) => void;
   onLogDeleted?: () => void;
+  readonly?: boolean;
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [setToDelete, setSetToDelete] = useState<Set | null>(null);
@@ -150,15 +152,17 @@ export const ExerciseLogs = ({
                         $sm={{ size: "$6" }}
                         paddingBlock="$3"
                         iconAfter={
-                          <Button
-                            size="$1.5"
-                            $sm={{ size: "$4" }}
-                            circular
-                            chromeless
-                            color="$red9"
-                            icon={<Trash2 size="$1" $sm={{ size: "$1.5" }} />}
-                            onPress={() => handleDeletePress(set)}
-                          />
+                          readonly ? undefined : (
+                            <Button
+                              size="$1.5"
+                              $sm={{ size: "$4" }}
+                              circular
+                              chromeless
+                              color="$red9"
+                              icon={<Trash2 size="$1" $sm={{ size: "$1.5" }} />}
+                              onPress={() => handleDeletePress(set)}
+                            />
+                          )
                         }
                         hoverTheme
                         pressTheme

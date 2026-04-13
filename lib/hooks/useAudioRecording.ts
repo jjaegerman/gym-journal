@@ -34,24 +34,28 @@ export function useAudioRecording() {
   const useNativeRecording = Platform.OS === "ios" &&
     AudioSessionManager?.startRecording;
 
+  const audioSetupDoneRef = useRef(false);
+
+  const ensureAudioSetup = async () => {
+    if (audioSetupDoneRef.current || useNativeRecording) return true;
+    const status = await AudioModule.requestRecordingPermissionsAsync();
+    if (!status.granted) return false;
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      allowsRecording: true,
+      interruptionMode: "doNotMix",
+      interruptionModeAndroid: "doNotMix",
+      shouldRouteThroughEarpiece: true,
+    });
+    audioSetupDoneRef.current = true;
+    return true;
+  };
+
+  // Eagerly set up audio on Android (not web — avoids microphone prompt on share pages)
   useEffect(() => {
-    (async () => {
-      // Only configure expo-audio for non-iOS platforms
-      // iOS audio session is configured at app root level
-      if (!useNativeRecording) {
-        const status = await AudioModule.requestRecordingPermissionsAsync();
-        if (!status.granted) {
-          Alert.alert("Permission to access microphone was denied");
-        }
-        await setAudioModeAsync({
-          playsInSilentMode: true,
-          allowsRecording: true,
-          interruptionMode: "doNotMix",
-          interruptionModeAndroid: "doNotMix",
-          shouldRouteThroughEarpiece: true,
-        });
-      }
-    })();
+    if (!useNativeRecording && Platform.OS !== 'web') {
+      ensureAudioSetup();
+    }
   }, [useNativeRecording]);
 
   // Keep a ref to expo recorder state so the interval can read it without restarting
@@ -93,6 +97,12 @@ export function useAudioRecording() {
           );
         }
       } else {
+        const granted = await ensureAudioSetup();
+        if (!granted) {
+          setState("idle");
+          Alert.alert("Permission to access microphone was denied");
+          return;
+        }
         await audioRecorder.prepareToRecordAsync();
         await audioRecorder.record();
         setState("recording");
