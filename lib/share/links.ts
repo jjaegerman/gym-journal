@@ -4,18 +4,19 @@ import type { ExerciseFilters } from "@/lib/api/supabase/stats";
 /**
  * Base URL for shareable links.
  *
- * Prod: https://gym-journal.com
- * Dev (web):    the current window origin (e.g. http://localhost:8081)
- * Dev (native): http://localhost:8081 as a best-effort fallback
+ * Web:          the current window origin — works for localhost, preview
+ *               deployments, and prod without any env coordination.
+ * Native prod:  https://gym-journal.com
+ * Native dev:   http://localhost:8081 as a best-effort fallback
  *
  * When a user handle column is introduced later, replace the `uid` query
  * param in `buildStatsShareUrl` with a handle and update `parseStatsShareParams`.
  */
 export function getShareBaseUrl(): string {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return window.location.origin;
+  }
   if (__DEV__) {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      return window.location.origin;
-    }
     return "http://localhost:8081";
   }
   return "https://gym-journal.com";
