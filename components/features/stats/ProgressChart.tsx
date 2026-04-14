@@ -45,6 +45,18 @@ function getValue(d: ProgressDataPoint, metric: MetricType): number {
   }
 }
 
+function hasValue(d: ProgressDataPoint, metric: MetricType): boolean {
+  switch (metric) {
+    case "volume":        return d.volume > 0;
+    case "maxWeight":     return d.maxWeight > 0;
+    case "maxReps":       return d.maxReps != null && d.maxReps > 0;
+    case "distance":      return d.distance != null && d.distance > 0;
+    case "avgPace":       return d.avgPace != null && d.avgPace > 0;
+    case "maxDuration":   return d.maxDuration != null && d.maxDuration > 0;
+    case "maxResistance": return d.maxResistance != null && d.maxResistance > 0;
+  }
+}
+
 export function ProgressChart({ data, weightUnit, distanceUnit }: ProgressChartProps) {
   const baseTheme = useTheme();
   const gridColor = baseTheme.color6.val;
@@ -109,7 +121,34 @@ function ProgressChartContent({
     }
   }, [availableMetrics, metric]);
 
-  if (data.length === 0 || availableMetrics.length === 0) {
+  const metricSeries = useMemo(() => {
+    const real = data
+      .filter((d) => hasValue(d, metric))
+      .map((d) => ({ week: d.week, value: getValue(d, metric) }));
+    if (real.length < 2) return real.map((p) => ({ ...p, empty: false }));
+
+    const WEEK_MS = 7 * 24 * 3600 * 1000;
+    const points: Array<{ week: string; value: number; empty: boolean }> = [];
+    for (let i = 0; i < real.length; i++) {
+      points.push({ ...real[i], empty: false });
+      if (i < real.length - 1) {
+        const cur = new Date(real[i].week).getTime();
+        const next = new Date(real[i + 1].week).getTime();
+        const gapWeeks = Math.max(0, Math.round((next - cur) / WEEK_MS) - 1);
+        for (let g = 1; g <= gapWeeks; g++) {
+          const t = g / (gapWeeks + 1);
+          points.push({
+            week: new Date(cur + g * WEEK_MS).toISOString(),
+            value: real[i].value + (real[i + 1].value - real[i].value) * t,
+            empty: true,
+          });
+        }
+      }
+    }
+    return points;
+  }, [data, metric]);
+
+  if (data.length === 0 || availableMetrics.length === 0 || metricSeries.length < 2) {
     return (
       <YStack p="$4" items="center" justify="center" height={200}>
         <Text color="$color10">No progress data available</Text>
@@ -163,17 +202,22 @@ function ProgressChartContent({
   };
 
   const DOT_RADIUS = 4;
+  const ACTIVE_DOT_RADIUS = DOT_RADIUS + DOT_RADIUS / 2;
+  const DENSE_POINT_THRESHOLD = 12;
+  const showDots = metricSeries.length <= DENSE_POINT_THRESHOLD;
   const WRAPPER_PADDING = DOT_RADIUS + 2;
   const Y_LABEL_WIDTH = 40;
   const outerWidth = containerWidth;
   const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
   const chartHeight = 180;
-  const spacing = data.length > 1 ? chartWidth / (data.length - 1) : 60;
+  const spacing = metricSeries.length > 1 ? chartWidth / (metricSeries.length - 1) : 60;
 
   const POINTER_SHIFT_FIRST_X = -(DOT_RADIUS + 1);
-  const chartData = data.map((d, i) => ({
-    value: getValue(d, metric),
+  const chartData = metricSeries.map((d, i) => ({
+    value: d.value,
     week: d.week,
+    empty: d.empty,
+    ...(d.empty ? { hideDataPoint: true } : {}),
     ...(i === 0 ? { pointerShiftX: POINTER_SHIFT_FIRST_X } : {}),
   }));
 
@@ -187,12 +231,12 @@ function ProgressChartContent({
   const maxValue = niceStep * noOfSections;
   const minValue = Math.max(0, Math.floor(rawMin / niceStep) * niceStep);
 
-  const MAX_X_LABELS = Math.min(data.length, 4);
+  const MAX_X_LABELS = Math.min(metricSeries.length, 4);
   const xLabelIndices =
     MAX_X_LABELS <= 1
       ? [0]
       : Array.from({ length: MAX_X_LABELS }, (_, k) =>
-          Math.round((k * (data.length - 1)) / (MAX_X_LABELS - 1))
+          Math.round((k * (metricSeries.length - 1)) / (MAX_X_LABELS - 1))
         ).filter((v, i, arr) => arr.indexOf(v) === i);
 
   return (
@@ -230,14 +274,14 @@ function ProgressChartContent({
           height={chartHeight}
           spacing={spacing}
           initialSpacing={0}
-          endSpacing={data.length > 1 ? 10 - spacing : 0}
+          endSpacing={metricSeries.length > 1 ? 10 - spacing : 0}
           rulesLength={chartWidth}
           xAxisLength={chartWidth}
           disableScroll
           color={lineColor}
           thickness={2}
           curved
-          hideDataPoints={false}
+          hideDataPoints={!showDots}
           dataPointsColor={lineColor}
           dataPointsRadius={DOT_RADIUS}
           noOfSections={noOfSections}
@@ -255,7 +299,7 @@ function ProgressChartContent({
           formatYLabel={formatYLabel}
           pointerConfig={{
             pointerStripHeight: chartHeight,
-            pointerStripColor: stripColor,
+            pointerStripColor: "transparent",
             pointerStripWidth: 1,
             pointerColor: lineColor,
             radius: DOT_RADIUS,
@@ -263,19 +307,24 @@ function ProgressChartContent({
             pointerLabelHeight: 48,
             activatePointersOnLongPress: false,
             autoAdjustPointerLabelPosition: true,
-            pointerComponent: (item: { pointerShiftX?: number }) => (
-              <View
-                style={{
-                  height: DOT_RADIUS * 2,
-                  width: DOT_RADIUS * 2,
-                  backgroundColor: lineColor,
-                  borderRadius: DOT_RADIUS,
-                  marginLeft: item?.pointerShiftX ?? 0,
-                }}
-              />
-            ),
-            pointerLabelComponent: (items: Array<{ value: number; week?: string }>) => {
+            pointerComponent: (item: { pointerShiftX?: number; empty?: boolean }) => {
+              if (item?.empty) return <View />;
+              return (
+                <View
+                  style={{
+                    height: ACTIVE_DOT_RADIUS * 2,
+                    width: ACTIVE_DOT_RADIUS * 2,
+                    backgroundColor: lineColor,
+                    borderRadius: ACTIVE_DOT_RADIUS,
+                    marginTop: DOT_RADIUS / 4 - (ACTIVE_DOT_RADIUS - DOT_RADIUS),
+                    marginLeft: (item?.pointerShiftX ?? 0) - (ACTIVE_DOT_RADIUS - DOT_RADIUS),
+                  }}
+                />
+              );
+            },
+            pointerLabelComponent: (items: Array<{ value: number; week?: string; empty?: boolean }>) => {
               const item = items[0];
+              if (item?.empty) return <View />;
               const date = item?.week
                 ? new Date(item.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                 : "";
@@ -306,8 +355,8 @@ function ProgressChartContent({
         {xLabelIndices.map((i) => {
           const x = WRAPPER_PADDING + Y_LABEL_WIDTH + i * spacing;
           const isFirst = i === 0;
-          const isLast = i === data.length - 1;
-          const date = new Date(data[i].week).toLocaleDateString("en-US", {
+          const isLast = i === metricSeries.length - 1;
+          const date = new Date(metricSeries[i].week).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
           });
