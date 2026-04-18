@@ -118,7 +118,7 @@ export function StatsFilters({
   return (
     <>
       <XStack gap="$1.5" py="$2" items="center">
-        <XStack gap="$1.5" flex={1} flexWrap="wrap">
+        <XStack gap="$1.5" flex={1} flexWrap="wrap" items="center">
           <FilterChip
             label={filters.exercise_kinds?.[0] ?? "Category"}
             active={!!filters.exercise_kinds?.length}
@@ -137,14 +137,13 @@ export function StatsFilters({
           {hasActiveFilters && (
             <Button
               size="$3"
-              $sm={{ size: "$5" }}
               chromeless
               bg="$gray4"
               pressStyle={{ opacity: 0.8 }}
               onPress={onClear}
               borderRadius="$10"
               circular
-              icon={<X size="$1" $sm={{ size: "$1.5" }} color="$gray11" />}
+              icon={<X size="$1" color="$gray11" />}
             />
           )}
         </XStack>

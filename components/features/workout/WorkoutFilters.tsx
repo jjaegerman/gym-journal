@@ -32,7 +32,7 @@ export function WorkoutFilters({
 
   return (
     <>
-      <XStack gap="$1.5" py="$2" flexWrap="wrap">
+      <XStack gap="$1.5" py="$2" flexWrap="wrap" items="center">
         <FilterChip
           label="Category"
           selectedCount={filters.exercise_kinds?.length ?? 0}
@@ -42,10 +42,12 @@ export function WorkoutFilters({
           <Button
             size="$3"
             chromeless
+            bg="$gray4"
+            pressStyle={{ opacity: 0.8 }}
             onPress={onClear}
             borderRadius="$10"
-            px="$2"
-            icon={<X size={14} color="$color11" />}
+            circular
+            icon={<X size="$1" color="$gray11" />}
           />
         )}
       </XStack>
