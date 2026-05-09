@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.dacky.gymjournal",
       "sha256_cert_fingerprints": [
-        "FF:EE:4A:75:D6:70:BC:76:5E:EF:F0:3A:E5:9A:01:84:DA:C3:F1:72:E4:06:F2:92:4D:79:22:28:0D:91:68:C4"
+        "FF:EE:4A:75:D6:70:BC:76:5E:EF:F0:3A:E5:9A:01:84:DA:C3:F1:72:E4:06:F2:92:4D:79:22:28:0D:91:68:C4",
+        "C5:F3:10:04:2F:14:38:84:BA:D2:99:DC:EC:A1:C1:EA:8E:9D:3A:87:48:63:99:4D:B2:F7:F6:7E:5C:2B:DA:6F"
       ]
     }
   }
