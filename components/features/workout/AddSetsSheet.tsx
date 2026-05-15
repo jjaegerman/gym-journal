@@ -98,7 +98,7 @@ export function AddSetsSheet({
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose();
       }}
-      snapPoints={[60]}
+      snapPoints={[90]}
       dismissOnSnapToBottom
     >
       <Sheet.Overlay opacity={0.5} />
@@ -109,12 +109,18 @@ export function AddSetsSheet({
             Add to {dateLabel}
           </H5>
           {exercises.length > 0 && (
-            <ExerciseList
-              exercises={exercises}
-              contextExerciseId={selectedContext?.id}
-              onContextChange={handleContextChange}
-              onLogDeleted={onSetsAdded}
-            />
+            <Sheet.ScrollView
+              flex={1}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+            >
+              <ExerciseList
+                exercises={exercises}
+                contextExerciseId={selectedContext?.id}
+                onContextChange={handleContextChange}
+                onLogDeleted={onSetsAdded}
+              />
+            </Sheet.ScrollView>
           )}
           <YStack gap="$3">
             <XStack justify="space-between" items="center">

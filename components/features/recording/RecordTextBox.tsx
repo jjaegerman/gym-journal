@@ -28,6 +28,9 @@ export const RecordTextBox = ({
         onChangeText={setText}
         placeholder="Type your workout log..."
         numberOfLines={4}
+        multiline
+        textAlignVertical="top"
+        verticalAlign="top"
         size="$4"
         $sm={{ size: "$6" }}
         rounded="$4"
