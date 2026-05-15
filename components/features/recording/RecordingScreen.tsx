@@ -148,11 +148,9 @@ export function RecordingScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "web" ? undefined : "padding"}
       style={{ flex: 1 }}
-      keyboardVerticalOffset={
-        Platform.OS === "ios" || Platform.OS === "android" ? 90 : 0
-      }
+      keyboardVerticalOffset={Platform.OS === "web" ? 0 : 90}
     >
       <View flex={1} bg="$background">
         {/* Toggle button at top right */}
