@@ -6,9 +6,10 @@ interface FilterChipProps {
   selectedCount?: number;
   active?: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
-export function FilterChip({ label, selectedCount = 0, active, onPress }: FilterChipProps) {
+export function FilterChip({ label, selectedCount = 0, active, onPress, disabled }: FilterChipProps) {
   const isActive = active ?? selectedCount > 0;
   const displayText = selectedCount > 0 ? `${label} (${selectedCount})` : label;
 
@@ -20,6 +21,8 @@ export function FilterChip({ label, selectedCount = 0, active, onPress }: Filter
       bg={isActive ? "$blue4" : "$gray4"}
       pressStyle={{ opacity: 0.8 }}
       onPress={onPress}
+      disabled={disabled}
+      opacity={disabled ? 0.5 : 1}
       borderRadius="$10"
       px="$2.5"
     >

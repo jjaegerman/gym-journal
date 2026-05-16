@@ -66,6 +66,11 @@ export function StatsFilters({
   const moreFiltersCount =
     (filters.modifiers?.length ?? 0) + (filters.equipment?.length ?? 0);
 
+  const moreFiltersAvailable =
+    (filterOptions?.modifiers?.length ?? 0) +
+      (filterOptions?.equipment?.length ?? 0) >
+    0;
+
   const handleExerciseKindChange = (selected: string[]) => {
     onFiltersChange({
       ...filters,
@@ -128,6 +133,7 @@ export function StatsFilters({
             label="Filter"
             selectedCount={moreFiltersCount}
             onPress={() => setMoreFiltersOpen(true)}
+            disabled={!moreFiltersAvailable && moreFiltersCount === 0}
           />
           <FilterChip
             label={currentTimeRangeLabel}

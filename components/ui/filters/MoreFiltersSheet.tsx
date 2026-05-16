@@ -42,6 +42,11 @@ export function MoreFiltersSheet({
 
   const totalSelected = sections.reduce((sum, s) => sum + s.selected.length, 0);
 
+  // Hide sections (and their headers) that have no available options
+  const visibleSections = sections
+    .map((section, index) => ({ section, index }))
+    .filter(({ section }) => section.options.length > 0);
+
   const handleToggle = (sectionIndex: number, option: string) => {
     if (committedRef.current) return;
     committedRef.current = true;
@@ -82,7 +87,7 @@ export function MoreFiltersSheet({
 
           <ScrollView flex={1}>
             <YStack gap="$4">
-              {sections.map((section, sectionIndex) => (
+              {visibleSections.map(({ section, index }, visibleIndex) => (
                 <YStack key={section.title} gap="$2">
                   <Text fontSize="$4" $sm={{ fontSize: "$6" }} fontWeight="600" color="$color11" px="$2">
                     {section.title}
@@ -97,7 +102,7 @@ export function MoreFiltersSheet({
                         py="$3"
                         px="$2"
                         pressStyle={{ opacity: 0.7 }}
-                        onPress={() => handleToggle(sectionIndex, option)}
+                        onPress={() => handleToggle(index, option)}
                         cursor="pointer"
                         borderRadius="$3"
                         hoverStyle={{ bg: "$color4" }}
@@ -115,7 +120,7 @@ export function MoreFiltersSheet({
                       </XStack>
                     );
                   })}
-                  {sectionIndex < sections.length - 1 && <Separator mt="$2" />}
+                  {visibleIndex < visibleSections.length - 1 && <Separator mt="$2" />}
                 </YStack>
               ))}
             </YStack>
