@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { useTheme } from "tamagui";
+import { AppInstallBanner } from "@/components/features/AppInstallBanner";
 
 /**
  * Layout for /share/* routes.
@@ -11,13 +12,16 @@ import { useTheme } from "tamagui";
 export default function ShareLayout() {
   const theme = useTheme();
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          backgroundColor: theme.background.val,
-        },
-      }}
-    />
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: theme.background.val,
+          },
+        }}
+      />
+      <AppInstallBanner />
+    </>
   );
 }
