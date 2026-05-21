@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button, H5, Paragraph, XStack, YStack } from "tamagui";
 import { Plus, Share2 } from "@tamagui/lucide-icons";
-import * as Clipboard from "expo-clipboard";
 import { useToastController } from "@tamagui/toast";
 import { WorkoutDetails, WorkoutDetailsSchema } from "@/types/exercise";
 import { getWorkoutDetails } from "@/lib/api/supabase/workouts";
 import { buildWorkoutShareUrl } from "@/lib/share/links";
+import { shareLink } from "@/lib/share/share";
 import { ExerciseList } from "./shared/ExerciseList";
 import { AddSetsSheet } from "./features/workout/AddSetsSheet";
 import { LoadingState } from "./ui/feedback/LoadingState";
@@ -48,11 +48,16 @@ export const WorkoutView = ({
 
   const handleShare = async () => {
     try {
-      await Clipboard.setStringAsync(buildWorkoutShareUrl(workoutId));
-      toast.show("Link copied", { duration: 2000 });
+      const { copiedToClipboard } = await shareLink({
+        url: buildWorkoutShareUrl(workoutId),
+        title: "Workout",
+      });
+      if (copiedToClipboard) {
+        toast.show("Link copied", { duration: 2000 });
+      }
     } catch (err) {
-      console.error("Failed to copy share link", err);
-      toast.show("Failed to copy link", { duration: 2000 });
+      console.error("Failed to share workout link", err);
+      toast.show("Failed to share link", { duration: 2000 });
     }
   };
 

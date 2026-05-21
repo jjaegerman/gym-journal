@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { XStack, Button } from "tamagui";
 import { X, Share2 } from "@tamagui/lucide-icons";
-import * as Clipboard from "expo-clipboard";
 import { useToastController } from "@tamagui/toast";
 import { FilterChip, FilterSheet, MoreFiltersSheet } from "@/components/ui/filters";
 import {
@@ -11,6 +10,7 @@ import {
 import { useSession } from "@/lib/hooks/useSession";
 import { useUnitPreferences } from "@/lib/hooks/useUnitPreferences";
 import { buildStatsShareUrl } from "@/lib/share/links";
+import { shareLink } from "@/lib/share/share";
 
 type TimeRange = 'all_time' | '1_year' | '3_months' | '1_month';
 
@@ -52,11 +52,13 @@ export function StatsFilters({
         preferredWeightUnit: prefs.weightUnit,
         preferredDistanceUnit: prefs.distanceUnit,
       });
-      await Clipboard.setStringAsync(url);
-      toast.show("Link copied", { duration: 2000 });
+      const { copiedToClipboard } = await shareLink({ url, title: "My stats" });
+      if (copiedToClipboard) {
+        toast.show("Link copied", { duration: 2000 });
+      }
     } catch (err) {
-      console.error("Failed to copy stats share link", err);
-      toast.show("Failed to copy link", { duration: 2000 });
+      console.error("Failed to share stats link", err);
+      toast.show("Failed to share link", { duration: 2000 });
     }
   };
 
