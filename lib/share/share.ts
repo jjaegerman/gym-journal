@@ -27,7 +27,9 @@ export async function shareLink({
     return { copiedToClipboard: true };
   }
 
-  // iOS reads `url`; Android reads `message`. Passing both is correct.
-  await Share.share({ message: url, url, title });
+  // Pass the URL as `message` on both platforms: iOS auto-detects the link
+  // and offers all URL-aware share targets, while text-only apps still accept
+  // it. Passing `url` alongside `message` on iOS duplicates the item.
+  await Share.share({ message: url, title });
   return { copiedToClipboard: false };
 }
