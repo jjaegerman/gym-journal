@@ -31,6 +31,7 @@ export function RecentSessions({ sessions, onSessionPress }: RecentSessionsProps
           const formattedDate = new Date(session.date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
+            year: "numeric",
           });
 
           return (

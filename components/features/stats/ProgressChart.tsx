@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { useWindowDimensions, View, LayoutChangeEvent } from "react-native";
-import { YStack, XStack, Text, Button, useTheme, Theme } from "tamagui";
-import { LineChart } from "react-native-gifted-charts";
-import { formatDurationSeconds, formatPace } from "@/lib/utils/formatters";
+import { YStack } from "tamagui";
+import { BaseTrendChart, type TrendPoint } from "@/components/ui/charts/BaseTrendChart";
+import { MetricChips, type MetricChipOption } from "@/components/ui/charts/MetricChips";
+import { formatPace } from "@/lib/utils/formatters";
 
 interface ProgressDataPoint {
   week: string;
@@ -21,7 +21,14 @@ interface ProgressChartProps {
   distanceUnit?: string | null;
 }
 
-type MetricType = "volume" | "maxWeight" | "maxReps" | "distance" | "avgPace" | "maxDuration" | "maxResistance";
+type MetricType =
+  | "volume"
+  | "maxWeight"
+  | "maxReps"
+  | "distance"
+  | "avgPace"
+  | "maxDuration"
+  | "maxResistance";
 
 const METRIC_LABELS: Record<MetricType, string> = {
   volume: "Volume",
@@ -35,12 +42,12 @@ const METRIC_LABELS: Record<MetricType, string> = {
 
 function getValue(d: ProgressDataPoint, metric: MetricType): number {
   switch (metric) {
-    case "volume": return d.volume;
-    case "maxWeight": return d.maxWeight;
-    case "maxReps": return d.maxReps ?? 0;
-    case "distance": return d.distance ?? 0;
-    case "avgPace": return d.avgPace ?? 0;
-    case "maxDuration": return d.maxDuration ?? 0;
+    case "volume":        return d.volume;
+    case "maxWeight":     return d.maxWeight;
+    case "maxReps":       return d.maxReps ?? 0;
+    case "distance":      return d.distance ?? 0;
+    case "avgPace":       return d.avgPace ?? 0;
+    case "maxDuration":   return d.maxDuration ?? 0;
     case "maxResistance": return d.maxResistance ?? 0;
   }
 }
@@ -58,46 +65,6 @@ function hasValue(d: ProgressDataPoint, metric: MetricType): boolean {
 }
 
 export function ProgressChart({ data, weightUnit, distanceUnit }: ProgressChartProps) {
-  const baseTheme = useTheme();
-  const gridColor = baseTheme.color6.val;
-  const labelColor = baseTheme.color11.val;
-  const inactiveBg = baseTheme.color3.val;
-  const inactiveText = baseTheme.color11.val;
-  return (
-    <Theme name="accent">
-      <ProgressChartContent
-        data={data}
-        gridColor={gridColor}
-        labelColor={labelColor}
-        inactiveBg={inactiveBg}
-        inactiveText={inactiveText}
-        weightUnit={weightUnit}
-        distanceUnit={distanceUnit}
-      />
-    </Theme>
-  );
-}
-
-function ProgressChartContent({
-  data,
-  gridColor,
-  labelColor,
-  inactiveBg,
-  inactiveText,
-  weightUnit,
-  distanceUnit,
-}: ProgressChartProps & { gridColor: string; labelColor: string; inactiveBg: string; inactiveText: string }) {
-  const { width: screenWidth } = useWindowDimensions();
-  const [containerWidth, setContainerWidth] = useState(screenWidth * 0.9);
-  const handleLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
-  const theme = useTheme();
-
-  const lineColor = theme.color10.val;
-  const stripColor = theme.color7.val;
-  const tooltipBg = theme.color3.val;
-  const tooltipValueColor = theme.color12.val;
-  const tooltipDateColor = theme.color10.val;
-
   const wUnit = weightUnit ?? 'lbs';
   const dUnit = distanceUnit ?? 'miles';
 
@@ -121,24 +88,26 @@ function ProgressChartContent({
     }
   }, [availableMetrics, metric]);
 
-  const metricSeries = useMemo(() => {
+  // Interpolate gaps between sparse data points so the line is continuous.
+  // Interpolated points are marked empty so the chart hides their dots/tooltips.
+  const series: TrendPoint[] = useMemo(() => {
     const real = data
       .filter((d) => hasValue(d, metric))
-      .map((d) => ({ week: d.week, value: getValue(d, metric) }));
-    if (real.length < 2) return real.map((p) => ({ ...p, empty: false }));
+      .map((d) => ({ x: d.week, value: getValue(d, metric), empty: false }));
+    if (real.length < 2) return real;
 
     const WEEK_MS = 7 * 24 * 3600 * 1000;
-    const points: Array<{ week: string; value: number; empty: boolean }> = [];
+    const points: TrendPoint[] = [];
     for (let i = 0; i < real.length; i++) {
-      points.push({ ...real[i], empty: false });
+      points.push(real[i]);
       if (i < real.length - 1) {
-        const cur = new Date(real[i].week).getTime();
-        const next = new Date(real[i + 1].week).getTime();
+        const cur = new Date(real[i].x).getTime();
+        const next = new Date(real[i + 1].x).getTime();
         const gapWeeks = Math.max(0, Math.round((next - cur) / WEEK_MS) - 1);
         for (let g = 1; g <= gapWeeks; g++) {
           const t = g / (gapWeeks + 1);
           points.push({
-            week: new Date(cur + g * WEEK_MS).toISOString(),
+            x: new Date(cur + g * WEEK_MS).toISOString(),
             value: real[i].value + (real[i + 1].value - real[i].value) * t,
             empty: true,
           });
@@ -148,16 +117,8 @@ function ProgressChartContent({
     return points;
   }, [data, metric]);
 
-  if (data.length === 0 || availableMetrics.length === 0 || metricSeries.length < 2) {
-    return (
-      <YStack p="$4" items="center" justify="center" height={200}>
-        <Text color="$color10">No progress data available</Text>
-      </YStack>
-    );
-  }
-
-  const formatValue = (value: number, m: MetricType): string => {
-    switch (m) {
+  const formatValue = (value: number): string => {
+    switch (metric) {
       case "volume":
         if (value >= 1000) return (value / 1000).toFixed(1).replace(/\.0$/, "") + `K ${wUnit}`;
         return value.toFixed(0) + ` ${wUnit}`;
@@ -171,17 +132,17 @@ function ProgressChartContent({
         return formatPace(value, distanceUnit ?? null);
       case "maxDuration": {
         const totalSecs = Math.round(value);
-        const m2 = Math.floor(totalSecs / 60);
+        const m = Math.floor(totalSecs / 60);
         const s = totalSecs % 60;
-        return s > 0 ? `${m2}m ${s}s` : `${m2}m`;
+        return s > 0 ? `${m}m ${s}s` : `${m}m`;
       }
       case "maxResistance":
         return "Level " + value.toFixed(0);
     }
   };
 
-  const formatYLabel = (val: string): string => {
-    const num = parseFloat(val);
+  const formatY = (raw: string): string => {
+    const num = parseFloat(raw);
     if (metric === "avgPace") {
       const mins = Math.floor(num);
       const secs = Math.round((num - mins) * 60);
@@ -189,196 +150,49 @@ function ProgressChartContent({
     }
     if (metric === "maxDuration") {
       const totalSecs = Math.round(num);
-      const m2 = Math.floor(totalSecs / 60);
+      const m = Math.floor(totalSecs / 60);
       const s = totalSecs % 60;
-      return s > 0 ? `${m2}:${String(s).padStart(2, "0")}` : `${m2}m`;
+      return s > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${m}m`;
     }
-    if (metric === "maxResistance") {
-      return String(Math.round(num));
-    }
+    if (metric === "maxResistance") return String(Math.round(num));
     if (num === 0) return "0";
     if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
     return String(Math.round(num));
   };
 
-  const DOT_RADIUS = 4;
-  const ACTIVE_DOT_RADIUS = DOT_RADIUS + DOT_RADIUS / 2;
-  const DENSE_POINT_THRESHOLD = 12;
-  const showDots = metricSeries.length <= DENSE_POINT_THRESHOLD;
-  const WRAPPER_PADDING = DOT_RADIUS + 2;
-  const Y_LABEL_WIDTH = 40;
-  const outerWidth = containerWidth;
-  const chartWidth = outerWidth - WRAPPER_PADDING * 2 - Y_LABEL_WIDTH;
-  const chartHeight = 180;
-  const spacing = metricSeries.length > 1 ? chartWidth / (metricSeries.length - 1) : 60;
+  const formatDate = (iso: string): string =>
+    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-  const POINTER_SHIFT_FIRST_X = -(DOT_RADIUS + 1);
-  const chartData = metricSeries.map((d, i) => ({
-    value: d.value,
-    week: d.week,
-    empty: d.empty,
-    ...(d.empty ? { hideDataPoint: true } : {}),
-    ...(i === 0 ? { pointerShiftX: POINTER_SHIFT_FIRST_X } : {}),
+  if (data.length === 0 || availableMetrics.length === 0 || series.length < 2) {
+    return (
+      <YStack p="$4" items="center" justify="center" height={200}>
+        <BaseTrendChart
+          series={[]}
+          formatY={formatY}
+          formatTooltipValue={formatValue}
+          formatTooltipDate={formatDate}
+          formatXLabel={formatDate}
+          emptyMessage="No progress data available"
+        />
+      </YStack>
+    );
+  }
+
+  const chipOptions: MetricChipOption<MetricType>[] = availableMetrics.map((m) => ({
+    id: m,
+    label: METRIC_LABELS[m],
   }));
 
-  const values = chartData.map((d) => d.value);
-  const rawMin = Math.min(...values);
-  const rawMax = Math.max(...values, 1);
-  const noOfSections = 4;
-  const roughStep = rawMax / noOfSections;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(roughStep, 1))));
-  const niceStep = Math.ceil(roughStep / magnitude) * magnitude;
-  const maxValue = niceStep * noOfSections;
-  const minValue = Math.max(0, Math.floor(rawMin / niceStep) * niceStep);
-
-  const MAX_X_LABELS = Math.min(metricSeries.length, 4);
-  const xLabelIndices =
-    MAX_X_LABELS <= 1
-      ? [0]
-      : Array.from({ length: MAX_X_LABELS }, (_, k) =>
-          Math.round((k * (metricSeries.length - 1)) / (MAX_X_LABELS - 1))
-        ).filter((v, i, arr) => arr.indexOf(v) === i);
-
   return (
-    <YStack gap="$3" width="100%" onLayout={handleLayout}>
-      {availableMetrics.length > 0 && (
-        <XStack gap="$2" justify="center" flexWrap="wrap">
-          {availableMetrics.map((m) => (
-            <Button
-              key={m}
-              size="$2"
-              $sm={{ size: "$5" }}
-              chromeless={metric !== m}
-              bg={metric === m ? "$color3" : (inactiveBg as any)}
-              onPress={() => setMetric(m)}
-              borderRadius="$3"
-              px="$3"
-            >
-              <Text
-                fontSize="$2"
-                $sm={{ fontSize: "$4" }}
-                fontWeight={metric === m ? "600" : "400"}
-                color={metric === m ? "$color11" : (inactiveText as any)}
-              >
-                {METRIC_LABELS[m]}
-              </Text>
-            </Button>
-          ))}
-        </XStack>
-      )}
-
-      <View style={{ paddingHorizontal: WRAPPER_PADDING }}>
-        <LineChart
-          data={chartData}
-          width={chartWidth}
-          height={chartHeight}
-          spacing={spacing}
-          initialSpacing={0}
-          endSpacing={metricSeries.length > 1 ? 10 - spacing : 0}
-          rulesLength={chartWidth}
-          xAxisLength={chartWidth}
-          disableScroll
-          color={lineColor}
-          thickness={2}
-          curved
-          hideDataPoints={!showDots}
-          dataPointsColor={lineColor}
-          dataPointsRadius={DOT_RADIUS}
-          noOfSections={noOfSections}
-          maxValue={maxValue - minValue}
-          yAxisOffset={minValue}
-          rulesType="dashed"
-          rulesColor={gridColor}
-          yAxisColor="transparent"
-          xAxisColor={gridColor}
-          hideXAxisText
-          xAxisLabelsHeight={0}
-          yAxisLabelWidth={Y_LABEL_WIDTH}
-          yAxisThickness={0}
-          yAxisTextStyle={{ color: labelColor, fontSize: 10 }}
-          formatYLabel={formatYLabel}
-          pointerConfig={{
-            pointerStripHeight: chartHeight,
-            pointerStripColor: "transparent",
-            pointerStripWidth: 1,
-            pointerColor: lineColor,
-            radius: DOT_RADIUS,
-            pointerLabelWidth: 100,
-            pointerLabelHeight: 48,
-            activatePointersOnLongPress: false,
-            autoAdjustPointerLabelPosition: true,
-            pointerComponent: (item: { pointerShiftX?: number; empty?: boolean }) => {
-              if (item?.empty) return <View />;
-              return (
-                <View
-                  style={{
-                    height: ACTIVE_DOT_RADIUS * 2,
-                    width: ACTIVE_DOT_RADIUS * 2,
-                    backgroundColor: lineColor,
-                    borderRadius: ACTIVE_DOT_RADIUS,
-                    marginTop: DOT_RADIUS / 4 - (ACTIVE_DOT_RADIUS - DOT_RADIUS),
-                    marginLeft: (item?.pointerShiftX ?? 0) - (ACTIVE_DOT_RADIUS - DOT_RADIUS),
-                  }}
-                />
-              );
-            },
-            pointerLabelComponent: (items: Array<{ value: number; week?: string; empty?: boolean }>) => {
-              const item = items[0];
-              if (item?.empty) return <View />;
-              const date = item?.week
-                ? new Date(item.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                : "";
-              return (
-                <View
-                  style={{
-                    backgroundColor: tooltipBg,
-                    borderRadius: 6,
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Text style={{ color: tooltipValueColor, fontSize: 12, fontWeight: "600" }}>
-                    {formatValue(item?.value ?? 0, metric)}
-                  </Text>
-                  <Text style={{ color: tooltipDateColor, fontSize: 10 }}>{date}</Text>
-                </View>
-              );
-            },
-          }}
-        />
-      </View>
-
-      <View style={{ height: 16, position: "relative", marginTop: -18 }}>
-        {xLabelIndices.map((i) => {
-          const x = WRAPPER_PADDING + Y_LABEL_WIDTH + i * spacing;
-          const isFirst = i === 0;
-          const isLast = i === metricSeries.length - 1;
-          const date = new Date(metricSeries[i].week).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-          return (
-            <Text
-              key={i}
-              style={{
-                position: "absolute",
-                ...(isLast
-                  ? { right: WRAPPER_PADDING }
-                  : { left: isFirst ? x : x - 18 }),
-                ...(!isFirst && !isLast ? { width: 36 } : {}),
-                fontSize: 10,
-                color: labelColor,
-                textAlign: isFirst ? "left" : isLast ? "right" : "center",
-              }}
-            >
-              {date}
-            </Text>
-          );
-        })}
-      </View>
+    <YStack gap="$3">
+      <MetricChips options={chipOptions} value={metric} onChange={setMetric} />
+      <BaseTrendChart
+        series={series}
+        formatY={formatY}
+        formatTooltipValue={formatValue}
+        formatTooltipDate={formatDate}
+        formatXLabel={formatDate}
+      />
     </YStack>
   );
 }

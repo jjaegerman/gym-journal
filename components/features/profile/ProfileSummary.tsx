@@ -1,182 +1,118 @@
-import {
-  ScrollView,
-  YStack,
-  H3,
-  XStack,
-  Paragraph,
-  Separator,
-} from "tamagui";
-import { useProfileStats } from "@/lib/hooks";
-import { LoadingState, ErrorState } from "@/components/ui/feedback";
-import { StatCard } from "./StatCard";
-import { TrendIndicator } from "./TrendIndicator";
-import {
-  Activity,
-  Clock,
-  Flame,
-  TrendingUp,
-  Dumbbell,
-  Timer,
-} from "@tamagui/lucide-icons";
+import { ScrollView, YStack, H5, Separator, Paragraph } from "tamagui";
 import { RefreshControl } from "react-native";
 import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "expo-router";
+import {
+  useProfileStats,
+  useProfileWeeklyTrends,
+  usePrTimeline,
+  useDailyTrainingSummary,
+} from "@/lib/hooks";
+import { LoadingState, ErrorState } from "@/components/ui/feedback";
+import { IdentityStrip } from "./IdentityStrip";
+import { ProfileTrendChart } from "./ProfileTrendChart";
+import { PrTimeline } from "./PrTimeline";
+import { CalendarHeatmap } from "./CalendarHeatmap";
 
-/**
- * Profile Summary Screen
- * Displays user workout statistics (all-time and recent)
- * Exercise breakdown is now in the Stats tab
- */
+const PROFILE_RANGE = '1_year' as const;
+
 export function ProfileSummary() {
-  const { stats, loading, error, refetch } = useProfileStats();
+  const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useProfileStats();
+
+  const weekly = useProfileWeeklyTrends(PROFILE_RANGE);
+  const prs = usePrTimeline(PROFILE_RANGE, 2);
+  const daily = useDailyTrainingSummary(PROFILE_RANGE);
+
   const [refreshing, setRefreshing] = useState(false);
   const isFirstFocus = useRef(true);
 
-  // Refetch profile stats when this screen comes into focus (but skip the first mount)
   useFocusEffect(
     useCallback(() => {
       if (isFirstFocus.current) {
         isFirstFocus.current = false;
         return;
       }
-      refetch();
-    }, [refetch]) // Include refetch in deps
+      refetchStats();
+      weekly.refetch();
+      prs.refetch();
+      daily.refetch();
+    }, [refetchStats, weekly.refetch, prs.refetch, daily.refetch])
   );
 
-  const handleRefresh = async () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.allSettled([
+      refetchStats(),
+      weekly.refetch(),
+      prs.refetch(),
+      daily.refetch(),
+    ]);
     setRefreshing(false);
   };
 
-  if (loading && !stats) {
-    return <LoadingState message="Loading your stats..." />;
+  if (statsLoading && !stats) return <LoadingState message="Loading your stats..." />;
+  if (statsError) {
+    return <ErrorState title="Error loading stats" message={statsError.message} onRetry={refetchStats} />;
   }
+  if (!stats) return <ErrorState title="No Data" message="No statistics available" />;
 
-  if (error) {
-    return (
-      <ErrorState
-        title="Error loading stats"
-        message={error.message}
-        onRetry={refetch}
-      />
-    );
-  }
-
-  if (!stats) {
-    return <ErrorState title="No Data" message="No statistics available" />;
-  }
+  const hasData = stats.total_workouts > 0;
 
   return (
     <ScrollView
       flex={1}
       bg="$background"
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <YStack p="$4" gap="$4" width="90%" $sm={{ width: "80%" }} $md={{ width: "75%" }} self="center">
-        {/* Section 1: All-Time */}
-        <YStack gap="$3">
-          <H3>All-Time</H3>
-        </YStack>
+        <IdentityStrip stats={stats} />
 
-        <XStack gap="$3" flexWrap="wrap">
-          <StatCard
-            title="Total Workouts"
-            value={stats.total_workouts}
-            icon={<Activity size={24} />}
-          />
-          <StatCard
-            title="Total Hours"
-            value={`${stats.total_hours}h`}
-            icon={<Clock size={24} />}
-          />
-          <StatCard
-            title="Current Streak"
-            value={`${stats.current_streak_days} days`}
-            icon={<Flame size={24} />}
-          />
-          <StatCard
-            title="Best Streak"
-            value={`${stats.longest_streak_days} days`}
-            icon={<TrendingUp size={24} />}
-          />
-        </XStack>
+        {hasData && (
+          <>
+            <Separator />
 
-        <Separator my="$4" />
+            <YStack gap="$2">
+              <H5 color="$color11" fontWeight="600" $sm={{ fontSize: "$8" }}>
+                Trends
+              </H5>
+              <ProfileTrendChart trends={weekly.data} loading={weekly.loading} />
+              {weekly.error && (
+                <Paragraph size="$2" color="$color10">
+                  Couldn't load trends. Pull to refresh.
+                </Paragraph>
+              )}
+            </YStack>
 
-        {/* Section 2: Recent (Last 4 Weeks) */}
-        <YStack gap="$3">
-          <H3>Recent</H3>
-          <Paragraph color="$color11" size="$2">
-            Last 4 weeks vs previous 4 weeks
-          </Paragraph>
-        </YStack>
+            {prs.data.length > 0 && (
+              <>
+                <Separator />
+                <YStack gap="$2">
+                  <H5 color="$color11" fontWeight="600" $sm={{ fontSize: "$8" }}>
+                    Recent PRs
+                  </H5>
+                  <PrTimeline
+                    prs={prs.data}
+                    loading={prs.loading}
+                    hasAnyPrEver={prs.data.length > 0}
+                  />
+                </YStack>
+              </>
+            )}
 
-        <XStack gap="$3" flexWrap="wrap">
-          <StatCard
-            title="Workouts/Week"
-            value={stats.recent_workouts_per_week}
-            icon={<Activity size={20} />}
-            trend={
-              <TrendIndicator
-                current={stats.recent_workouts_per_week}
-                previous={stats.prev_workouts_per_week}
+            <Separator />
+
+            <YStack gap="$2">
+              <H5 color="$color11" fontWeight="600" $sm={{ fontSize: "$8" }}>
+                Training calendar
+              </H5>
+              <CalendarHeatmap
+                days={daily.data}
+                range={PROFILE_RANGE}
+                loading={daily.loading}
               />
-            }
-          />
-          <StatCard
-            title="Hours/Week"
-            value={`${stats.recent_hours_per_week}h`}
-            icon={<Clock size={20} />}
-            trend={
-              <TrendIndicator
-                current={stats.recent_hours_per_week}
-                previous={stats.prev_hours_per_week}
-                format={(v) => `${v.toFixed(1)}h`}
-              />
-            }
-          />
-          <StatCard
-            title="Avg Duration"
-            value={`${Math.round(stats.recent_avg_duration_minutes)} min`}
-            icon={<Timer size={20} />}
-            trend={
-              <TrendIndicator
-                current={stats.recent_avg_duration_minutes}
-                previous={stats.prev_avg_duration_minutes}
-                format={(v) => `${Math.round(v)} min`}
-              />
-            }
-          />
-          <StatCard
-            title="Volume/Week"
-            value={
-              stats.recent_total_volume > 0
-                ? `${(stats.recent_total_volume / 1000).toFixed(1)}k lbs`
-                : stats.recent_total_distance > 0
-                ? `${stats.recent_total_distance.toFixed(1)} mi`
-                : "—"
-            }
-            icon={<Dumbbell size={20} />}
-            trend={
-              stats.recent_total_volume > 0 ? (
-                <TrendIndicator
-                  current={stats.recent_total_volume}
-                  previous={stats.prev_total_volume}
-                  format={(v) => `${(v / 1000).toFixed(1)}k lbs`}
-                />
-              ) : stats.recent_total_distance > 0 ? (
-                <TrendIndicator
-                  current={stats.recent_total_distance}
-                  previous={stats.prev_total_distance}
-                  format={(v) => `${v.toFixed(1)} mi`}
-                />
-              ) : null
-            }
-          />
-        </XStack>
+            </YStack>
+          </>
+        )}
       </YStack>
     </ScrollView>
   );
