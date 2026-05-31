@@ -29,7 +29,7 @@ function formatValue(pr: PrTimelineEntry): string {
     const secs = total % 60;
     return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   }
-  if (pr.pr_type === 'distance') return `${pr.value.toFixed(2)} ${pr.unit}`;
+  if (pr.pr_type === 'distance') return `${pr.value.toFixed(1)} ${pr.unit}`;
   if (pr.pr_type === 'weight') return `${Math.round(pr.value)} ${pr.unit}`;
   if (pr.pr_type === 'reps_at_top') return `${Math.round(pr.value)} reps`;
   return `${pr.value} ${pr.unit}`;
@@ -39,7 +39,7 @@ function formatDelta(pr: PrTimelineEntry): string | undefined {
   if (pr.delta == null) return undefined;
   if (pr.pr_type === 'weight')      return `+${Math.round(pr.delta)} ${pr.unit}`;
   if (pr.pr_type === 'reps_at_top') return `+${Math.round(pr.delta)} reps`;
-  if (pr.pr_type === 'distance')    return `+${pr.delta.toFixed(2)} ${pr.unit}`;
+  if (pr.pr_type === 'distance')    return `+${pr.delta.toFixed(1)} ${pr.unit}`;
   if (pr.pr_type === 'pace') {
     const secs = Math.round(Math.abs(pr.delta));
     return `-0:${String(secs).padStart(2, '0')}`;

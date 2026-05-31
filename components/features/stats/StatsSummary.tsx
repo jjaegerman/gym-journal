@@ -8,9 +8,9 @@ interface StatsSummaryProps {
 }
 
 function formatVolume(volume: number): string {
-  if (volume >= 1_000_000) return (volume / 1_000_000).toFixed(1) + "M";
-  if (volume >= 1_000) return (volume / 1_000).toFixed(1) + "K";
-  return volume.toFixed(0);
+  if (volume >= 1_000_000) return Math.round(volume / 1_000_000) + "M";
+  if (volume >= 1_000) return Math.round(volume / 1_000) + "K";
+  return Math.round(volume).toString();
 }
 
 export function StatsSummary({ stats }: StatsSummaryProps) {
@@ -45,7 +45,7 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
     cells.push({
       icon: <Dumbbell size={18} color="$color10" />,
       label: "Max weight",
-      value: stats.maxWeight,
+      value: Math.round(stats.maxWeight),
       unit: weightUnit,
     });
   }

@@ -38,7 +38,7 @@ export function PersonalRecords({ weightPr, repsPr, weightUnit, onPRPress }: Per
             icon={<Trophy size={16} $sm={{ size: 20 } as any} color="$color11" />}
             title="Weight PR"
             subtitle={weightPr.exercise}
-            primary={`${weightPr.value} ${weightUnit ?? 'lbs'}`}
+            primary={`${Math.round(weightPr.value)} ${weightUnit ?? 'lbs'}`}
             dateLabel={formatDate(weightPr.date)}
             flex={1}
             onPress={weightPr.workoutId ? () => onPRPress?.(weightPr.workoutId!) : undefined}
