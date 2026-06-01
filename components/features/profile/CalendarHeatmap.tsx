@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Platform, ScrollView, Pressable } from "react-native";
-import { YStack, XStack, View, Text, Popover, Paragraph, Theme, useTheme } from "tamagui";
+import { YStack, XStack, View, Text, Popover, Paragraph, Theme, useTheme, useMedia } from "tamagui";
 import type { DailySummaryPoint, ProfileRange } from "@/lib/api/supabase/profileTrends";
 
 interface Props {
@@ -118,9 +118,12 @@ function CalendarHeatmapInner({
 
 function HeatmapBody({ days, range, loading, bucketing }: Props & { bucketing: Bucketing }) {
   const [openDay, setOpenDay] = useState<string | null>(null);
+  const media = useMedia();
 
-  const cellSize = 16;
+  // Phone keeps the compact 16/3; gentle bumps at sm/md.
+  const cellSize = media.md ? 20 : media.sm ? 18 : 16;
   const cellGap = 3;
+  const labelFontSize = media.sm ? 10 : 9;
   const colWidth = cellSize + cellGap;
 
   const byDay = useMemo(() => {
@@ -185,7 +188,7 @@ function HeatmapBody({ days, range, loading, bucketing }: Props & { bucketing: B
             style={{
               position: 'absolute',
               left: ci * colWidth,
-              fontSize: 9,
+              fontSize: labelFontSize,
               color: bucketing.labelColor,
             }}
           >
@@ -205,7 +208,7 @@ function HeatmapBody({ days, range, loading, bucketing }: Props & { bucketing: B
           return (
             <View key={di} style={{ height: cellSize, justifyContent: "center" }}>
               {labels[di] && (
-                <Text style={{ fontSize: 9, color: bucketing.labelColor }}>
+                <Text style={{ fontSize: labelFontSize, color: bucketing.labelColor }}>
                   {labels[di]}
                 </Text>
               )}
