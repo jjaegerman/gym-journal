@@ -24,7 +24,7 @@ export {
 } from "./date";
 
 // Exercise utilities
-export { getExerciseIcon, getExerciseIconColor } from "./exerciseIcons";
+export { ExerciseIcon } from "./exerciseIcons";
 export {
   formatExerciseGrouping,
   getExerciseGroupingKey,

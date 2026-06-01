@@ -1,144 +1,128 @@
-/**
- * Exercise type icon mapping
- * Maps exercise categories to appropriate Lucide icons
- */
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "tamagui";
 
-import {
-  Activity,
-  Zap,
-  Dumbbell,
-  TrendingUp,
-  Circle,
-  Target,
-  Award,
-  Heart,
-  Navigation,
-} from "@tamagui/lucide-icons";
-import { ReactElement } from "react";
+type MCIName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
-/**
- * Get icon component for exercise type
- * @param exerciseType - The exercise type/category
- * @param size - Icon size (default 20)
- * @returns Icon component
- */
-export function getExerciseIcon(
-  exerciseType?: string | null,
-  size: number = 20,
-  // biome-ignore lint/suspicious/noExplicitAny: Tamagui color tokens are strings at runtime
-  color?: any
-): ReactElement {
-  if (!exerciseType) {
-    return <Activity size={size} color={color} />;
-  }
+type Category =
+  | "lower_knee"
+  | "lower_hip"
+  | "calves"
+  | "push"
+  | "pull"
+  | "olympic"
+  | "shoulders"
+  | "arms"
+  | "core"
+  | "functional"
+  | "cardio_run"
+  | "cardio_bike"
+  | "cardio_row"
+  | "cardio_swim"
+  | "cardio_stairs"
+  | "cardio_jump_rope"
+  | "cardio_other"
+  | "other";
 
-  const type = exerciseType.toLowerCase();
+const CATEGORY_ICON: Record<Category, MCIName> = {
+  lower_knee:       "weight-lifter",
+  lower_hip:        "kettlebell",
+  calves:           "foot-print",
+  push:             "arrow-up-bold",
+  pull:             "arrow-down-bold",
+  olympic:          "flash",
+  shoulders:        "human-handsup",
+  arms:             "arm-flex",
+  core:             "yoga",
+  functional:       "bag-suitcase",
+  cardio_run:       "run",
+  cardio_bike:      "bike",
+  cardio_row:       "rowing",
+  cardio_swim:      "swim",
+  cardio_stairs:    "stairs",
+  cardio_jump_rope: "jump-rope",
+  cardio_other:     "heart-pulse",
+  other:            "dumbbell",
+};
 
-  // Lower Body Compound
-  if (type.includes("squat")) {
-    return <Dumbbell size={size} color={color} />;
-  }
-  if (type.includes("deadlift")) {
-    return <TrendingUp size={size} color={color} />;
-  }
-  if (type.includes("lunge") || type.includes("split")) {
-    return <Navigation size={size} color={color} />;
-  }
+const KIND_CATEGORY: Record<string, Category> = {
+  // Lower - knee dominant
+  "Squat":            "lower_knee",
+  "Lunge":            "lower_knee",
+  "Leg Press":        "lower_knee",
+  "Leg Extension":    "lower_knee",
 
-  // Upper Body Compound
-  if (type.includes("bench") || type.includes("press")) {
-    return <Dumbbell size={size} color={color} />;
-  }
-  if (type.includes("row")) {
-    return <TrendingUp size={size} color={color} />;
-  }
-  if (type.includes("pull")) {
-    return <TrendingUp size={size} color={color} />;
-  }
+  // Lower - hip dominant (incl. hip abductors/adductors)
+  "Deadlift":         "lower_hip",
+  "Hip Hinge":        "lower_hip",
+  "Leg Curl":         "lower_hip",
+  "Hip Adduction":    "lower_hip",
+  "Hip Abduction":    "lower_hip",
 
-  // Olympic & Power
-  if (type.includes("olympic") || type.includes("power")) {
-    return <Zap size={size} color={color} />;
-  }
+  // Calves
+  "Calf Raise":       "calves",
 
-  // Isolation exercises
-  if (
-    type.includes("leg") ||
-    type.includes("glute") ||
-    type.includes("calf") ||
-    type.includes("chest") ||
-    type.includes("shoulder") ||
-    type.includes("arm")
-  ) {
-    return <Target size={size} color={color} />;
-  }
+  // Push
+  "Bench Press":      "push",
+  "Push-up":          "push",
+  "Overhead Press":   "push",
+  "Dip":              "push",
+  "Chest Fly":        "push",
+
+  // Pull
+  "Row":              "pull",
+  "Pull-up":          "pull",
+  "Lat Pulldown":     "pull",
+
+  // Olympic
+  "Clean":            "olympic",
+  "Snatch":           "olympic",
+  "Jerk":             "olympic",
+
+  // Shoulders (isolation)
+  "Lateral Raise":    "shoulders",
+  "Rear Delt":        "shoulders",
+  "Shrug":            "shoulders",
+
+  // Arms (bi/tri/forearm)
+  "Bicep Curl":       "arms",
+  "Tricep Extension": "arms",
+  "Forearm":          "arms",
 
   // Core
-  if (type.includes("core")) {
-    return <Circle size={size} color={color} />;
-  }
+  "Core":             "core",
+
+  // Functional
+  "Carry":            "functional",
+  "Plyometric":       "functional",
 
   // Cardio
-  if (type.includes("cardio")) {
-    return <Heart size={size} color={color} />;
-  }
+  "Running":          "cardio_run",
+  "Cycling":          "cardio_bike",
+  "Stationary Bike":  "cardio_bike",
+  "Rowing Machine":   "cardio_row",
+  "Swimming":         "cardio_swim",
+  "Elliptical":       "cardio_stairs",
+  "Stair Climber":    "cardio_stairs",
+  "Jump Rope":        "cardio_jump_rope",
+  "Cardio Other":     "cardio_other",
 
-  // Default
-  return <Activity size={size} color={color} />;
+  // Catch-all
+  "Other":            "other",
+};
+
+function resolveIcon(kind?: string | null): MCIName {
+  const cat = (kind && KIND_CATEGORY[kind]) || "other";
+  return CATEGORY_ICON[cat];
 }
 
-/**
- * Get icon color for exercise type
- * @param exerciseType - The exercise type/category
- * @returns Tamagui color token
- */
-export function getExerciseIconColor(exerciseType?: string | null): string {
-  if (!exerciseType) {
-    return "$gray10";
-  }
-
-  const type = exerciseType.toLowerCase();
-
-  // Cardio - red/pink
-  if (type.includes("cardio")) {
-    return "$red10";
-  }
-
-  // Power/Olympic - yellow/orange
-  if (type.includes("olympic") || type.includes("power")) {
-    return "$orange10";
-  }
-
-  // Compound movements - blue
-  if (
-    type.includes("squat") ||
-    type.includes("deadlift") ||
-    type.includes("bench") ||
-    type.includes("press") ||
-    type.includes("row") ||
-    type.includes("pull")
-  ) {
-    return "$blue10";
-  }
-
-  // Isolation - purple
-  if (
-    type.includes("isolation") ||
-    type.includes("leg") ||
-    type.includes("glute") ||
-    type.includes("calf") ||
-    type.includes("chest") ||
-    type.includes("shoulder") ||
-    type.includes("arm")
-  ) {
-    return "$purple10";
-  }
-
-  // Core - green
-  if (type.includes("core")) {
-    return "$green10";
-  }
-
-  // Default
-  return "$gray10";
+export function ExerciseIcon({
+  kind,
+  size = 20,
+}: {
+  kind?: string | null;
+  size?: number;
+}) {
+  const theme = useTheme();
+  const color = (theme as any).color?.get?.() ?? "#888";
+  return <MaterialCommunityIcons name={resolveIcon(kind)} size={size} color={color} />;
 }

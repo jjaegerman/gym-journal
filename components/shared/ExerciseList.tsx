@@ -4,8 +4,7 @@ import { Expand } from "@tamagui/lucide-icons";
 import { Exercise } from "@/types/exercise";
 import {
   capitalizeEachWord,
-  getExerciseIcon,
-  getExerciseIconColor,
+  ExerciseIcon,
   formatExerciseGrouping,
   summarizeExerciseLogs,
   descriptionFromSummary,
@@ -34,7 +33,7 @@ export const ExerciseList = memo(function ExerciseList({
   const [focusedExerciseIdx, setFocusedExerciseIdx] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const media = useMedia();
-  const exerciseIconSize = getTokenValue(media.sm ? "$2" : "$1.5", "size");
+  const exerciseIconSize = getTokenValue(media.sm ? "$3.5" : "$3", "size");
 
   return (
     <>
@@ -56,7 +55,6 @@ export const ExerciseList = memo(function ExerciseList({
             }),
           );
 
-          const iconColor = getExerciseIconColor(exercise.exercise_kind);
           const isSelected = exercise.id === contextExerciseId;
 
           return (
@@ -73,7 +71,10 @@ export const ExerciseList = memo(function ExerciseList({
                 borderColor={isSelected ? "$blue7" : undefined}
                 icon={
                   <View>
-                    {getExerciseIcon(exercise.exercise_kind, exerciseIconSize, isSelected ? "$blue9" : iconColor)}
+                    <ExerciseIcon
+                      kind={exercise.exercise_kind}
+                      size={exerciseIconSize}
+                    />
                   </View>
                 }
                 iconAfter={
