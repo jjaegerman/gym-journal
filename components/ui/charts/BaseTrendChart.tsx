@@ -118,7 +118,7 @@ function ChartBody({
 
   return (
     <YStack gap="$3" width="100%" onLayout={handleLayout}>
-      <View style={{ paddingHorizontal: WRAPPER_PADDING }}>
+      <View style={{ paddingHorizontal: WRAPPER_PADDING, overflow: "hidden" }}>
         <LineChart
           data={chartData}
           width={chartWidth}
@@ -132,6 +132,7 @@ function ChartBody({
           color={lineColor}
           thickness={2}
           curved
+          curvature={0.05}
           hideDataPoints={!showDots}
           dataPointsColor={lineColor}
           dataPointsRadius={DOT_RADIUS}
