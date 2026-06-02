@@ -2,7 +2,7 @@
   "expo": {
     "name": "Gym Journal",
     "slug": "expo-router-example",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "com.supabase.gym-journal",
@@ -11,7 +11,7 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "11",
+      "buildNumber": "12",
       "supportsTablet": true,
       "bundleIdentifier": "com.dacky.gymjournal",
       "associatedDomains": ["applinks:gym-journal.com"],
@@ -27,7 +27,7 @@
       }
     },
     "android": {
-      "versionCode": 11,
+      "versionCode": 12,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0f0f10"
