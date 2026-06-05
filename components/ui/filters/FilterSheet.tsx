@@ -12,6 +12,7 @@ import {
   useMedia,
 } from "tamagui";
 import { Check } from "@tamagui/lucide-icons";
+import { track } from "@/lib/analytics/track";
 
 interface FilterSheetProps {
   title: string;
@@ -44,6 +45,7 @@ export function FilterSheet({
       ? selected.filter((o) => o !== option)
       : [...selected, option];
     onSelectionChange(next);
+    track("filter_applied", { filter_kind: title, option, selected_count: next.length });
   };
 
 const handleClear = () => {
@@ -83,6 +85,7 @@ const handleClear = () => {
                   if (committedRef.current) return;
                   committedRef.current = true;
                   onSelectionChange([value]);
+                  track("filter_applied", { filter_kind: title, option: value, selected_count: 1 });
                   onOpenChange(false);
                 }}
               >

@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { Workout, WorkoutDetails } from '@/types/exercise';
+import { track } from '@/lib/analytics/track';
 
 /**
  * Workouts API
@@ -74,6 +75,7 @@ export async function deleteSet(setId: string): Promise<boolean> {
     throw error;
   }
 
+  track('set_deleted');
   return data as boolean;
 }
 

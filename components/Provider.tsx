@@ -15,6 +15,8 @@ import { useSession } from "@/lib/hooks";
 import { TabProvider } from "@/lib/context/TabContext";
 import { UnitPreferencesProvider } from "@/lib/context/UnitPreferencesContext";
 import { SessionProvider } from "@/lib/context/SessionContext";
+import { PostHogProvider } from "posthog-react-native";
+import { posthog } from "@/lib/analytics/track";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -78,9 +80,17 @@ export function Provider({
           ]
         }
       >
-        <SessionProvider>
-          <AppContent>{children}</AppContent>
-        </SessionProvider>
+        {posthog ? (
+          <PostHogProvider client={posthog}>
+            <SessionProvider>
+              <AppContent>{children}</AppContent>
+            </SessionProvider>
+          </PostHogProvider>
+        ) : (
+          <SessionProvider>
+            <AppContent>{children}</AppContent>
+          </SessionProvider>
+        )}
         <CurrentToast />
         <ToastViewport top="$8" left={0} right={0} />
       </ToastProvider>

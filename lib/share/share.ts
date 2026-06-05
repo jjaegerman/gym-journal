@@ -1,9 +1,16 @@
 import { Platform, Share } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { track } from "@/lib/analytics/track";
 
 interface ShareLinkOptions {
   url: string;
   title?: string;
+}
+
+function shareTypeFromUrl(url: string): string {
+  if (url.includes("/share/workout/")) return "workout";
+  if (url.includes("/share/stats")) return "stats";
+  return "other";
 }
 
 interface ShareLinkResult {
@@ -22,8 +29,10 @@ export async function shareLink({
   url,
   title,
 }: ShareLinkOptions): Promise<ShareLinkResult> {
+  const share_type = shareTypeFromUrl(url);
   if (Platform.OS === "web") {
     await Clipboard.setStringAsync(url);
+    track("workout_shared", { share_type, method: "clipboard" });
     return { copiedToClipboard: true };
   }
 
@@ -31,5 +40,6 @@ export async function shareLink({
   // and offers all URL-aware share targets, while text-only apps still accept
   // it. Passing `url` alongside `message` on iOS duplicates the item.
   await Share.share({ message: url, title });
+  track("workout_shared", { share_type, method: "os_share_sheet" });
   return { copiedToClipboard: false };
 }

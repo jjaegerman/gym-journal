@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { AppState } from 'react-native';
 import { Session } from '@supabase/supabase-js';
 import { getSession, refreshSession, onAuthStateChange, startAutoRefresh, stopAutoRefresh } from '@/lib/api/supabase/auth';
+import { posthog, track } from '@/lib/analytics/track';
 
 interface SessionContextValue {
   session: Session | null;
@@ -23,10 +24,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }).then((session) => {
       setSession(session ?? null);
       setLoading(false);
+      if (session?.user) {
+        posthog?.identify(session.user.id, session.user.email ? { email: session.user.email } : undefined);
+      }
     });
 
-    const { data: { subscription } } = onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
       setSession(session);
+      if (event === 'SIGNED_IN' && session?.user) {
+        posthog?.identify(session.user.id, session.user.email ? { email: session.user.email } : undefined);
+        const method = (session.user.app_metadata?.provider as string | undefined) ?? 'unknown';
+        const createdAt = session.user.created_at ? Date.parse(session.user.created_at) : 0;
+        const isNewUser = createdAt > 0 && Date.now() - createdAt < 60_000;
+        track(isNewUser ? 'auth_signed_up' : 'auth_signed_in', { method });
+      } else if (event === 'SIGNED_OUT') {
+        posthog?.reset();
+      }
     });
 
     startAutoRefresh();
