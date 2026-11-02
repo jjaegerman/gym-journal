@@ -53,6 +53,7 @@ export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
         console.error('Error submitting audio:', error);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         toast.show('Failed to log exercise', {
+          message: error instanceof Error ? error.message : undefined,
           duration: 3000,
           customData: { theme: 'red' },
         });
@@ -81,6 +82,7 @@ export function useExerciseSubmit(onSuccess?: () => void, workoutId?: string) {
         console.error('Error submitting text:', error);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         toast.show('Failed to log exercise', {
+          message: error instanceof Error ? error.message : undefined,
           duration: 3000,
           customData: { theme: 'red' },
         });
