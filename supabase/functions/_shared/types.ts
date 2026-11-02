@@ -232,3 +232,12 @@ export const OpenAILogDetails = z.object({
 export const OpenAILogDetailsArray = z.object({
   items: z.array(OpenAILogDetails).nullable().optional(),
 });
+
+// The duration format/pattern emitted by z.iso.duration() causes empty output
+// from structured generation. Request a string, then validate the result with
+// OpenAILogDetailsArray so ISO 8601 validation still applies before saving.
+export const OpenAILogDetailsResponseSchema = z.object({
+  items: z.array(OpenAILogDetails.extend({
+    duration: z.string().describe("ISO 8601 duration, e.g. PT30M").nullable().optional(),
+  })).nullable().optional(),
+});

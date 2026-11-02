@@ -1,6 +1,6 @@
 import OpenAI from "npm:openai";
 import { zodTextFormat } from "npm:openai/helpers/zod";
-import { OpenAILogDetailsArray } from "../_shared/types.ts";
+import { OpenAILogDetailsArray, OpenAILogDetailsResponseSchema } from "../_shared/types.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
+        // Each request forwards its own user token and owns no persistent session.
+        auth: { autoRefreshToken: false, persistSession: false },
         global: {
           headers: { Authorization: req.headers.get("Authorization")! },
         },
@@ -37,7 +39,7 @@ Deno.serve(async (req) => {
       if (query.length > 1024) {
         return new Response(
           JSON.stringify({ error: "Text too long." }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -46,7 +48,7 @@ Deno.serve(async (req) => {
       if (!audio?.base64) {
         return new Response(
           JSON.stringify({ error: "Missing audio.base64 field" }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -62,14 +64,14 @@ Deno.serve(async (req) => {
       if (!supportedFormats.includes(audio.fileExtension?.toLowerCase())) {
         return new Response(
           JSON.stringify({ error: "Unsupported audio format" }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
       if (audio.base64.length > 10 * 1024 * 1024) {
         return new Response(
           JSON.stringify({ error: "Audio recording too long" }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -91,7 +93,7 @@ Deno.serve(async (req) => {
     if (!textLog || textLog.trim() === "") {
       return new Response(
         JSON.stringify({ error: "No exercise logs extracted from input" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -121,7 +123,8 @@ If repetitions not specified but sets are, assume repetitions equal sets and set
 If both specified, repeat item with same repetitions for each set.
 When expanding sets, each item's input should describe that single set (e.g. "3 sets of 10 bench press at 185 lbs" → each item's input is "10 reps bench press at 185 lbs").${context ? buildContextBlock(context) : ""}`;
 
-    const structured = await openai.responses.parse({
+    // Check completion before parsing so the SDK cannot parse incomplete output.
+    const structured = await openai.responses.create({
       model: "gpt-4.1",
       input: [
         {
@@ -134,11 +137,26 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
         },
       ],
       text: {
-        format: zodTextFormat(OpenAILogDetailsArray, "log"),
+        format: zodTextFormat(OpenAILogDetailsResponseSchema, "log"),
       },
     });
 
-    const exerciseLogs = structured.output_parsed?.items ?? [];
+    if (structured.status !== "completed") {
+      console.error("Workout extraction did not complete:", {
+        response_id: structured.id,
+        status: structured.status,
+        incomplete_details: structured.incomplete_details,
+        error: structured.error,
+      });
+      return new Response(
+        JSON.stringify({ error: "Workout processing returned an incomplete response. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const exerciseLogs = OpenAILogDetailsArray.parse(
+      JSON.parse(structured.output_text || '{"items":[]}'),
+    ).items ?? [];
 
     const defaultWeightUnit = unitPreferences?.weightUnit ?? 'lbs';
     const defaultDistanceUnit = unitPreferences?.distanceUnit ?? 'miles';
@@ -166,7 +184,7 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
     if (logsForDb.length === 0) {
       return new Response(
         JSON.stringify({ error: "No exercise logs extracted from input" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -199,9 +217,9 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
 
     if (submissionError) {
       console.error("Error creating submission with logs:", submissionError);
-      return new Response(String(submissionError.message), {
+      return new Response(JSON.stringify({ error: submissionError.message }), {
         status: 500,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -213,7 +231,10 @@ When expanding sets, each item's input should describe that single set (e.g. "3 
     );
   } catch (error) {
     console.error("Error processing request:", error);
-    return new Response(String(error), { status: 500, headers: corsHeaders });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 });
 

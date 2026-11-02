@@ -36,15 +36,15 @@ interface OpenAIRequestBody {
 }
 
 interface OpenAIResponse {
-  text?: string;
-  error?: string;
+  success: true;
+  submission_id: string;
 }
 
 /**
  * Invoke the OpenAI edge function for audio transcription or text processing
  * @param audioData - Optional audio file data (base64 encoded)
  * @param query - Optional text query/instruction for the AI
- * @returns Transcribed text or error
+ * @returns The saved submission; throws if processing or saving fails
  */
 export async function invokeOpenAI(
   audioData?: {
@@ -59,7 +59,7 @@ export async function invokeOpenAI(
 ): Promise<OpenAIResponse> {
   // Require either audioData or query
   if (!audioData && !query) {
-    return { error: 'Either audioData or query must be provided' };
+    throw new Error('Either audioData or query must be provided');
   }
 
   const body: OpenAIRequestBody = {};
@@ -90,7 +90,25 @@ export async function invokeOpenAI(
 
   if (error) {
     console.error("Error invoking OpenAI function:", error);
-    return { error: error.message };
+    let message = error.message;
+    // HTTP errors carry the function's response, including its useful error message.
+    if (error.context instanceof Response) {
+      const text = await error.context.text();
+      if (text) {
+        try {
+          const body = JSON.parse(text);
+          if (typeof body.error === 'string') message = body.error;
+        } catch {
+          message = text;
+        }
+      }
+    }
+    throw new Error(message);
+  }
+
+  if (data?.error) throw new Error(String(data.error));
+  if (data?.success !== true || typeof data.submission_id !== 'string') {
+    throw new Error('Workout processing returned an invalid response');
   }
 
   return data as OpenAIResponse;
